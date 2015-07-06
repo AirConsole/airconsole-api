@@ -6,7 +6,7 @@
  -------------------------------------
 
  Create a screen.html and a controller.html file and include:
-   http://www.airconsole.com/api/airconsole-1.0.js
+   http://www.airconsole.com/api/airconsole-1.1.js
 
  The screen.html is for the gameconsole's screen.
  The controller.html are for the gameconsole's controllers (gamepads).
