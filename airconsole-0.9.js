@@ -1,58 +1,7 @@
 /*
-
- AirConsole. Copyright 2015 by N-Dream AG, Switzerland.
-
- Getting started with game development
- -------------------------------------
-
- Create a screen.html and a controller.html file and include:
-   http://www.airconsole.com/api/v1.js
-
- The screen.html is for the gameconsole's screen.
- The controller.html are for the gameconsole's controllers (gamepads).
-
- Here is simple example where the a controller sends "How are you?" to the
- screen and the screen replies with "Full of pixels!"
-
- controller.html:
-   ...
-   var gameconsole = new AirConsole();
-   gameconsole.message(AirConsole.SCREEN, "How are you?")
-   ...
-
-
- screen.html:
-   ...
-   var gameconsole = new AirConsole();
-   gameconsole.onMessage = function(sender, data) {
-     gameconsole.message(sender, "Full of pixels!");
-   }
-   ...
-
- To test your game, you just need to host it somewhere accessible by all the
- devices you want to use. In this example we will host the two files on:
-   http://192.168.0.1:8080/game/screen.html
-   http://192.168.0.1:8080/game/controller.html
-
- To run the game, go with the browser that should act as the screen to:
-   http://www.airconsole.com/#http://192.168.0.1:8080/game/
- NOTE: there is NO screen.html at the end!
- Game controllers can join as usual over www.airconsole.com.
-
- If you develop locally and you can also use the developers console to test:
-   http://www.airconsole.com/developers/
-
- Here is a simple pong example:
-   http://pong.airconsole-games.appspot.com/screen.html
-   http://pong.airconsole-games.appspot.com/controller.html
- To test it, go with the browser that should act as the screen to:
-   http://www.airconsole.com/#http://pong.airconsole-games.appspot.com/
-
- Now just read the documentation in this file.
-
- Questions can be sent to:
-   hello@n-dream.com
-
+  AirConsole. Copyright 2015 by N-Dream AG, Switzerland.
+  @version 0.9
+  See http://developers.airconsole.com/ for API documentation
 */
 
 /**
