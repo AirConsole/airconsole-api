@@ -257,15 +257,7 @@ AirConsole.prototype.setupDocument_ = function() {
       "    min-zoom: 1;\n" +
       "    max-zoom: 1;\n" +
       "    user-zoom: fixed;\n" +
-      "}\n" +
-      "@viewport {\n" +
-      "    width: device-width;\n" +
-      "    initial-scale: 1;\n" +
-      "    zoom: 1;\n" +
-      "    min-zoom: 1;\n" +
-      "    max-zoom: 1;\n" +
-      "    user-zoom: fixed;\n" +
-      "}"
+      "}";
   if (style.styleSheet) {
     style.styleSheet.cssText = css_code;
   } else {
