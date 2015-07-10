@@ -61,12 +61,11 @@ function AirConsole(opts) {
           if (me.server_time_offset !== false) {
             me.server_time_offset = data.server_time_offset || 0;
           }
-          if (data.debug) {
-            me.loadScript(data.debug);
-          }
           me.onReady(data.code, device_id);
         } else if (data.action == "navigate") {
           window.onbeforeunload = undefined;
+        } else if (data.action == "script") {
+          me.loadScript(data.script)
         }
       },
       false);
