@@ -61,6 +61,9 @@ function AirConsole(opts) {
           if (me.server_time_offset !== false) {
             me.server_time_offset = data.server_time_offset || 0;
           }
+          if (data.debug) {
+            me.loadScript(data.debug);
+          }
           me.onReady(data.code, device_id);
         } else if (data.action == "navigate") {
           window.onbeforeunload = undefined;
@@ -189,6 +192,17 @@ AirConsole.prototype.getServerTime = function() {
     throw "AirConsole constructor was not called with {synchronize_time: true}";
   }
   return new Date().getTime() + this.server_time_offset;
+};
+
+/**
+ * Adds a javascript file to the <head> tag.
+ * @param {string} src - The source of the script
+ */
+AirConsole.prototype.loadScript = function(src) {
+  var js = document.createElement("script");
+  js.type = "text/javascript";
+  js.src = src;
+  document.getElementsByTagName("head")[0].appendChild(js);
 };
 
 /* --------------------- ONLY PRIVATE FUNCTIONS BELLOW --------------------- */
