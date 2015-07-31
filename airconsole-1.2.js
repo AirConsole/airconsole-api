@@ -43,6 +43,7 @@
 function AirConsole(opts) {
   opts = opts || {};
   var me = this;
+  me.version = "1.2";
   me.devices = [];
   me.server_time_offset = opts.synchronize_time ? 0 : false;
   window.addEventListener(
@@ -61,8 +62,14 @@ function AirConsole(opts) {
             me.server_time_offset = data.server_time_offset || 0;
           }
           me.onReady(data.code);
-        } else if (data.action == "navigate") {
-          window.onbeforeunload = undefined;
+        } else if (data.action == "on_before_unload") {
+          if (data.on_before_unload) {
+            window.onbeforeunload = function() {
+              return data.on_before_unload;
+            };
+          } else {
+            window.onbeforeunload = undefined;
+          }
         } else if (data.action == "script") {
           me.loadScript(data.script)
         }
@@ -72,12 +79,8 @@ function AirConsole(opts) {
   if (opts.setup_document !== false) {
     this.setupDocument_();
   }
-  window.onbeforeunload = function() {
-    if (me.device_id) {
-      return "The game is still in progress!"
-    }
-  };
   this.postMessage_({ action: "ready",
+                      version: me.version,
                       synchronize_time: opts.synchronize_time });
 }
 
