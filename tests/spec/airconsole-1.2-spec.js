@@ -36,6 +36,7 @@ describe("API 1.2", function() {
     //
     expect(air_console.onReady).toHaveBeenCalledWith(1034);
     expect(air_console.devices).toEqual([1, 5, 8]);
+    expect(air_console.device_id).toEqual(device_id);
   });
 
   it ("should return nickname if device has nickname set", function() {
@@ -49,6 +50,12 @@ describe("API 1.2", function() {
 
     var actual_name = air_console.getNickname(1);
     var expected_name = "Player 1";
+    expect(expected_name).toEqual(actual_name);
+  });
+
+  it ("should return undefined when requesting nickname for non-existing device_id", function() {
+    var actual_name = air_console.getNickname(3);
+    var expected_name = undefined;
     expect(expected_name).toEqual(actual_name);
   });
 
