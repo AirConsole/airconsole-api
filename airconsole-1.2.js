@@ -60,6 +60,11 @@ function AirConsole(opts) {
           if (me.server_time_offset !== false) {
             me.server_time_offset = data.server_time_offset || 0;
           }
+          if (data.on_before_unload) {
+            window.onbeforeunload = function () {
+              return data.on_before_unload;
+            };
+          }
           me.onReady(data.code);
         } else if (data.action == "navigate") {
           window.onbeforeunload = undefined;
@@ -72,11 +77,6 @@ function AirConsole(opts) {
   if (opts.setup_document !== false) {
     this.setupDocument_();
   }
-  window.onbeforeunload = function() {
-    if (me.device_id) {
-      return "The game is still in progress!"
-    }
-  };
   this.postMessage_({ action: "ready",
                       synchronize_time: opts.synchronize_time });
 }
