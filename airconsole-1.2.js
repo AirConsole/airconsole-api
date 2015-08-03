@@ -212,8 +212,6 @@ AirConsole.prototype.getProfilePicture = function(device_id, size) {
 /**
  * Returns the nickname of the user.
  * @param device_id - The device id for which you want the nickname.
- * @param {number|undefined} size - The size of in pixels of the picture.
- *                                  Default is 64.
  * @return {string|undefined}
  */
 AirConsole.prototype.getNickname = function(device_id) {
