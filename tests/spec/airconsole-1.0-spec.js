@@ -33,6 +33,7 @@ describe("API 1.0", function() {
     var custom_data = { url: "airconsole.com" };
     var expected_data = { action: "message", to: 1, data: custom_data };
     air_console = new AirConsole();
+    air_console.device_id = 1;
     spyOn(air_console, 'postMessage_');
     air_console.message(1, custom_data);
     expect(air_console.postMessage_).toHaveBeenCalledWith(expected_data);
@@ -42,6 +43,7 @@ describe("API 1.0", function() {
     var custom_data = { url: "airconsole.com" };
     var expected_data = { action: "message", to: undefined, data: custom_data };
     air_console = new AirConsole();
+    air_console.device_id = 1;
     spyOn(air_console, 'postMessage_');
     air_console.broadcast(custom_data);
     expect(air_console.postMessage_).toHaveBeenCalledWith(expected_data);
@@ -50,6 +52,7 @@ describe("API 1.0", function() {
   it ("should call postMessage_ method when navigating home", function() {
     var expected_data = { action: "set", key: "home", value: true };
     air_console = new AirConsole();
+    air_console.device_id = 1;
     spyOn(air_console, 'postMessage_');
     air_console.navigateHome();
     expect(air_console.postMessage_).toHaveBeenCalledWith(expected_data);
@@ -58,22 +61,10 @@ describe("API 1.0", function() {
   it ("should call postMessage_ method when setting UI", function() {
     var expected_data = { action: "set", key: "default_ui", value: true };
     air_console = new AirConsole();
+    air_console.device_id = 1;
     spyOn(air_console, 'postMessage_');
     air_console.showDefaultUI(true);
     expect(air_console.postMessage_).toHaveBeenCalledWith(expected_data);
-  });
-
-  it ("should call set_ method when setting custom device data", function() {
-    var expected_data = {
-      my_custom_data: "AirConsole"
-    };
-    var actual_data = {
-      my_custom_data: "AirConsole"
-    };
-    air_console = new AirConsole();
-    spyOn(air_console, 'set_');
-    air_console.setCustomDeviceState(expected_data);
-    expect(air_console.set_).toHaveBeenCalledWith("custom", actual_data);
   });
 
   it ("should throw error when requesting time offset without declaring it", function() {
@@ -83,6 +74,7 @@ describe("API 1.0", function() {
 
   it ("should call onMessage when window message event is dispatched with action equal message", function() {
     air_console = new AirConsole();
+    air_console.device_id = 1;
     spyOn(air_console, 'onMessage');
     // Trigger Event
     var fake_event = new Event('message');
@@ -104,6 +96,7 @@ describe("API 1.0", function() {
   it ("should call onDeviceStateChange when window message event is dispatched with action equal update", function() {
     var from = 8;
     air_console = new AirConsole();
+    air_console.device_id = 1;
     spyOn(air_console, 'onDeviceStateChange');
     // Trigger Event
     var fake_event = new Event('message');

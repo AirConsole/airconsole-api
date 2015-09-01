@@ -1,4 +1,4 @@
-describe("API 1.2", function() {
+describe("API 1.2.1", function() {
 
   var air_console = null;
 
@@ -76,6 +76,22 @@ describe("API 1.2", function() {
     var actual_path = air_console.getProfilePicture(1);
     var expected_path = undefined;
     expect(expected_path).toEqual(actual_path);
+  });
+
+  it ("should call set_ method when setting custom device data", function() {
+    var expected_data = {
+      my_custom_data: "AirConsole"
+    };
+    var actual_data = {
+      my_custom_data: "AirConsole"
+    };
+    air_console.device_id = 1;
+    spyOn(air_console, 'set_');
+    air_console.setCustomDeviceState(expected_data);
+    expect(air_console.set_).toHaveBeenCalledWith("custom", actual_data);
+    //
+    var actual_get_data = air_console.getCustomDeviceState(1);
+    expect(expected_data).toEqual(actual_get_data);
   });
 
 });

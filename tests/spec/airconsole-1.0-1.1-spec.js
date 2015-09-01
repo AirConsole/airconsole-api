@@ -11,6 +11,19 @@ describe("API 1.0 - 1.1 compatible", function() {
     air_console = null;
   });
 
+  it ("should call set_ method when setting custom device data", function() {
+    var expected_data = {
+      my_custom_data: "AirConsole"
+    };
+    var actual_data = {
+      my_custom_data: "AirConsole"
+    };
+    air_console = new AirConsole();
+    spyOn(air_console, 'set_');
+    air_console.setCustomDeviceState(expected_data);
+    expect(air_console.set_).toHaveBeenCalledWith("custom", actual_data);
+  });
+
   it ("should call onReady when window message event is dispatched with action equal ready", function() {
     var device_id = 8;
     air_console = new AirConsole();
