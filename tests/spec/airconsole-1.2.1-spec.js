@@ -25,7 +25,8 @@ describe("API 1.2.1", function() {
     air_console = new AirConsole();
     spyOn(air_console, 'onReady');
     // Trigger Event
-    var fake_event = new Event('message');
+    var fake_event = document.createEvent('CustomEvent');  // MUST be 'CustomEvent'
+    fake_event.initCustomEvent('message', false, false, null);
     fake_event.data = {
       action: "ready",
       device_id: device_id,
