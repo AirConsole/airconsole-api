@@ -11,10 +11,3 @@ API documentation and guides are available on the AirConsole developers document
 Checkout our Pong-Game if you want to see how a simple AirConsole project looks like:
 
 https://github.com/AirConsole/games-pong
-
-
-#### Other libs and plugins:
-
-* **Unity 5 Plugin:** https://github.com/AirConsole/airconsole-unity-plugin
-* **DPad and button library:** https://github.com/AirConsole/airconsole-controls
-* **Leader-board:** https://github.com/AirConsole/airconsole-leaderboard
