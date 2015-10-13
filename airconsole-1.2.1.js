@@ -1,8 +1,8 @@
-/*
-  AirConsole. Copyright 2015 by N-Dream AG, Switzerland.
-  @version 1.2
-  See http://developers.airconsole.com/ for API documentation
-*/
+/**
+ * AirConsole. Copyright 2015 by N-Dream AG, Switzerland.
+ * @version 1.2
+ * See http://developers.airconsole.com/ for API documentation
+ */
 
 /**
  * An object containing information about a device in this session.
@@ -83,9 +83,11 @@ function AirConsole(opts) {
   if (opts.setup_document !== false) {
     this.setupDocument_();
   }
-  this.postMessage_({ action: "ready",
-                      version: me.version,
-                      synchronize_time: opts.synchronize_time });
+  this.postMessage_({
+    action: "ready",
+    version: me.version,
+    synchronize_time: opts.synchronize_time
+  });
 }
 
 /**
@@ -179,10 +181,14 @@ AirConsole.prototype.setCustomDeviceState = function(data) {
 
 /**
  * Sets the custom property in this devices DeviceState object.
- * @param {number} device_id - The device ID of this device.
+ * @param {number|undefined} device_id - The device ID of this device. Default
+ *                                       is this device.
  * @return {Object|undefined} The custom data previously set by the device.
  */
 AirConsole.prototype.getCustomDeviceState = function(device_id) {
+  if (device_id === undefined) {
+    device_id = this.device_id;
+  }
   var device_data = this.devices[device_id];
   if (device_data) {
     return device_data["custom"];
@@ -204,12 +210,17 @@ AirConsole.prototype.getServerTime = function() {
 
 /**
  * Returns the url to a profile picture of the user.
- * @param device_id - The device id for which you want profile picture.
+ * @param {number|undefined} device_id - The device id for which you want
+ *                                       profile picture. Default is this
+ *                                       device.
  * @param {number|undefined} size - The size of in pixels of the picture.
  *                                  Default is 64.
  * @return {string|undefined}
  */
 AirConsole.prototype.getProfilePicture = function(device_id, size) {
+  if (device_id === undefined) {
+    device_id = this.device_id;
+  }
   var device_data = this.devices[device_id];
   if (device_data) {
     return "http://www.airconsole.com/api/profile-picture?uid=" +
@@ -219,10 +230,14 @@ AirConsole.prototype.getProfilePicture = function(device_id, size) {
 
 /**
  * Returns the nickname of the user.
- * @param device_id - The device id for which you want the nickname.
+ * @param {number|undefined} device_id - The device id for which you want the
+ *                                       nickname. Default is this device.
  * @return {string|undefined}
  */
 AirConsole.prototype.getNickname = function(device_id) {
+  if (device_id === undefined) {
+    device_id = this.device_id;
+  }
   var device_data = this.devices[device_id];
   if (device_data) {
     return device_data.nickname || ("Player " + device_id);
@@ -230,14 +245,12 @@ AirConsole.prototype.getNickname = function(device_id) {
 };
 
 /**
- * Adds a javascript file to the <head> tag.
- * @param {string} src - The source of the script
+ * Sets the device orientation.
+ * @param {string} orientation - AirConsole.ORIENTATION_PORTRAIT or
+ *                               AirConsole.ORIENTATION_LANDSCAPE.
  */
-AirConsole.prototype.loadScript = function(src) {
-  var js = document.createElement("script");
-  js.type = "text/javascript";
-  js.src = src;
-  document.getElementsByTagName("head")[0].appendChild(js);
+AirConsole.prototype.setOrientation = function(orientation) {
+  this.set_("orientation", orientation);
 };
 
 /* --------------------- ONLY PRIVATE FUNCTIONS BELLOW --------------------- */
@@ -315,7 +328,7 @@ AirConsole.prototype.setupDocument_ = function() {
   var meta = document.createElement("meta");
   meta.setAttribute("name", "viewport");
   meta.setAttribute("content", "width=device-width, minimum-scale=1, " +
-      "initial-scale=1, user-scalable=no");
+                    "initial-scale=1, user-scalable=no");
   var head = document.getElementsByTagName("head")[0];
   head.appendChild(meta);
   head.appendChild(style);
