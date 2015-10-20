@@ -2,6 +2,8 @@
  * AirConsole. Copyright 2015 by N-Dream AG, Switzerland.
  * @version 1.2
  * See http://developers.airconsole.com/ for API documentation
+ * Read http://developers.airconsole.com/#/guides/device_ids_and_states to know more about
+ * devices, device states, onReady, etc.
  */
 
 /**
