@@ -245,18 +245,15 @@ AirConsole.prototype.getNickname = function(device_id) {
 };
 
 /**
- * Returns the lowest device ID of all the controllers (E.g. to select the master player)
- * @return {number|null}
+ * Returns the device ID of the master controller
+ * @return {number|undefined}
  */
-AirConsole.prototype.getLowestControllerDeviceId = function() {
-  var device_id = null;
-  for (var i = AirConsole.SCREEN; i < this.devices.length; ++i) {
+AirConsole.prototype.getMasterControllerDeviceId = function() {
+  for (var i = AirConsole.SCREEN + 1; i < this.devices.length; ++i) {
     if (this.devices[i]) {
-      device_id = i;
-      break;
+      return i;
     }
   }
-  return device_id;
 };
 
 /**
