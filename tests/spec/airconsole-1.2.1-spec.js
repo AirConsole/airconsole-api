@@ -95,4 +95,23 @@ describe("API 1.2.1", function() {
     expect(expected_data).toEqual(actual_get_data);
   });
 
+  it ("should return the lowest device id", function() {
+    var expected_id = 2;
+    air_console.devices = [];
+    air_console.devices[AirConsole.Screen] = 0;
+    air_console.devices[expected_id] = { "device": "unicorn" };
+    air_console.devices[4] = { "device": "Na na na batman" };
+
+    var actual_id = air_console.getLowestControllerDeviceId();
+    expect(actual_id).toEqual(expected_id);
+  });
+
+  it ("should return null for lowest device ID when no devices are connected", function() {
+    air_console.devices = [];
+    air_console.devices[AirConsole.Screen] = 0;
+
+    var actual_id = air_console.getLowestControllerDeviceId();
+    expect(actual_id).toEqual(null);
+  });
+
 });

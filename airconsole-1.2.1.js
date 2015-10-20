@@ -180,7 +180,7 @@ AirConsole.prototype.setCustomDeviceState = function(data) {
 };
 
 /**
- * Sets the custom property in this devices DeviceState object.
+ * Gets the custom property in this devices DeviceState object.
  * @param {number|undefined} device_id - The device ID of which you want the
  *                                       custom state. Default is this device.
  * @return {Object|undefined} The custom data previously set by the device.
@@ -242,6 +242,21 @@ AirConsole.prototype.getNickname = function(device_id) {
   if (device_data) {
     return device_data.nickname || ("Player " + device_id);
   }
+};
+
+/**
+ * Returns the lowest device ID of all the controllers (E.g. to select the master player)
+ * @return {number|null}
+ */
+AirConsole.prototype.getLowestControllerDeviceId = function() {
+  var device_id = null;
+  for (var i = AirConsole.SCREEN; i < this.devices.length; ++i) {
+    if (this.devices[i]) {
+      device_id = i;
+      break;
+    }
+  }
+  return device_id;
 };
 
 /**
