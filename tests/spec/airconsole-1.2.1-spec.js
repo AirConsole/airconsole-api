@@ -114,4 +114,15 @@ describe("API 1.2.1", function() {
     expect(actual_id).toEqual(undefined);
   });
 
+  it ("should return all connected controller device ids", function() {
+    air_console.devices = [];
+    air_console.devices[AirConsole.SCREEN] = {"device": "screen"};
+    air_console.devices[2] = { "device": "unicorn" };
+    air_console.devices[10] = { "device": "Na na na batman" };
+    //
+    var actual_ids = air_console.getControllerDeviceIds();
+    var expected_ids = [2, 10];
+    expect(actual_ids).toEqual(expected_ids);
+  });
+
 });

@@ -251,11 +251,21 @@ AirConsole.prototype.getNickname = function(device_id) {
  * @return {number|undefined}
  */
 AirConsole.prototype.getMasterControllerDeviceId = function() {
+  return this.getControllerDeviceIds()[0] || undefined;
+};
+
+/**
+ * Returns all connected controller device ids
+ * @return {Array}
+ */
+AirConsole.prototype.getControllerDeviceIds = function() {
+  var result = [];
   for (var i = AirConsole.SCREEN + 1; i < this.devices.length; ++i) {
     if (this.devices[i]) {
-      return i;
+      result.push(i);
     }
   }
+  return result;
 };
 
 /**
