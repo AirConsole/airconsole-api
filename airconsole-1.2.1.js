@@ -2,8 +2,8 @@
  * AirConsole. Copyright 2015 by N-Dream AG, Switzerland.
  * @version 1.2
  * See http://developers.airconsole.com/ for API documentation
- * Read http://developers.airconsole.com/#/guides/device_ids_and_states to know more about
- * devices, device states, onReady, etc.
+ * Read http://developers.airconsole.com/#/guides/device_ids_and_states to learn more
+ * about devices, device states, onReady, etc.
  */
 
 /**
@@ -251,11 +251,11 @@ AirConsole.prototype.getNickname = function(device_id) {
  * @return {number|undefined}
  */
 AirConsole.prototype.getMasterControllerDeviceId = function() {
-  return this.getControllerDeviceIds()[0] || undefined;
+  return this.getControllerDeviceIds()[0];
 };
 
 /**
- * Returns all connected controller device ids
+ * Returns all controller device ids that are currently connected
  * @return {Array}
  */
 AirConsole.prototype.getControllerDeviceIds = function() {

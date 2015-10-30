@@ -106,7 +106,8 @@ describe("API 1.2.1", function() {
     expect(actual_id).toEqual(expected_id);
   });
 
-  it ("should return null for lowest device ID when no devices are connected", function() {
+  it ("should return undefined for lowest device ID when no devices are connected",
+      function() {
     air_console.devices = [];
     air_console.devices[AirConsole.SCREEN] = {"device" : "screen"};
 
