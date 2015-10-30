@@ -2,6 +2,8 @@
  * AirConsole. Copyright 2015 by N-Dream AG, Switzerland.
  * @version 1.2
  * See http://developers.airconsole.com/ for API documentation
+ * Read http://developers.airconsole.com/#/guides/device_ids_and_states to learn more
+ * about devices, device states, onReady, etc.
  */
 
 /**
@@ -180,7 +182,7 @@ AirConsole.prototype.setCustomDeviceState = function(data) {
 };
 
 /**
- * Sets the custom property in this devices DeviceState object.
+ * Gets the custom property in this devices DeviceState object.
  * @param {number|undefined} device_id - The device ID of which you want the
  *                                       custom state. Default is this device.
  * @return {Object|undefined} The custom data previously set by the device.
@@ -242,6 +244,28 @@ AirConsole.prototype.getNickname = function(device_id) {
   if (device_data) {
     return device_data.nickname || ("Player " + device_id);
   }
+};
+
+/**
+ * Returns the device ID of the master controller
+ * @return {number|undefined}
+ */
+AirConsole.prototype.getMasterControllerDeviceId = function() {
+  return this.getControllerDeviceIds()[0];
+};
+
+/**
+ * Returns all controller device ids that are currently connected
+ * @return {Array}
+ */
+AirConsole.prototype.getControllerDeviceIds = function() {
+  var result = [];
+  for (var i = AirConsole.SCREEN + 1; i < this.devices.length; ++i) {
+    if (this.devices[i]) {
+      result.push(i);
+    }
+  }
+  return result;
 };
 
 /**
