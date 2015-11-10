@@ -163,6 +163,16 @@ AirConsole.prototype.navigateHome = function() {
 };
 
 /**
+ * Request that the devices (screen and players) load a game by url.
+ * Note that the custom DeviceStates are preserved. If you don't want that
+ * override setCustomDeviceState(undefined) on every device before calling
+ * this function.
+ */
+AirConsole.prototype.navigateToGame = function(url) {
+  this.set_("home", url);
+};
+
+/**
  * Shows or hides the default UI.
  * @param {boolean} visible - Whether to show or hide the default UI.
  */
