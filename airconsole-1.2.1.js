@@ -168,7 +168,7 @@ AirConsole.prototype.navigateHome = function() {
  * override setCustomDeviceState(undefined) on every device before calling
  * this function.
  */
-AirConsole.prototype.navigateToGame = function(url) {
+AirConsole.prototype.navigateTo = function(url) {
   this.set_("home", url);
 };
 
