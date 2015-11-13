@@ -126,4 +126,14 @@ describe("API 1.2.1", function() {
     expect(actual_ids).toEqual(expected_ids);
   });
 
+  it ("should call postMessage_ method when using navigateTo", function() {
+    var url = 'http://airconsole.com';
+    var expected_data = { action: "set", key: "home", value: url };
+    air_console = new AirConsole();
+    air_console.device_id = 1;
+    spyOn(air_console, 'postMessage_');
+    air_console.navigateTo(url);
+    expect(air_console.postMessage_).toHaveBeenCalledWith(expected_data);
+  });
+
 });
