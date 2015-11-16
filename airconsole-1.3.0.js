@@ -1,6 +1,6 @@
 /**
  * AirConsole. Copyright 2015 by N-Dream AG, Switzerland.
- * @version 1.2.1
+ * @version 1.3.0
  * See http://developers.airconsole.com/ for API documentation
  * Read http://developers.airconsole.com/#/guides/device_ids_and_states to learn more
  * about devices, device states, onReady, etc.
@@ -36,6 +36,7 @@
  *           data of all devices. The position is equal to the device ID of
  *           that device (The first element is the screen).
  *           An element can be undefined if the has left.
+ *           Devices may not have loaded your game yet.
  * @property {number} device_id - The device_id of this device.
  * @property {number} server_time_offset - The difference between this devices
  *           time and the time on the gameserver. Only correct if the opts
@@ -45,20 +46,43 @@
 function AirConsole(opts) {
   opts = opts || {};
   var me = this;
-  me.version = "1.2.1";
+  me.version = "1.3.0";
   me.devices = [];
   me.server_time_offset = opts.synchronize_time ? 0 : false;
   window.addEventListener(
       "message",
       function (event) {
         var data = event.data;
+        var game_url = me.getGameUrl_(document.location.href);
         if (data.action == "message") {
           if (me.device_id !== undefined) {
-            me.onMessage(data.from, data.data);
+            if (me.devices[data.from] &&
+                game_url == me.getGameUrl_(me.devices[data.from].location)) {
+              me.onMessage(data.from, data.data);
+            }
           }
         } else if (data.action == "update") {
-          me.devices[data.device_id] = data.device_data;
           if (me.device_id !== undefined) {
+            var game_url_before = null;
+            var game_url_after = null;
+            var before = me.devices[data.device_id];
+            if (before) {
+              game_url_before = me.getGameUrl_(before.location);
+            }
+            if (data.device_data) {
+              game_url_after = me.getGameUrl_(data.device_data.location);
+            }
+            me.devices[data.device_id] = data.device_data;
+            if (game_url_before != game_url && game_url_after == game_url) {
+              me.onConnect(data.device_id);
+            } else if (game_url_before == game_url &&
+                       game_url_after != game_url) {
+              me.onDisconnect(data.device_id);
+            } else if (data.device_data &&
+                       data.device_data._is_custom_update &&
+                       game_url_after == game_url) {
+              me.onCustomDeviceStateChange(data.device_id);
+            }
             me.onDeviceStateChange(data.device_id, data.device_data);
           }
         } else if (data.action == "ready") {
@@ -68,6 +92,17 @@ function AirConsole(opts) {
             me.server_time_offset = data.server_time_offset || 0;
           }
           me.onReady(data.code);
+          var game_url = me.getGameUrl_(document.location.href);
+          for (var i = 0; i < me.devices.length; ++i) {
+            if (me.devices[i] &&
+                me.getGameUrl_(me.devices[i].location) == game_url) {
+              me.onConnect(i);
+              var state = me.getCustomDeviceState(i);
+              if (state !== undefined) {
+                me.onCustomDeviceStateChange(i);
+              }
+            }
+          }
         }
       },
       false);
@@ -78,7 +113,8 @@ function AirConsole(opts) {
   this.postMessage_({
     action: "ready",
     version: me.version,
-    synchronize_time: opts.synchronize_time
+    synchronize_time: opts.synchronize_time,
+    location: document.location.href
   });
 }
 
@@ -131,12 +167,28 @@ AirConsole.ORIENTATION_PORTRAIT = "portrait";
 AirConsole.ORIENTATION_LANDSCAPE = "landscape";
 
 /**
- * Gets called when a device joins/leaves/updates it's DeviceState.
- * @param {number} device_id - the device ID that changed it's DeviceState.
- * @param user_data {AirConsole~DeviceState} - the data of that device.
- *        If undefined, the device has left.
+ * Gets called when a device has loaded the game.
+ * @abstract
+ * @param {number} device_id - the device ID that loaded the game.
  */
-AirConsole.prototype.onDeviceStateChange = function(device_id, device_data) {};
+AirConsole.prototype.onConnect = function(device_id) {};
+
+/**
+ * Gets called when a device has left the game.
+ * @abstract
+ * @param {number} device_id - the device ID that left the game.
+ */
+AirConsole.prototype.onDisconnect = function(device_id) {};
+
+/**
+ * Gets called when a device updates it's custom DeviceState
+ * by calling setCustomDeviceState or setCustomDeviceStateProperty.
+ * @abstract
+ * @param {number} device_id - the device ID that changed its custom
+ *                             DeviceState.
+ */
+AirConsole.prototype.onCustomDeviceStateChange = function(device_id) {};
+
 
 /**
  * Gets called when the game console is ready.
@@ -144,6 +196,16 @@ AirConsole.prototype.onDeviceStateChange = function(device_id, device_data) {};
  * @param {string} code - The AirConsole join code.
  */
 AirConsole.prototype.onReady = function(code) {};
+
+/**
+ * Gets called when a device joins/leaves a game session or updates its
+ * DeviceState (custom DeviceState, profile pic, nickname, slow connection).
+ * @param {number} device_id - the device ID that changed it's DeviceState.
+ * @param user_data {AirConsole~DeviceState} - the data of that device.
+ *        If undefined, the device has left.
+ */
+AirConsole.prototype.onDeviceStateChange = function(device_id, device_data) {};
+
 
 /**
  * Request that the devices (screen and players) return to the start screen.
@@ -171,13 +233,31 @@ AirConsole.prototype.showDefaultUI = function(visible) {
 };
 
 /**
- * Sets the custom property in this devices DeviceState object.
+ * Sets the custom DeviceState of this device.
  * @param {Object} data - The custom data to set.
  */
 AirConsole.prototype.setCustomDeviceState = function(data) {
   if (this.device_id !== undefined) {
     this.devices[this.device_id]["custom"] = data;
     this.set_("custom", data);
+  }
+};
+
+/**
+ * Sets a property in the custom DeviceState property of this device.
+ * @param {String} key - The property name.
+ * @param {mixed} value - The property value.
+ */
+AirConsole.prototype.setCustomDeviceStateProperty = function(key, value) {
+  if (this.device_id !== undefined) {
+    var state = this.getCustomDeviceState();
+    if (state === undefined) {
+      state = {};
+    } else if (typeof state !== "object") {
+      throw "Custom DeviceState needs to be of type object";
+    }
+    state[key] = value;
+    this.setCustomDeviceState(state);
   }
 };
 
@@ -192,7 +272,8 @@ AirConsole.prototype.getCustomDeviceState = function(device_id) {
     device_id = this.device_id;
   }
   var device_data = this.devices[device_id];
-  if (device_data) {
+  if (device_data && this.getGameUrl_(document.location.href) ==
+          this.getGameUrl_(device_data.location)) {
     return device_data["custom"];
   }
 };
@@ -255,13 +336,15 @@ AirConsole.prototype.getMasterControllerDeviceId = function() {
 };
 
 /**
- * Returns all controller device ids that are currently connected
+ * Returns all controller device ids that have loaded your game.
  * @return {Array}
  */
 AirConsole.prototype.getControllerDeviceIds = function() {
   var result = [];
+  var game_url = this.getGameUrl_(document.location.href);
   for (var i = AirConsole.SCREEN + 1; i < this.devices.length; ++i) {
-    if (this.devices[i]) {
+    if (this.devices[i] &&
+        this.getGameUrl_(this.devices[i].location) == game_url) {
       result.push(i);
     }
   }
@@ -278,6 +361,21 @@ AirConsole.prototype.setOrientation = function(orientation) {
 };
 
 /* --------------------- ONLY PRIVATE FUNCTIONS BELLOW --------------------- */
+
+/**
+ * @private
+ * @param {String} url - A url
+ * @return {String} Returns the root game url
+ */
+AirConsole.prototype.getGameUrl_ = function(url) {
+  if (!url) {
+    return;
+  }
+  url = url.replace("screen.html", "");
+  url = url.replace("controller.html", "");
+  return url;
+};
+
 
 /**
  * @private
