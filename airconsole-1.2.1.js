@@ -68,16 +68,6 @@ function AirConsole(opts) {
             me.server_time_offset = data.server_time_offset || 0;
           }
           me.onReady(data.code);
-        } else if (data.action == "on_before_unload") {
-          if (data.on_before_unload) {
-            window.onbeforeunload = function() {
-              return data.on_before_unload;
-            };
-          } else {
-            window.onbeforeunload = undefined;
-          }
-        } else if (data.action == "script") {
-          me.loadScript(data.script)
         }
       },
       false);
