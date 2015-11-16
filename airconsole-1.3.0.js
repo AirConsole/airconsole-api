@@ -245,7 +245,8 @@ AirConsole.prototype.setCustomDeviceState = function(data) {
 
 /**
  * Sets a property in the custom DeviceState property of this device.
- * @param {Object} data - The custom data to set.
+ * @param {String} key - The property name.
+ * @param {mixed} value - The property value.
  */
 AirConsole.prototype.setCustomDeviceStateProperty = function(key, value) {
   if (this.device_id !== undefined) {
