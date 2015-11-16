@@ -174,7 +174,7 @@ AirConsole.ORIENTATION_LANDSCAPE = "landscape";
 AirConsole.prototype.onConnect = function(device_id) {};
 
 /**
- * Gets called when a device has left the game
+ * Gets called when a device has left the game.
  * @abstract
  * @param {number} device_id - the device ID that left the game.
  */
@@ -233,7 +233,7 @@ AirConsole.prototype.showDefaultUI = function(visible) {
 };
 
 /**
- * Sets the custom DeviceState property of this device.
+ * Sets the custom DeviceState of this device.
  * @param {Object} data - The custom data to set.
  */
 AirConsole.prototype.setCustomDeviceState = function(data) {
@@ -335,7 +335,7 @@ AirConsole.prototype.getMasterControllerDeviceId = function() {
 };
 
 /**
- * Returns all controller device ids that are currently connected
+ * Returns all controller device ids that have loaded your game.
  * @return {Array}
  */
 AirConsole.prototype.getControllerDeviceIds = function() {
