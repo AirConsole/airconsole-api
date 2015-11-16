@@ -94,7 +94,8 @@ function AirConsole(opts) {
           me.onReady(data.code);
           var game_url = me.getGameUrl_(document.location.href);
           for (var i = 0; i < me.devices.length; ++i) {
-            if (me.getGameUrl_(me.devices.location) == game_url) {
+            if (me.devices[i] &&
+                me.getGameUrl_(me.devices[i].location) == game_url) {
               me.onConnect(i);
               var state = me.getCustomDeviceState(i);
               if (state !== undefined) {
@@ -232,13 +233,30 @@ AirConsole.prototype.showDefaultUI = function(visible) {
 };
 
 /**
- * Sets the custom property in this devices DeviceState object.
+ * Sets the custom DeviceState property of this device.
  * @param {Object} data - The custom data to set.
  */
 AirConsole.prototype.setCustomDeviceState = function(data) {
   if (this.device_id !== undefined) {
     this.devices[this.device_id]["custom"] = data;
     this.set_("custom", data);
+  }
+};
+
+/**
+ * Sets a property in the custom DeviceState property of this device.
+ * @param {Object} data - The custom data to set.
+ */
+AirConsole.prototype.setCustomDeviceStateProperty = function(key, value) {
+  if (this.device_id !== undefined) {
+    var state = this.getCustomDeviceState();
+    if (state === undefined) {
+      state = {};
+    } else if (typeof state !== "object") {
+      throw "Custom DeviceState needs to be of type object";
+    }
+    state[key] = value;
+    this.setCustomDeviceState(state);
   }
 };
 
@@ -349,6 +367,9 @@ AirConsole.prototype.setOrientation = function(orientation) {
  * @return {String} Returns the root game url
  */
 AirConsole.prototype.getGameUrl_ = function(url) {
+  if (!url) {
+    return;
+  }
   url = url.replace("screen.html", "");
   url = url.replace("controller.html", "");
   return url;
