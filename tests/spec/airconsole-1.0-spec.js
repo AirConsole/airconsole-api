@@ -74,13 +74,21 @@ describe("API 1.0", function() {
 
   it ("should call onMessage when window message event is dispatched with action equal message", function() {
     air_console = new AirConsole();
-    air_console.device_id = 1;
+    var device_id = 1;
+    var device_data = {
+      uid: 8237,
+      nickname: "Sergio",
+      location: document.location.href
+    };
+    air_console.device_id = device_id;
+    air_console.devices[device_id] = device_data;
     spyOn(air_console, 'onMessage');
     // Trigger Event
     var fake_event = new Event('message');
     fake_event.data = {
       action: "message",
-      from: 8,
+      from: device_id,
+      location: document.location.href,
       data: {
         games: "are fun"
       }
@@ -90,7 +98,7 @@ describe("API 1.0", function() {
     var expected_data = {
       games: "are fun"
     };
-    expect(air_console.onMessage).toHaveBeenCalledWith(8, expected_data);
+    expect(air_console.onMessage).toHaveBeenCalledWith(1, expected_data);
   });
 
   it ("should call onDeviceStateChange when window message event is dispatched with action equal update", function() {
