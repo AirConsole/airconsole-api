@@ -97,9 +97,9 @@ function AirConsole(opts) {
             if (me.devices[i] &&
                 me.getGameUrl_(me.devices[i].location) == game_url) {
               me.onConnect(i);
-              var state = me.getCustomDeviceState(i);
-              if (state !== undefined) {
-                me.onCustomDeviceStateChange(i, state.custom);
+              var custom_state = me.getCustomDeviceState(i);
+              if (custom_state !== undefined) {
+                me.onCustomDeviceStateChange(i, custom_state);
               }
             }
           }
