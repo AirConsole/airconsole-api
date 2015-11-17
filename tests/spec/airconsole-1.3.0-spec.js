@@ -69,17 +69,24 @@ describe("API 1.3.0", function() {
 
     var device_data = {
       location: LOCATION,
-      _is_custom_update: true
+      _is_custom_update: true,
+      custom: {
+        r2d2: true
+      }
     };
+
+    var devices = [];
+    devices[DEVICE_ID] = device_data;
 
     dispatchCustomEvent({
       action: "update",
       device_id: DEVICE_ID,
       device_data: device_data,
+      devices: devices,
       code: 1034
     });
 
-    expect(air_console.onCustomDeviceStateChange).toHaveBeenCalledWith(DEVICE_ID);
+    expect(air_console.onCustomDeviceStateChange).toHaveBeenCalledWith(DEVICE_ID, device_data.custom);
   });
 
   it ("should call onCustomDeviceStateChange when changing custom device state", function() {
@@ -90,9 +97,7 @@ describe("API 1.3.0", function() {
     var devices = [];
     devices[DEVICE_ID] = {
       location: LOCATION,
-      custom: {
-        r2d2: 42
-      }
+      custom: custom_data
     };
     dispatchCustomEvent({
       action: "ready",
@@ -101,7 +106,7 @@ describe("API 1.3.0", function() {
       code: 1034
     });
     //
-    expect(air_console.onCustomDeviceStateChange).toHaveBeenCalledWith(DEVICE_ID); //, custom_data
+    expect(air_console.onCustomDeviceStateChange).toHaveBeenCalledWith(DEVICE_ID, custom_data);
   });
 
   it ("should set custom device state when calling setCustomDeviceStateProperty", function() {
