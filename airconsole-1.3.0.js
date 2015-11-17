@@ -82,7 +82,7 @@ function AirConsole(opts) {
             } else if (data.device_data &&
                        data.device_data._is_custom_update &&
                        game_url_after == game_url) {
-              me.onCustomDeviceStateChange(data.device_id);
+              me.onCustomDeviceStateChange(data.device_id, data.device_data.custom);
             }
           }
         } else if (data.action == "ready") {
@@ -99,7 +99,7 @@ function AirConsole(opts) {
               me.onConnect(i);
               var state = me.getCustomDeviceState(i);
               if (state !== undefined) {
-                me.onCustomDeviceStateChange(i);
+                me.onCustomDeviceStateChange(i, state.custom);
               }
             }
           }
@@ -186,8 +186,9 @@ AirConsole.prototype.onDisconnect = function(device_id) {};
  * @abstract
  * @param {number} device_id - the device ID that changed its custom
  *                             DeviceState.
+ * @param {Object} custom_data - The custom DeviceState data value
  */
-AirConsole.prototype.onCustomDeviceStateChange = function(device_id) {};
+AirConsole.prototype.onCustomDeviceStateChange = function(device_id, custom_data) {};
 
 
 /**
