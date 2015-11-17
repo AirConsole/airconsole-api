@@ -73,6 +73,7 @@ function AirConsole(opts) {
               game_url_after = me.getGameUrl_(data.device_data.location);
             }
             me.devices[data.device_id] = data.device_data;
+            me.onDeviceStateChange(data.device_id, data.device_data);
             if (game_url_before != game_url && game_url_after == game_url) {
               me.onConnect(data.device_id);
             } else if (game_url_before == game_url &&
@@ -81,9 +82,8 @@ function AirConsole(opts) {
             } else if (data.device_data &&
                        data.device_data._is_custom_update &&
                        game_url_after == game_url) {
-              me.onCustomDeviceStateChange(data.device_id);
+              me.onCustomDeviceStateChange(data.device_id, data.device_data.custom);
             }
-            me.onDeviceStateChange(data.device_id, data.device_data);
           }
         } else if (data.action == "ready") {
           me.device_id = data.device_id;
@@ -97,9 +97,9 @@ function AirConsole(opts) {
             if (me.devices[i] &&
                 me.getGameUrl_(me.devices[i].location) == game_url) {
               me.onConnect(i);
-              var state = me.getCustomDeviceState(i);
-              if (state !== undefined) {
-                me.onCustomDeviceStateChange(i);
+              var custom_state = me.getCustomDeviceState(i);
+              if (custom_state !== undefined) {
+                me.onCustomDeviceStateChange(i, custom_state);
               }
             }
           }
@@ -186,8 +186,9 @@ AirConsole.prototype.onDisconnect = function(device_id) {};
  * @abstract
  * @param {number} device_id - the device ID that changed its custom
  *                             DeviceState.
+ * @param {Object} custom_data - The custom DeviceState data value
  */
-AirConsole.prototype.onCustomDeviceStateChange = function(device_id) {};
+AirConsole.prototype.onCustomDeviceStateChange = function(device_id, custom_data) {};
 
 
 /**
