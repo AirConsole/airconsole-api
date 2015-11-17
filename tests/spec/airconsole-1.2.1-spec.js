@@ -1,6 +1,9 @@
 describe("API 1.2.1", function() {
 
   var air_console = null;
+  // Location was added in 1.3.0
+  // For the tests it does not matter, because it is backwards compatible
+  var LOCATION = document.location.href;
 
   beforeEach(function() {
     air_console = new AirConsole({
@@ -9,7 +12,8 @@ describe("API 1.2.1", function() {
     var device_id = 1;
     var device_data = {
       uid: 8237,
-      nickname: "Sergio"
+      nickname: "Sergio",
+      location: LOCATION
     };
     air_console.devices[device_id] = device_data;
   });
@@ -99,8 +103,8 @@ describe("API 1.2.1", function() {
     var expected_id = 3;
     air_console.devices = [];
     air_console.devices[AirConsole.SCREEN] = {"device": "screen"};
-    air_console.devices[expected_id] = { "device": "unicorn" };
-    air_console.devices[4] = { "device": "Na na na batman" };
+    air_console.devices[expected_id] = { "device": "unicorn", location: LOCATION };
+    air_console.devices[4] = { "device": "Na na na batman", location: LOCATION };
     //
     var actual_id = air_console.getMasterControllerDeviceId();
     expect(actual_id).toEqual(expected_id);
@@ -118,8 +122,8 @@ describe("API 1.2.1", function() {
   it ("should return all connected controller device ids", function() {
     air_console.devices = [];
     air_console.devices[AirConsole.SCREEN] = {"device": "screen"};
-    air_console.devices[2] = { "device": "unicorn" };
-    air_console.devices[10] = { "device": "Na na na batman" };
+    air_console.devices[2] = { "device": "unicorn", location: LOCATION };
+    air_console.devices[10] = { "device": "Na na na batman", location: LOCATION };
     //
     var actual_ids = air_console.getControllerDeviceIds();
     var expected_ids = [2, 10];
