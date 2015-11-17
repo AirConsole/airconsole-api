@@ -73,6 +73,7 @@ function AirConsole(opts) {
               game_url_after = me.getGameUrl_(data.device_data.location);
             }
             me.devices[data.device_id] = data.device_data;
+            me.onDeviceStateChange(data.device_id, data.device_data);
             if (game_url_before != game_url && game_url_after == game_url) {
               me.onConnect(data.device_id);
             } else if (game_url_before == game_url &&
@@ -83,7 +84,6 @@ function AirConsole(opts) {
                        game_url_after == game_url) {
               me.onCustomDeviceStateChange(data.device_id);
             }
-            me.onDeviceStateChange(data.device_id, data.device_data);
           }
         } else if (data.action == "ready") {
           me.device_id = data.device_id;
