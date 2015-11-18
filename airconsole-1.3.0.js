@@ -108,11 +108,11 @@ AirConsole.prototype.onConnect = function(device_id) {};
 AirConsole.prototype.onDisconnect = function(device_id) {};
 
 /**
- * @abstract
  * Gets called when a message is received from another device
  * that called message() or broadcast().
  * If you dont want to parse messages yourself and prefer an event driven
  * approach, have a look at http://github.com/AirConsole/airconsole-events/
+ * @abstract
  * @param {number} from - The device ID that sent the message.
  * @param {serializable} data - The data that was sent.
  */
@@ -474,8 +474,8 @@ AirConsole.prototype.getGameUrl_ = function(url) {
 
 
 /**
- * @private
  * Posts a message to the parent window.
+ * @private
  * @param {Object} data - the data to be sent to the parent window.
  */
 AirConsole.prototype.postMessage_ = function(data) {
@@ -488,8 +488,8 @@ AirConsole.prototype.postMessage_ = function(data) {
 
 
 /**
- * @private
  * Sets a variable in the external AirConsole framework.
+ * @private
  * @param {string} key - The key to set.
  * @param {serializable} value - The value to set.
  */
@@ -499,10 +499,10 @@ AirConsole.prototype.set_ = function(key, value) {
 
 
 /**
- * @private
  * Adds default css rules to documents so nothing is selectable, zoom is
  * fixed to 1 and preventing scrolling down (iOS 8 clients drop out of
  * fullscreen when scrolling).
+ * @private
  */
 AirConsole.prototype.setupDocument_ = function() {
   var style = document.createElement("style");
