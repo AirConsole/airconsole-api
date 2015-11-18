@@ -29,37 +29,12 @@
  *           disabled (iOS 8 clients drop out of fullscreen when scrolling).
  *           Default: true
  */
-
 /**
  * Your gateway object to AirConsole.
  * There are getter and setter functions for all properties.
  * Do not access properties of this object directly.
  * @constructor
  * @param {AirConsole~Config} opts - Constructor config.
- * @property {number} device_id - The device_id of this device.
- *           Every device in a AirConsole session has a device_id.
- *           The screen always has device_id 0. You can use the
- *           AirConsole.SCREEN constant instead of 0.
- *           All controllers also get a device_id. You can NOT assume that
- *           the device_ids of controllers are consecutive or that they start
- *           at 1. DO NOT HARDCODE CONTROLLER DEVICE IDS!
- *           Within an AirConsole session, devices keep the same device_id when
- *           they disconnect and reconnect. Different controllers will never
- *           get the same device_id in a session. Every device_id remains
- *           reserved for the device that originally got it.
- * @property {number} server_time_offset - The difference between this devices
- *           time and the time on the gameserver. Only correct if the opts
- *           param has "synchronize_time" set to true and onReady was called.
- * @property {Array.<AirConsole~DeviceState>} devices - An array of the device
- *           data of all devices in this session. The position is equal to the
- *           device ID of that device (The first element is the screen).
- *           To detect which controllers are in the game, use
- *           getControllerDeviceIds().
- *           Use the the getUID, getNickname, getProfilePicture and
- *           getCustomDeviceState to access the data.
- *           An element can be undefined if the has left.
- *           Devices in this array may not have loaded your game yet and
- *           may not be ready!
  */
 function AirConsole(opts) {
   this.init_(opts);
@@ -176,11 +151,24 @@ AirConsole.prototype.onDeviceStateChange = function(device_id, device_data) {};
  * constant instead of 0.
  * All controllers also get a device_id. You can NOT assume that the device_ids
  * of controllers are consecutive or that they start at 1.
+ *
  * DO NOT HARDCODE CONTROLLER DEVICE IDS!
+ *
+ * In the beginning of a round in your game you should store which players are
+ * part of this round.
+ * var active_players = airconsole.getControllerDeviceIDs(); stores currently
+ * connected controllers that should be part of this round. Then you can access
+ * the the device_id of the first player at active_players[0], the device_id of
+ * the second player at active_players[1], and so on ...
+ *
  * Within an AirConsole session, devices keep the same device_id when they
  * disconnect and reconnect. Different controllers will never get the same
  * device_id in a session. Every device_id remains reserved for the device that
  * originally got it.
+ *
+ * For more info read
+ * http:// developers.airconsole.com/#/guides/device_ids_and_states
+ *
  * @return {number}
  */
 AirConsole.prototype.getDeviceId = function() {
