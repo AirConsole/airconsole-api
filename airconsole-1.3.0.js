@@ -32,16 +32,23 @@
 
 /**
  * Your gateway object to AirConsole.
+ * There are getter and setter functions for all properties.
+ * Do not access properties of this object directly.
  * @constructor
  * @param {AirConsole~Config} opts - Constructor config.
  * @property {number} device_id - The device_id of this device.
+ *           Every device in a AirConsole session has a device_id.
+ *           The screen always has device_id 0. You can use the
+ *           AirConsole.SCREEN constant instead of 0.
+ *           All controllers also get a device_id. You can NOT assume that
+ *           the device_ids of controllers are consecutive or that they start
+ *           at 1. DO NOT HARDCODE CONTROLLER DEVICE IDS!
  * @property {number} server_time_offset - The difference between this devices
  *           time and the time on the gameserver. Only correct if the opts
  *           param has "synchronize_time" set to true and onReady was called.
  * @property {Array.<AirConsole~DeviceState>} devices - An array of the device
  *           data of all devices in this session. The position is equal to the
  *           device ID of that device (The first element is the screen).
- *           We discourage you from using the property directly.
  *           To detect which controllers are in the game, use
  *           getControllerDeviceIds().
  *           Use the the getUID, getNickname, getProfilePicture and
@@ -151,12 +158,26 @@ AirConsole.prototype.onCustomDeviceStateChange = function(device_id,
  * DeviceState (custom DeviceState, profile pic, nickname, slow connection).
  * This is function is also called every time onConnect, onDisconnect or
  * onCustomDeviceStateChange is called. It's like their root function.
+ * @abstract
  * @param {number} device_id - the device ID that changed it's DeviceState.
  * @param user_data {AirConsole~DeviceState} - the data of that device.
  *        If undefined, the device has left.
  */
 AirConsole.prototype.onDeviceStateChange = function(device_id, device_data) {};
 
+/**
+ * Returns the device_id of this device.
+ * Every device in a AirConsole session has a device_id.
+ * The screen always has device_id 0. You can use the AirConsole.SCREEN
+ * constant instead of 0.
+ * All controllers also get a device_id. You can NOT assume that the device_ids
+ * of controllers are consecutive or that they start at 1.
+ * DO NOT HARDCODE CONTROLLER DEVICE IDS!
+ * @return {number}
+ */
+AirConsole.prototype.getDeviceId = function() {
+  return this.device_id;
+};
 
 /**
  * Returns the globally unique id of a device.
