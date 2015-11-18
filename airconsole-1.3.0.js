@@ -43,6 +43,10 @@
  *           All controllers also get a device_id. You can NOT assume that
  *           the device_ids of controllers are consecutive or that they start
  *           at 1. DO NOT HARDCODE CONTROLLER DEVICE IDS!
+ *           Within an AirConsole session, devices keep the same device_id when
+ *           they disconnect and reconnect. Different controllers will never
+ *           get the same device_id in a session. Every device_id remains
+ *           reserved for the device that originally got it.
  * @property {number} server_time_offset - The difference between this devices
  *           time and the time on the gameserver. Only correct if the opts
  *           param has "synchronize_time" set to true and onReady was called.
@@ -173,6 +177,10 @@ AirConsole.prototype.onDeviceStateChange = function(device_id, device_data) {};
  * All controllers also get a device_id. You can NOT assume that the device_ids
  * of controllers are consecutive or that they start at 1.
  * DO NOT HARDCODE CONTROLLER DEVICE IDS!
+ * Within an AirConsole session, devices keep the same device_id when they
+ * disconnect and reconnect. Different controllers will never get the same
+ * device_id in a session. Every device_id remains reserved for the device that
+ * originally got it.
  * @return {number}
  */
 AirConsole.prototype.getDeviceId = function() {
