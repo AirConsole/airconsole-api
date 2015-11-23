@@ -137,4 +137,111 @@ describe("API 1.3.0", function() {
     expect(actual_data[key_2]).toEqual(value_2);
   });
 
+  it ("should set active players correctly when max_players is set", function() {
+    spyOn(air_console, 'set_');
+    air_console.devices = [];
+    air_console.device_id = AirConsole.SCREEN;
+    air_console.devices[AirConsole.SCREEN] = {};
+    var device_data = {
+      location: LOCATION,
+      custom: {}
+    };
+    // We only want the first two devices
+    var max_players = 2;
+    air_console.devices[2] = device_data;
+    air_console.devices[5] = device_data;
+    air_console.devices[3] = device_data;
+    air_console.setActivePlayers(max_players);
+
+    var actual_players = air_console.devices[AirConsole.SCREEN]["players"];
+    var count = actual_players.length;
+    var expected_players = [2, 3];
+    expect(count).toEqual(max_players);
+    expect(air_console.set_).toHaveBeenCalledWith('players', expected_players);
+
+    // Test getActivePlayerDeviceIds()
+    var actual_device_ids = air_console.getActivePlayerDeviceIds();
+    expect(expected_players).toEqual(actual_device_ids);
+  });
+
+  it ("should set active players correctly when max_players is NOT set", function() {
+    spyOn(air_console, 'set_');
+    air_console.devices = [];
+    air_console.device_id = AirConsole.SCREEN;
+    air_console.devices[AirConsole.SCREEN] = {};
+    var device_data = {
+      location: LOCATION,
+      custom: {}
+    };
+    // We only want the first two ones
+    air_console.devices[1] = device_data;
+    air_console.devices[5] = device_data;
+    air_console.devices[3] = device_data;
+    air_console.setActivePlayers();
+
+    var actual_players = air_console.devices[AirConsole.SCREEN]["players"];
+    var count = actual_players.length;
+    var expected_players = [1, 3, 5];
+    expect(count).toEqual(expected_players.length);
+    expect(air_console.set_).toHaveBeenCalledWith('players', expected_players);
+
+    // Test getActivePlayerDeviceIds()
+    var actual_device_ids = air_console.getActivePlayerDeviceIds();
+    expect(expected_players).toEqual(actual_device_ids);
+  });
+
+  it ("should throw when set active players is called on a controller", function() {
+    expect(air_console.device_id).not.toEqual(AirConsole.SCREEN);
+    expect(air_console.setActivePlayers).toThrow();
+  });
+
+  it ("should convert player number to device id correctly", function() {
+    air_console.devices = [];
+    air_console.device_id = AirConsole.SCREEN;
+    air_console.devices[AirConsole.SCREEN] = {};
+    var device_data = {
+      location: LOCATION,
+      custom: {}
+    };
+    air_console.devices[2] = device_data;
+    air_console.devices[3] = device_data;
+    // Player number 2
+    air_console.devices[5] = device_data;
+    air_console.setActivePlayers();
+
+    // Player 2
+    var actual_device_id = air_console.convertPlayerNumberToDeviceId(2);
+    var expected_device_id = 5;
+    expect(expected_device_id).toEqual(actual_device_id);
+
+    // Player 0
+    var actual_device_id = air_console.convertPlayerNumberToDeviceId(0);
+    var expected_device_id = 2;
+    expect(expected_device_id).toEqual(actual_device_id);
+  });
+
+  it ("should convert device id to player number correctly", function() {
+    air_console.devices = [];
+    air_console.device_id = AirConsole.SCREEN;
+    air_console.devices[AirConsole.SCREEN] = {};
+    var device_data = {
+      location: LOCATION,
+      custom: {}
+    };
+    air_console.devices[2] = device_data;
+    air_console.devices[3] = device_data;
+    air_console.devices[5] = device_data;
+    air_console.setActivePlayers();
+
+    // Player 0 is first device
+    var actual_number = air_console.convertDeviceIdToPlayerNumber(2);
+    var expected_number = 0;
+    expect(expected_device_id).toEqual(actual_device_id);
+
+    // Player 2 is last device
+    var actual_device_id = air_console.convertDeviceIdToPlayerNumber(5);
+    var expected_device_id = 2;
+    expect(expected_device_id).toEqual(actual_device_id);
+  });
+
 });
