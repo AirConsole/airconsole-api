@@ -166,7 +166,7 @@ AirConsole.prototype.onActivePlayersChange = function(player_number) {};
  * Takes all currently connected controllers and assigns them a player number.
  * Can only be called by the screen. You don't have to use this helper
  * function, but this mechanism is very convenient if you want to know which
- * device is the first player, the second players, the third player ...
+ * device is the first player, the second player, the third player ...
  * The assigned player numbers always start with 0 and are consecutive.
  * You can hardcode player numbers, but not device_ids.
  * Once the screen has called setActivePlayers you can get the device_id of
