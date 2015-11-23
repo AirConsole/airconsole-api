@@ -63,16 +63,18 @@ AirConsole.ORIENTATION_LANDSCAPE = "landscape";
 
 /**
  * Sends a message to another device.
- * @param to {number|undefined} - The device ID to send the message to.
- *                                If "to" is undefined, the message is sent
- *                                to all devices (except this one).
+ * @param device_id {number|undefined} - The device ID to send the message to.
+ *                                       If "device_id" is undefined, the
+ *                                       message is sent to all devices (except
+ *                                       this one).
  * @param data
  */
-AirConsole.prototype.message = function(to, data) {
+AirConsole.prototype.message = function(device_id, data) {
   if (this.device_id !== undefined) {
-    this.postMessage_({ action: "message", to: to, data: data });
+    this.postMessage_({ action: "message", to: device_id, data: data });
   }
 };
+
 
 /**
  * Sends a message to all connected devices.
@@ -81,6 +83,7 @@ AirConsole.prototype.message = function(to, data) {
 AirConsole.prototype.broadcast = function(data) {
   this.message(undefined, data);
 };
+
 
 /**
  * Gets called when the game console is ready.
@@ -93,12 +96,14 @@ AirConsole.prototype.broadcast = function(data) {
  */
 AirConsole.prototype.onReady = function(code) {};
 
+
 /**
  * Gets called when a device has connected and loaded the game.
  * @abstract
  * @param {number} device_id - the device ID that loaded the game.
  */
 AirConsole.prototype.onConnect = function(device_id) {};
+
 
 /**
  * Gets called when a device has left the game.
@@ -107,16 +112,17 @@ AirConsole.prototype.onConnect = function(device_id) {};
  */
 AirConsole.prototype.onDisconnect = function(device_id) {};
 
+
 /**
  * Gets called when a message is received from another device
  * that called message() or broadcast().
  * If you dont want to parse messages yourself and prefer an event driven
  * approach, have a look at http://github.com/AirConsole/airconsole-events/
  * @abstract
- * @param {number} from - The device ID that sent the message.
+ * @param {number} device_id - The device ID that sent the message.
  * @param {serializable} data - The data that was sent.
  */
-AirConsole.prototype.onMessage = function(from, data) {};
+AirConsole.prototype.onMessage = function(device_id, data) {};
 
 
 /**
@@ -132,21 +138,108 @@ AirConsole.prototype.onMessage = function(from, data) {};
 AirConsole.prototype.onCustomDeviceStateChange = function(device_id,
                                                           custom_data) {};
 
+
 /**
  * Gets called when a device joins/leaves a game session or updates its
  * DeviceState (custom DeviceState, profile pic, nickname, slow connection).
  * This is function is also called every time onConnect, onDisconnect or
  * onCustomDeviceStateChange is called. It's like their root function.
  * @abstract
- * @param {number} device_id - the device ID that changed it's DeviceState.
+ * @param {number} device_id - the device_id that changed its DeviceState.
  * @param user_data {AirConsole~DeviceState} - the data of that device.
  *        If undefined, the device has left.
  */
 AirConsole.prototype.onDeviceStateChange = function(device_id, device_data) {};
 
+
+/**
+ * Gets called when the screen sets the active players by calling
+ * setActivePlayers().
+ * @param {number|undefined} player_number - The player number of this device.
+ *                                           Can be undefined if this device
+ *                                           is not part of the active players.
+ */
+AirConsole.prototype.onActivePlayersChange = function(player_number) {};
+
+
+/**
+ * Takes all currently connected controllers and assigns them a player number.
+ * Can only be called by the screen. You don't have to use this helper
+ * function, but this mechanism is very convenient if you want to know which
+ * device is the first player, the second players, the third player ...
+ * The assigned player numbers always start with 0 and are consecutive.
+ * You can hardcode player numbers, but not device_ids.
+ * Once the screen has called setActivePlayers you can get the device_id of
+ * the first player by calling convertPlayerNumberToDeviceId(0), the device_id
+ * of the second player by calling convertPlayerNumberToDeviceId(1), ...
+ * You can also convert device_ids to player numbers by calling
+ * convertDeviceIdToPlayerNumber(device_id). You can get all device_ids that
+ * are active players by calling getActivePlayerDeviceIds().
+ * The screen can call this function every time a game round starts.
+ * @param {number} max_players - The maximum number of controllers that should
+ *                               get a player number assigned.
+ */
+AirConsole.prototype.setActivePlayers = function(max_players) {
+  if (this.getDeviceId() != AirConsole.SCREEN) {
+    throw "Only the AirConsole.SCREEN can set the active players!";
+  }
+  this.device_id_to_player_cache = undefined;
+  var players = this.getControllerDeviceIds();
+  if (max_players !== undefined) {
+    players = players.slice(0, Math.min(players.length, max_players));
+  }
+  this.devices[AirConsole.SCREEN]["players"] = players;
+  this.set_("players", players);
+};
+
+
+/**
+ * Returns an array of device_ids of the active players previously set by the
+ * screen by calling setActivePlayers. The first device_id in the array is the
+ * first player, the second device_id in the array is the second player, ...
+ * @returns {Array}
+ */
+AirConsole.prototype.getActivePlayerDeviceIds = function() {
+  return this.devices[AirConsole.SCREEN]["players"] || [];
+}
+
+
+/**
+ * Returns the device_id of a player, if the player is part of the active
+ * players previously set by the screen by calling setActivePlayers. If fewer
+ * players are in the game than the passed in player_number or the active
+ * players have not been set by the screen, this function returns undefined.
+ * @param player_number
+ * @returns {number|undefined}
+ */
+AirConsole.prototype.convertPlayerNumberToDeviceId = function(player_number) {
+  return this.getActivePlayerDeviceIds()[player_number];
+};
+
+
+/**
+ * Returns the player number for a device_id, if the device_id is part of the
+ * active players previously set by the screen by calling setActivePlayers.
+ * Player numbers are zero based and are consecutive. If the device_id is not
+ * part of the active players, this function returns undefined.
+ * @param device_id
+ * @returns {number|undefined}
+ */
+AirConsole.prototype.convertDeviceIdToPlayerNumber = function(device_id) {
+  if (!this.device_id_to_player_cache) {
+    this.device_id_to_player_cache = {};
+    var players = this.devices[AirConsole.SCREEN]["players"];
+    for (var i = 0; i < players.length; ++i) {
+      this.device_id_to_player_cache[players[i]] = i;
+    }
+  }
+  return this.device_id_to_player_cache[device_id];
+};
+
+
 /**
  * Returns the device_id of this device.
- * Every device in a AirConsole session has a device_id.
+ * Every device in an AirConsole session has a device_id.
  * The screen always has device_id 0. You can use the AirConsole.SCREEN
  * constant instead of 0.
  * All controllers also get a device_id. You can NOT assume that the device_ids
@@ -154,12 +247,9 @@ AirConsole.prototype.onDeviceStateChange = function(device_id, device_data) {};
  *
  * DO NOT HARDCODE CONTROLLER DEVICE IDS!
  *
- * In the beginning of a round in your game you should store which players are
- * part of this round.
- * var active_players = airconsole.getControllerDeviceIDs(); stores currently
- * connected controllers that should be part of this round. Then you can access
- * the the device_id of the first player at active_players[0], the device_id of
- * the second player at active_players[1], and so on ...
+ * If you want to have a logic with "players numbers" (Player 0, Player 1,
+ * Player 2, Player 3) use the setActivePlayers helper function! You can
+ * hardcode player numbers, but not device_ids.
  *
  * Within an AirConsole session, devices keep the same device_id when they
  * disconnect and reconnect. Different controllers will never get the same
@@ -174,6 +264,7 @@ AirConsole.prototype.onDeviceStateChange = function(device_id, device_data) {};
 AirConsole.prototype.getDeviceId = function() {
   return this.device_id;
 };
+
 
 /**
  * Returns the globally unique id of a device.
@@ -191,8 +282,9 @@ AirConsole.prototype.getUID = function(device_id) {
   }
 };
 
+
 /**
- * Returns the nickname of the user.
+ * Returns the nickname of a user.
  * @param {number|undefined} device_id - The device id for which you want the
  *                                       nickname. Default is this device.
  *                                       Screens don't have nicknames.
@@ -211,9 +303,9 @@ AirConsole.prototype.getNickname = function(device_id) {
 
 /**
  * Returns the url to a profile picture of the user.
- * @param {number|undefined} device_id - The device id for which you want
+ * @param {number|undefined} device_id - The device id for which you want the
  *                                       profile picture. Default is this
- *                                       device. Screen's don't have profile
+ *                                       device. Screens don't have profile
  *                                       pictures.
  * @param {number|undefined} size - The size of in pixels of the picture.
  *                                  Default is 64.
@@ -261,7 +353,7 @@ AirConsole.prototype.getControllerDeviceIds = function() {
  * Returns the current time of the game server.
  * This allows you to have a synchronized clock: You can send the server
  * time in a message to know exactly at what point something happened on a
- * device. This function Can only be called if the AirConsole was instantiated
+ * device. This function can only be called if the AirConsole was instantiated
  * with the "synchronize_time" opts set to true and after onReady was called.
  * @return {number} Timestamp in milliseconds.
  */
@@ -423,6 +515,12 @@ AirConsole.prototype.init_ = function(opts) {
                 game_url_after == game_url) {
               me.onCustomDeviceStateChange(data.device_id,
                                            data.device_data.custom);
+            } else if (data.device_data &&
+                data.device_data._is_players_update &&
+                game_url_after == game_url) {
+              me.device_id_to_player_cache = null;
+              me.onActivePlayersChange(me.convertDeviceIdToPlayerNumber(
+                  me.getDeviceId()));
             }
           }
         } else if (data.action == "ready") {
@@ -457,6 +555,7 @@ AirConsole.prototype.init_ = function(opts) {
     location: document.location.href
   });
 }
+
 
 /**
  * @private
