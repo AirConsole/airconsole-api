@@ -64,13 +64,14 @@ AirConsole.ORIENTATION_LANDSCAPE = "landscape";
 /**
  * Sends a message to another device.
  * @param device_id {number|undefined} - The device ID to send the message to.
- *                                       If "to" is undefined, the message is
- *                                       sent to all devices (except this one).
+ *                                       If "device_id" is undefined, the
+ *                                       message is sent to all devices (except
+ *                                       this one).
  * @param data
  */
 AirConsole.prototype.message = function(device_id, data) {
   if (this.device_id !== undefined) {
-    this.postMessage_({ action: "message", to: to, data: data });
+    this.postMessage_({ action: "message", to: device_id, data: data });
   }
 };
 
@@ -144,7 +145,7 @@ AirConsole.prototype.onCustomDeviceStateChange = function(device_id,
  * This is function is also called every time onConnect, onDisconnect or
  * onCustomDeviceStateChange is called. It's like their root function.
  * @abstract
- * @param {number} device_id - the device ID that changed it's DeviceState.
+ * @param {number} device_id - the device_id that changed its DeviceState.
  * @param user_data {AirConsole~DeviceState} - the data of that device.
  *        If undefined, the device has left.
  */
@@ -217,7 +218,7 @@ AirConsole.prototype.convertPlayerNumberToDeviceId = function(player_number) {
 
 
 /**
- * Returns the player number for a device_id, if the device_id is port of the
+ * Returns the player number for a device_id, if the device_id is part of the
  * active players previously set by the screen by calling setActivePlayers.
  * Player numbers are zero based and are consecutive. If the device_id is not
  * part of the active players, this function returns undefined.
@@ -238,7 +239,7 @@ AirConsole.prototype.convertDeviceIdToPlayerNumber = function(device_id) {
 
 /**
  * Returns the device_id of this device.
- * Every device in a AirConsole session has a device_id.
+ * Every device in an AirConsole session has a device_id.
  * The screen always has device_id 0. You can use the AirConsole.SCREEN
  * constant instead of 0.
  * All controllers also get a device_id. You can NOT assume that the device_ids
@@ -283,7 +284,7 @@ AirConsole.prototype.getUID = function(device_id) {
 
 
 /**
- * Returns the nickname of the user.
+ * Returns the nickname of a user.
  * @param {number|undefined} device_id - The device id for which you want the
  *                                       nickname. Default is this device.
  *                                       Screens don't have nicknames.
@@ -302,9 +303,9 @@ AirConsole.prototype.getNickname = function(device_id) {
 
 /**
  * Returns the url to a profile picture of the user.
- * @param {number|undefined} device_id - The device id for which you want
+ * @param {number|undefined} device_id - The device id for which you want the
  *                                       profile picture. Default is this
- *                                       device. Screen's don't have profile
+ *                                       device. Screens don't have profile
  *                                       pictures.
  * @param {number|undefined} size - The size of in pixels of the picture.
  *                                  Default is 64.
@@ -352,7 +353,7 @@ AirConsole.prototype.getControllerDeviceIds = function() {
  * Returns the current time of the game server.
  * This allows you to have a synchronized clock: You can send the server
  * time in a message to know exactly at what point something happened on a
- * device. This function Can only be called if the AirConsole was instantiated
+ * device. This function can only be called if the AirConsole was instantiated
  * with the "synchronize_time" opts set to true and after onReady was called.
  * @return {number} Timestamp in milliseconds.
  */
