@@ -532,7 +532,7 @@ AirConsole.prototype.init_ = function(opts) {
           me.onReady(data.code);
           var game_url = me.getGameUrl_(document.location.href);
           for (var i = 0; i < me.devices.length; ++i) {
-            if (me.devices[i] &&
+            if (i != me.getDeviceId() && me.devices[i] &&
                 me.getGameUrl_(me.devices[i].location) == game_url) {
               me.onConnect(i);
               var custom_state = me.getCustomDeviceState(i);
