@@ -560,17 +560,25 @@ AirConsole.prototype.init_ = function(opts) {
 /**
  * @private
  * @param {String} url - A url.
- * @return {String} Returns the root game url.
+ * @return {String} Returns the root game url over http.
  */
 AirConsole.prototype.getGameUrl_ = function(url) {
   if (!url) {
     return;
   }
-  url = url.replace("screen.html", "");
-  url = url.replace("controller.html", "");
+  url = url.split("#")[0];
+  url = url.split("?")[0];
+  if (url.indexOf("screen.html", url.length - 11) !== -1) {
+    url = url.substr(0, url.length - 11);
+  }
+  if (url.indexOf("controller.html", url.length - 15) !== -1) {
+    url = url.substr(0, url.length - 15);
+  }
+  if (url.indexOf("https://") == 0)  {
+    url = "http://" + url.substr(8);
+  }
   return url;
 };
-
 
 /**
  * Posts a message to the parent window.
