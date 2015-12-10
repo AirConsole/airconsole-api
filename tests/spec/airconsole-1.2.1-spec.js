@@ -66,13 +66,13 @@ describe("API 1.2.1", function() {
 
   it ("should return profile picture", function() {
     var actual_path = air_console.getProfilePicture(1, 320);
-    var expected_path = "http://www.airconsole.com/api/profile-picture?uid=8237&size=320";
+    var expected_path = "https://www.airconsole.com/api/profile-picture?uid=8237&size=320";
     expect(expected_path).toEqual(actual_path);
   });
 
   it ("should return profile picture with size 64 when no size param passed", function() {
     var actual_path = air_console.getProfilePicture(1);
-    var expected_path = "http://www.airconsole.com/api/profile-picture?uid=8237&size=64";
+    var expected_path = "https://www.airconsole.com/api/profile-picture?uid=8237&size=64";
     expect(expected_path).toEqual(actual_path);
   });
 

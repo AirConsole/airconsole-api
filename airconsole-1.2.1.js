@@ -225,7 +225,7 @@ AirConsole.prototype.getProfilePicture = function(device_id, size) {
   }
   var device_data = this.devices[device_id];
   if (device_data) {
-    return "http://www.airconsole.com/api/profile-picture?uid=" +
+    return "https://www.airconsole.com/api/profile-picture?uid=" +
         device_data.uid + "&size=" + (size||64);
   }
 };
