@@ -89,7 +89,7 @@ describe("API 1.3.0", function() {
     expect(air_console.onCustomDeviceStateChange).toHaveBeenCalledWith(DEVICE_ID, device_data.custom);
   });
 
-  it ("should call onCustomDeviceStateChange when changing custom device state", function() {
+  it ("should not call onCustomDeviceStateChange when self device on-connects", function() {
     spyOn(air_console, 'onCustomDeviceStateChange');
     var custom_data = {
       telefon: 'yes'
@@ -106,7 +106,28 @@ describe("API 1.3.0", function() {
       code: 1034
     });
     //
-    expect(air_console.onCustomDeviceStateChange).toHaveBeenCalledWith(DEVICE_ID, custom_data);
+    expect(air_console.onCustomDeviceStateChange).not.toHaveBeenCalledWith(DEVICE_ID, custom_data);
+  });
+
+  it ("should call onCustomDeviceStateChange on ready for each other devices", function() {
+    spyOn(air_console, 'onCustomDeviceStateChange');
+    var custom_data = {
+      telefon: 'yes'
+    };
+    var other_device_id = 3;
+    var devices = [];
+    devices[other_device_id] = {
+      location: LOCATION,
+      custom: custom_data
+    };
+    dispatchCustomEvent({
+      action: "ready",
+      device_id: DEVICE_ID,
+      devices: devices,
+      code: 1034
+    });
+    //
+    expect(air_console.onCustomDeviceStateChange).toHaveBeenCalledWith(other_device_id, custom_data);
   });
 
   it ("should set custom device state when calling setCustomDeviceStateProperty", function() {
