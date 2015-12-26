@@ -477,6 +477,21 @@ AirConsole.prototype.setOrientation = function(orientation) {
 AirConsole.prototype.init_ = function(opts) {
   opts = opts || {};
   var me = this;
+  me.reported_exceptions = {};
+  window.addEventListener('error', function(e) {
+    if (me.reported_exceptions[e.message]) {
+      return;
+    }
+    me.reported_exceptions[e.message] = 1;
+    var head = document.getElementsByTagName("head")[0];
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src = "//www.airconsole.com/jserror?url=" +
+        escape(document.location.href) +
+        "&message=" + escape(e.message) +
+        "&filename=" + escape(e.filename) + "&lineno=" + escape(e.lineno);
+    head.appendChild(script);
+  });
   me.version = "1.3.0";
   me.devices = [];
   me.server_time_offset = opts.synchronize_time ? 0 : false;
