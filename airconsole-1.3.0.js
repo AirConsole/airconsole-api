@@ -484,6 +484,7 @@ AirConsole.prototype.init_ = function(opts) {
     }
     me.postMessage_({
                       "action": "jserror",
+                      "url": document.location.href,
                       "exception": {
                         "message": e.message,
                         "error": {
