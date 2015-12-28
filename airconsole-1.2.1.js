@@ -45,20 +45,14 @@
 function AirConsole(opts) {
   opts = opts || {};
   var me = this;
-  me.reported_exceptions = {};
   window.addEventListener('error', function(e) {
-    if (me.reported_exceptions[e.message]) {
-      return;
-    }
-    me.reported_exceptions[e.message] = 1;
-    var head = document.getElementsByTagName("head")[0];
-    var script = document.createElement("script");
-    script.type = "text/javascript";
-    script.src = "//www.airconsole.com/jserror?url=" +
-        escape(document.location.href) +
-        "&message=" + escape(e.message) +
-        "&filename=" + escape(e.filename) + "&lineno=" + escape(e.lineno);
-    head.appendChild(script);
+    me.postMessage_({
+                      "action": "jserror",
+                      "exception": {
+                        "message": e.message,
+                        "stack": e.stack
+                      }
+                    })
   });
   me.version = "1.2.1";
   me.devices = [];
