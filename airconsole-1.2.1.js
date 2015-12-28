@@ -46,13 +46,19 @@ function AirConsole(opts) {
   opts = opts || {};
   var me = this;
   window.addEventListener('error', function(e) {
+    var stack = undefined;
+    if (e.error && e.error.stack) {
+      stack = e.error.stack;
+    }
     me.postMessage_({
                       "action": "jserror",
                       "exception": {
                         "message": e.message,
-                        "stack": e.stack
+                        "error": {
+                          "stack": stack
+                        }
                       }
-                    })
+                    });
   });
   me.version = "1.2.1";
   me.devices = [];
