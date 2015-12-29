@@ -57,7 +57,10 @@ function AirConsole(opts) {
                         "message": e.message,
                         "error": {
                           "stack": stack
-                        }
+                        },
+                        "filename": e.filename,
+                        "lineno": e.lineno,
+                        "colno": e.colno
                       }
                     });
   });
