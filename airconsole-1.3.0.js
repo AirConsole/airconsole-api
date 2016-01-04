@@ -138,12 +138,20 @@ AirConsole.prototype.onMessage = function(device_id, data) {};
 AirConsole.prototype.onCustomDeviceStateChange = function(device_id,
                                                           custom_data) {};
 
+/**
+ * Gets called when a device updates it's profile pic, nickname or email.
+ * @abstract
+ * @param {number} device_id - The device_id that changed its profile.
+ */
+AirConsole.prototype.onDeviceProfileChange = function(device_id) {};
+
 
 /**
  * Gets called when a device joins/leaves a game session or updates its
- * DeviceState (custom DeviceState, profile pic, nickname, slow connection).
+ * DeviceState (custom DeviceState, profile pic, nickname, internal state).
  * This is function is also called every time onConnect, onDisconnect or
- * onCustomDeviceStateChange is called. It's like their root function.
+ * onCustomDeviceStateChange, onDeviceProfileChange is called.
+ * It's like their root function.
  * @abstract
  * @param {number} device_id - the device_id that changed its DeviceState.
  * @param user_data {AirConsole~DeviceState} - the data of that device.
@@ -151,6 +159,17 @@ AirConsole.prototype.onCustomDeviceStateChange = function(device_id,
  */
 AirConsole.prototype.onDeviceStateChange = function(device_id, device_data) {};
 
+
+/**
+ * Gets called if the request of requestEmailAddress() was granted.
+ * For privacy reasons, you need to whitelist your game in order to receive
+ * the email address of the user. To whitelist your game, contact
+ * developers@airconsole.com. For development purposes, localhost is always
+ * allowed.
+ * @param {string|undefined} email_address - The email address of the user if
+ *        it was set.
+ */
+AirConsole.prototype.onEmailAddress = function(email_address) {};
 
 /**
  * Gets called when the screen sets the active players by calling
@@ -317,8 +336,12 @@ AirConsole.prototype.getProfilePicture = function(device_id, size) {
   }
   var device_data = this.devices[device_id];
   if (device_data) {
-    return "https://www.airconsole.com/api/profile-picture?uid=" +
+    var url = "https://www.airconsole.com/api/profile-picture?uid=" +
         device_data.uid + "&size=" + (size||64);
+    if (device_data.picture) {
+      url += "&v=" + device_data.picture;
+    }
+    return url;
   }
 };
 
@@ -454,6 +477,45 @@ AirConsole.prototype.setOrientation = function(orientation) {
 
 
 /**
+ * Requests the email address of this device and calls onEmailAddress iff the
+ * request was granted. For privacy reasons, you need to whitelist your
+ * game in order to receive the email address of the user. To whitelist your
+ * game, contact developers@airconsole.com. For development purposes, localhost
+ * is always allowed.
+ */
+AirConsole.prototype.requestEmailAddress = function() {
+  this.set_("email", true);
+};
+
+/**
+ * Returns true if a user is logged in.
+ * @param device_id - The device_id of the user. Defaults is this device.
+ * @returns {boolean}
+ */
+AirConsole.prototype.isUserLoggedIn = function(device_id) {
+  if (device_id == undefined) {
+    device_id = this.device_id;
+  }
+  var data = this.devices[device_id];
+  if (data) {
+    return data.auth;
+  }
+}
+
+/**
+ * Lets the user change his nickname, profile picture and email address.
+ * If you need a real nickname of the user, use this function.
+ * onDeviceProfileChange will be called if the user logs in.
+ * Returns false, if the user was already logged in. Returns true if login
+ * mask is shown.
+ */
+AirConsole.prototype.editProfile = function() {
+  this.set_("login", true);
+  return true;
+};
+
+
+/**
  * DeviceState contains information about a device in this session.
  * Use the helper methods getUID, getNickname, getProfilePicture and
  * getCustomDeviceState to access this data.
@@ -522,7 +584,9 @@ AirConsole.prototype.init_ = function(opts) {
             if (data.device_data) {
               game_url_after = me.getGameUrl_(data.device_data.location);
             }
-            me.devices[data.device_id] = data.device_data;
+            if (data.device_id != me.device_id) {
+              me.devices[data.device_id] = data.device_data;
+            }
             me.onDeviceStateChange(data.device_id, data.device_data);
             if (game_url_before != game_url && game_url_after == game_url) {
               me.onConnect(data.device_id);
@@ -540,6 +604,10 @@ AirConsole.prototype.init_ = function(opts) {
               me.device_id_to_player_cache = null;
               me.onActivePlayersChange(me.convertDeviceIdToPlayerNumber(
                   me.getDeviceId()));
+            } else if (data.device_data &&
+                data.device_data._is_profile_update &&
+                game_url_after == game_url) {
+              me.onDeviceProfileChange(data.device_id);
             }
           }
         } else if (data.action == "ready") {
@@ -560,6 +628,17 @@ AirConsole.prototype.init_ = function(opts) {
               }
             }
           }
+        } else if (data.action == "profile") {
+          if (me.device_id) {
+            var state = me.devices[me.device_id];
+            state["auth"] = data.auth;
+            state["nickname"] = data.nickname;
+            state["picture"] = data.picture;
+            me.onDeviceStateChange(me.device_id, state);
+            me.onDeviceProfileChange(me.device_id);
+          }
+        } else if (data.action == "email") {
+          me.onEmailAddress(data.email);
         }
       },
       false);
