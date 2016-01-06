@@ -584,9 +584,7 @@ AirConsole.prototype.init_ = function(opts) {
             if (data.device_data) {
               game_url_after = me.getGameUrl_(data.device_data.location);
             }
-            if (data.device_id != me.device_id) {
-              me.devices[data.device_id] = data.device_data;
-            }
+            me.devices[data.device_id] = data.device_data;
             me.onDeviceStateChange(data.device_id, data.device_data);
             if (game_url_before != game_url && game_url_after == game_url) {
               me.onConnect(data.device_id);
