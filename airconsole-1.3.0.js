@@ -506,12 +506,9 @@ AirConsole.prototype.isUserLoggedIn = function(device_id) {
  * Lets the user change his nickname, profile picture and email address.
  * If you need a real nickname of the user, use this function.
  * onDeviceProfileChange will be called if the user logs in.
- * Returns false, if the user was already logged in. Returns true if login
- * mask is shown.
  */
 AirConsole.prototype.editProfile = function() {
   this.set_("login", true);
-  return true;
 };
 
 
