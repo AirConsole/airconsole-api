@@ -262,7 +262,7 @@ AirConsole.prototype.getNickname = function(device_id) {
   }
   var device_data = this.devices[device_id];
   if (device_data) {
-    return device_data.nickname || ("Player " + device_id);
+    return device_data.nickname || ("Guest " + device_id);
   }
 };
 

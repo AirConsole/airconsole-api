@@ -54,7 +54,7 @@ describe("API 1.2.1", function() {
     delete air_console.devices[1].nickname;
 
     var actual_name = air_console.getNickname(1);
-    var expected_name = "Player 1";
+    var expected_name = "Guest 1";
     expect(expected_name).toEqual(actual_name);
   });
 
