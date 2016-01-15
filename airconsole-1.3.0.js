@@ -28,6 +28,9 @@
  *           nothing is selectable, zoom is fixed to 1 and scrolling is
  *           disabled (iOS 8 clients drop out of fullscreen when scrolling).
  *           Default: true
+ * @property {number|undefined} device_motion - If set, onDeviceMotion gets
+ *           called every "device_motion" milliseconds with data from the
+ *           accelerometer and the gyroscope. Only for controllers.
  */
 /**
  * Your gateway object to AirConsole.
@@ -170,6 +173,18 @@ AirConsole.prototype.onDeviceStateChange = function(device_id, device_data) {};
  *        it was set.
  */
 AirConsole.prototype.onEmailAddress = function(email_address) {};
+
+/**
+ * Gets called every X milliseconds with device motion data iff the
+ * AirConsole was instantiated with the "device_motion" opts set to the
+ * interval in milliseconds. Only works for controllers.
+ * Note: Some browsers do not allow games to access accelerometer and gyroscope
+ *       in an iframe (your game). So use this method if you need gyroscope
+ *       or accelerometer data.
+ * @param {object} data - data.x, data.y, data.z for accelerometer
+ *                        data.alpha, data.beta, data.gamma for gyroscope
+ */
+AirConsole.prototype.onDeviceMotion = function(data) {};
 
 /**
  * Gets called when the screen sets the active players by calling
@@ -563,7 +578,9 @@ AirConsole.prototype.init_ = function(opts) {
       function (event) {
         var data = event.data;
         var game_url = me.getGameUrl_(document.location.href);
-        if (data.action == "message") {
+        if (data.action == "device_motion") {
+          me.onDeviceMotion(data.data);
+        } else if (data.action == "message") {
           if (me.device_id !== undefined) {
             if (me.devices[data.from] &&
                 game_url == me.getGameUrl_(me.devices[data.from].location)) {
@@ -644,6 +661,7 @@ AirConsole.prototype.init_ = function(opts) {
   this.postMessage_({
     action: "ready",
     version: me.version,
+    device_motion: opts.device_motion,
     synchronize_time: opts.synchronize_time,
     location: document.location.href
   });
