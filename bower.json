@@ -1,6 +1,6 @@
 {
   "name": "airconsole",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "authors": [
     "N-Dream AG"
   ],
@@ -22,10 +22,10 @@
     "type": "git",
     "url": "git@github.com:AirConsole/airconsole-api.git"
   },
-  "license": "MIT",
+  "license": "Apache License",
   "homepage": "http://developers.airconsole.com",
   "ignore": [
-    "Readme.md",
     "tests"
+    "deprecated"
   ]
 }
