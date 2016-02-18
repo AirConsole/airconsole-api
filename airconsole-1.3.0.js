@@ -30,7 +30,8 @@
  *           Default: true
  * @property {number|undefined} device_motion - If set, onDeviceMotion gets
  *           called every "device_motion" milliseconds with data from the
- *           accelerometer and the gyroscope. Only for controllers.
+ *           accelerometer and the gyroscope. Recommended value: 100.
+ *           Only for controllers.
  */
 /**
  * Your gateway object to AirConsole.
