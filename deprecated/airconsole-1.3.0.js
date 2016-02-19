@@ -170,6 +170,7 @@ AirConsole.prototype.onDeviceStateChange = function(device_id, device_data) {};
  * the email address of the user. To whitelist your game, contact
  * developers@airconsole.com. For development purposes, localhost is always
  * allowed.
+ * @abstract
  * @param {string|undefined} email_address - The email address of the user if
  *        it was set.
  */
@@ -182,14 +183,17 @@ AirConsole.prototype.onEmailAddress = function(email_address) {};
  * Note: Some browsers do not allow games to access accelerometer and gyroscope
  *       in an iframe (your game). So use this method if you need gyroscope
  *       or accelerometer data.
+ * @abstract
  * @param {object} data - data.x, data.y, data.z for accelerometer
  *                        data.alpha, data.beta, data.gamma for gyroscope
  */
 AirConsole.prototype.onDeviceMotion = function(data) {};
 
+
 /**
  * Gets called when the screen sets the active players by calling
  * setActivePlayers().
+ * @abstract
  * @param {number|undefined} player_number - The player number of this device.
  *                                           Can be undefined if this device
  *                                           is not part of the active players.
@@ -464,9 +468,6 @@ AirConsole.prototype.navigateHome = function() {
 
 /**
  * Request that all devices load a game by url.
- * Note that the custom DeviceStates are preserved. If you don't want that
- * override setCustomDeviceState(undefined) on every device before calling
- * this function.
  */
 AirConsole.prototype.navigateTo = function(url) {
   this.set_("home", url);
@@ -505,7 +506,8 @@ AirConsole.prototype.requestEmailAddress = function() {
 
 /**
  * Returns true if a user is logged in.
- * @param device_id - The device_id of the user. Defaults is this device.
+ * @param {number|undefined} device_id - The device_id of the user.
+ *                                       Default is this device.
  * @returns {boolean}
  */
 AirConsole.prototype.isUserLoggedIn = function(device_id) {
@@ -526,7 +528,6 @@ AirConsole.prototype.isUserLoggedIn = function(device_id) {
 AirConsole.prototype.editProfile = function() {
   this.set_("login", true);
 };
-
 
 /**
  * DeviceState contains information about a device in this session.
