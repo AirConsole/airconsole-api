@@ -87,10 +87,9 @@ AirConsole.prototype.broadcast = function(data) {
   this.message(undefined, data);
 };
 
-
 /**
  * Gets called when the game console is ready.
- * This event also also fires onConnect for all devices that already are
+ * This event also fires onConnect for all devices that already are
  * connected and have loaded your game.
  * This event also fires onCustomDeviceStateChange for all devices that are
  * connected, have loaded your game and have set a custom Device State.
@@ -486,6 +485,18 @@ AirConsole.prototype.navigateTo = function(url) {
   this.set_("home", url);
 };
 
+/**
+ * Opens url in external (default-system) browser. Call this method instead of
+ * calling window.open. In-App it will open the system's default browser.
+ * @param {stirng} url - The url to open
+ */
+AirConsole.prototype.openExternal = function(url) {
+  if (this.external_url) {
+    this.set_("external_url", url);
+  } else {
+    window.open(url);
+  }
+};
 
 /**
  * Shows or hides the default UI.
@@ -662,6 +673,7 @@ AirConsole.prototype.init_ = function(opts) {
         } else if (data.action == "ready") {
           me.device_id = data.device_id;
           me.devices = data.devices;
+          me.external_url  = data.client ? data.client.external_url : false;
           if (me.server_time_offset !== false) {
             me.server_time_offset = data.server_time_offset || 0;
           }
