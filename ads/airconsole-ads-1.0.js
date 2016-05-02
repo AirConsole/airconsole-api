@@ -311,6 +311,29 @@ AirConsoleAd.prototype.showDefaultUI = function(visible) {
 };
 
 /**
+ * Requests the email address of this device and calls onEmailAddress iff the
+ * request was granted. For privacy reasons, you need to whitelist your
+ * game in order to receive the email address of the user. To whitelist your
+ * game, contact developers@airconsole.com. For development purposes, localhost
+ * is always allowed.
+ */
+AirConsoleAd.prototype.requestEmailAddress = function() {
+  this.set_("email", true);
+};
+
+/**
+ * Gets called if the request of requestEmailAddress() was granted.
+ * For privacy reasons, you need to whitelist your game in order to receive
+ * the email address of the user. To whitelist your game, contact
+ * developers@airconsole.com. For development purposes, localhost is always
+ * allowed.
+ * @abstract
+ * @param {string|undefined} email_address - The email address of the user if
+ *        it was set.
+ */
+AirConsole.prototype.onEmailAddress = function(email_address) {};
+
+/**
  * Returns true if a user is logged in.
  * @param {number|undefined} device_id - The device_id of the user.
  *                                       Default is this device.
@@ -432,6 +455,8 @@ AirConsoleAd.prototype.init_ = function(opts) {
             me.onDeviceStateChange(me.device_id, state);
             me.onDeviceProfileChange(me.device_id);
           }
+        } else if (data.action == "email") {
+          me.onEmailAddress(data.email);
         }
       },
       false);
