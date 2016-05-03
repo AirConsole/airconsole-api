@@ -305,6 +305,9 @@ AirConsoleAd.prototype.navigateTo = function(url) {
 /**
  * Opens url in external (default-system) browser. Call this method instead of
  * calling window.open. In-App it will open the system's default browser.
+ * Because of Safari iOS you can only use it with the onclick handler:
+ * <div onclick="airconsole.openExternal('my-url.com');">Open new window</div>
+ * OR in JS with assigning element.onclick.
  * @param {stirng} url - The url to open
  */
 AirConsoleAd.prototype.openExternal = function(url) {
