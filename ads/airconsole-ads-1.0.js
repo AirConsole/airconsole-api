@@ -318,7 +318,7 @@ AirConsoleAd.prototype.showDefaultUI = function(visible) {
  * is always allowed.
  */
 AirConsoleAd.prototype.requestEmailAddress = function() {
-  this.set_("email", true);
+  this.set_("ademail", true);
 };
 
 /**
@@ -455,7 +455,7 @@ AirConsoleAd.prototype.init_ = function(opts) {
             me.onDeviceStateChange(me.device_id, state);
             me.onDeviceProfileChange(me.device_id);
           }
-        } else if (data.action == "email") {
+        } else if (data.action == "ademail") {
           me.onEmailAddress(data.email);
         }
       },
