@@ -278,6 +278,10 @@ AirConsole.prototype.convertPlayerNumberToDeviceId = function(player_number) {
  * @returns {number|undefined}
  */
 AirConsole.prototype.convertDeviceIdToPlayerNumber = function(device_id) {
+  if (!this.devices[AirConsole.SCREEN] ||
+      !this.devices[AirConsole.SCREEN]["players"]) {
+    return;
+  }
   if (!this.device_id_to_player_cache) {
     this.device_id_to_player_cache = {};
     var players = this.devices[AirConsole.SCREEN]["players"];
