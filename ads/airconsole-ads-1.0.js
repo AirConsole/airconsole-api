@@ -311,7 +311,8 @@ AirConsoleAd.prototype.navigateTo = function(url) {
  * @param {stirng} url - The url to open
  */
 AirConsoleAd.prototype.openExternal = function(url) {
-  if (this.external_url) {
+  var data = this.devices[this.device_id];
+  if (data.client && data.client.external_url === true) {
     this.set_("external_url", url);
   } else {
     window.open(url);
@@ -429,8 +430,6 @@ AirConsoleAd.prototype.init_ = function(opts) {
         } else if (data.action == "adready") {
           me.device_id = data.device_id;
           me.devices = data.devices;
-          me.client  = data.client;
-          me.external_url  = data.client ? data.client.external_url : false;
           me.onReady(data.code);
           for (var i = 0; i < me.devices.length; ++i) {
             if (i != me.getDeviceId() && me.devices[i]) {

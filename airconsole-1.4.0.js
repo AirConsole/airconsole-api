@@ -494,7 +494,8 @@ AirConsole.prototype.navigateTo = function(url) {
  * @param {stirng} url - The url to open
  */
 AirConsole.prototype.openExternal = function(url) {
-  if (this.external_url) {
+  var data = this.devices[this.device_id];
+  if (data.client && data.client.external_url === true) {
     this.set_("external_url", url);
   } else {
     window.open(url);
@@ -676,7 +677,6 @@ AirConsole.prototype.init_ = function(opts) {
         } else if (data.action == "ready") {
           me.device_id = data.device_id;
           me.devices = data.devices;
-          me.external_url  = data.client ? data.client.external_url : false;
           if (me.server_time_offset !== false) {
             me.server_time_offset = data.server_time_offset || 0;
           }
