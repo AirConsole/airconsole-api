@@ -348,7 +348,7 @@ AirConsoleAd.prototype.requestEmailAddress = function() {
  * @param {string|undefined} email_address - The email address of the user if
  *        it was set.
  */
-AirConsole.prototype.onEmailAddress = function(email_address) {};
+ AirConsoleAd.prototype.onEmailAddress = function(email_address) {};
 
 /**
  * Returns true if a user is logged in.
