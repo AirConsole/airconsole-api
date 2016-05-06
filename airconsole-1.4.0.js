@@ -87,10 +87,9 @@ AirConsole.prototype.broadcast = function(data) {
   this.message(undefined, data);
 };
 
-
 /**
  * Gets called when the game console is ready.
- * This event also also fires onConnect for all devices that already are
+ * This event also fires onConnect for all devices that already are
  * connected and have loaded your game.
  * This event also fires onCustomDeviceStateChange for all devices that are
  * connected, have loaded your game and have set a custom Device State.
@@ -490,6 +489,22 @@ AirConsole.prototype.navigateTo = function(url) {
   this.set_("home", url);
 };
 
+/**
+ * Opens url in external (default-system) browser. Call this method instead of
+ * calling window.open. In-App it will open the system's default browser.
+ * Because of Safari iOS you can only use it with the onclick handler:
+ * <div onclick="airconsole.openExternalUrl('my-url.com');">Open new window</div>
+ * OR in JS with assigning element.onclick.
+ * @param {stirng} url - The url to open
+ */
+AirConsole.prototype.openExternalUrl = function(url) {
+  var data = this.devices[this.device_id];
+  if (data.client && data.client.pass_external_url === true) {
+    this.set_("pass_external_url", url);
+  } else {
+    window.open(url);
+  }
+};
 
 /**
  * Shows or hides the default UI.
