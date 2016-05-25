@@ -430,7 +430,6 @@ AirConsoleAd.prototype.init_ = function(opts) {
             var connect_before = (me.devices[data.device_id] &&
                 me.devices[data.device_id].ad &&
                 me.devices[data.device_id].ad.loaded);
-            var connect = !me.devices[data.device_id] && data.device_data;
             var disconnect = me.devices[data.device_id] && !data.device_data;
             me.devices[data.device_id] = data.device_data;
             var connect = (!connect_before &&  me.devices[data.device_id] &&
@@ -444,7 +443,7 @@ AirConsoleAd.prototype.init_ = function(opts) {
             } else if (data.device_data &&
                 data.device_data._is_ad_custom_update) {
               me.onCustomAdStateChange(data.device_id,
-                                           data.device_data.custom);
+                                       me.getCustomAdState(data.device_id));
             } else if (data.device_data &&
                 data.device_data._is_profile_update) {
               me.onDeviceProfileChange(data.device_id);
