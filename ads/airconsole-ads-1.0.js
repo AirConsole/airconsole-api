@@ -49,7 +49,8 @@ AirConsoleAd.SCREEN = 0;
  */
 AirConsoleAd.prototype.message = function(device_id, data) {
   if (this.device_id !== undefined) {
-    this.postMessage_({ action: "admessage", to: device_id, data: data });
+    AirConsoleAd.postMessage_(
+        { action: "admessage", to: device_id, data: data });
   }
 };
 
@@ -396,25 +397,6 @@ AirConsoleAd.prototype.adComplete = function() {
 AirConsoleAd.prototype.init_ = function(opts) {
   opts = opts || {};
   var me = this;
-  window.addEventListener('error', function(e) {
-    var stack = undefined;
-    if (e.error && e.error.stack) {
-      stack = e.error.stack;
-    }
-    me.postMessage_({
-                      "action": "jserror",
-                      "url": document.location.href,
-                      "exception": {
-                        "message": e.message,
-                        "error": {
-                          "stack": stack
-                        },
-                        "filename": e.filename,
-                        "lineno": e.lineno,
-                        "colno": e.colno
-                      }
-                    });
-  });
   me.version = "1.0";
   me.devices = [];
   window.addEventListener(
@@ -479,7 +461,7 @@ AirConsoleAd.prototype.init_ = function(opts) {
   if (opts.setup_document !== false) {
     this.setupDocument_();
   }
-  this.postMessage_({
+  AirConsoleAd.postMessage_({
                       action: "adready",
                       version: me.version,
                       location: document.location.href
@@ -491,7 +473,7 @@ AirConsoleAd.prototype.init_ = function(opts) {
  * @private
  * @param {Object} data - the data to be sent to the parent window.
  */
-AirConsoleAd.prototype.postMessage_ = function(data) {
+AirConsoleAd.postMessage_ = function(data) {
   try {
     window.parent.postMessage(data, document.referrer);
   } catch(e) {
@@ -507,7 +489,7 @@ AirConsoleAd.prototype.postMessage_ = function(data) {
  * @param {serializable} value - The value to set.
  */
 AirConsoleAd.prototype.set_ = function(key, value) {
-  this.postMessage_({ action: "set", key: key, value: value });
+  AirConsoleAd.postMessage_({ action: "set", key: key, value: value });
 };
 
 
@@ -569,3 +551,23 @@ AirConsoleAd.prototype.setupDocument_ = function() {
     e.preventDefault();
   });
 };
+
+window.addEventListener('error', function(e) {
+  var stack = undefined;
+  if (e.error && e.error.stack) {
+    stack = e.error.stack;
+  }
+  AirConsoleAd.postMessage_({
+                    "action": "jserror",
+                    "url": document.location.href,
+                    "exception": {
+                      "message": e.message,
+                      "error": {
+                        "stack": stack
+                      },
+                      "filename": e.filename,
+                      "lineno": e.lineno,
+                      "colno": e.colno
+                    }
+                  });
+});
