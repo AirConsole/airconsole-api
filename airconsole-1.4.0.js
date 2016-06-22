@@ -74,7 +74,7 @@ AirConsole.ORIENTATION_LANDSCAPE = "landscape";
  */
 AirConsole.prototype.message = function(device_id, data) {
   if (this.device_id !== undefined) {
-    this.postMessage_({ action: "message", to: device_id, data: data });
+    AirConsole.postMessage_({ action: "message", to: device_id, data: data });
   }
 };
 
@@ -600,25 +600,6 @@ AirConsole.prototype.showAd = function() {
 AirConsole.prototype.init_ = function(opts) {
   opts = opts || {};
   var me = this;
-  window.addEventListener('error', function(e) {
-    var stack = undefined;
-    if (e.error && e.error.stack) {
-      stack = e.error.stack;
-    }
-    me.postMessage_({
-                      "action": "jserror",
-                      "url": document.location.href,
-                      "exception": {
-                        "message": e.message,
-                        "error": {
-                          "stack": stack
-                        },
-                        "filename": e.filename,
-                        "lineno": e.lineno,
-                        "colno": e.colno
-                      }
-                    });
-  });
   me.version = "1.4.0";
   me.devices = [];
   me.server_time_offset = opts.synchronize_time ? 0 : false;
@@ -720,7 +701,7 @@ AirConsole.prototype.init_ = function(opts) {
   if (opts.setup_document !== false) {
     this.setupDocument_();
   }
-  this.postMessage_({
+  AirConsole.postMessage_({
     action: "ready",
     version: me.version,
     device_motion: opts.device_motion,
@@ -758,7 +739,7 @@ AirConsole.prototype.getGameUrl_ = function(url) {
  * @private
  * @param {Object} data - the data to be sent to the parent window.
  */
-AirConsole.prototype.postMessage_ = function(data) {
+AirConsole.postMessage_ = function(data) {
   try {
     window.parent.postMessage(data, document.referrer);
   } catch(e) {
@@ -774,7 +755,7 @@ AirConsole.prototype.postMessage_ = function(data) {
  * @param {serializable} value - The value to set.
  */
 AirConsole.prototype.set_ = function(key, value) {
-  this.postMessage_({ action: "set", key: key, value: value });
+  AirConsole.postMessage_({ action: "set", key: key, value: value });
 };
 
 
@@ -836,3 +817,23 @@ AirConsole.prototype.setupDocument_ = function() {
     e.preventDefault();
   });
 };
+
+window.addEventListener('error', function(e) {
+  var stack = undefined;
+  if (e.error && e.error.stack) {
+    stack = e.error.stack;
+  }
+  AirConsole.postMessage_({
+                            "action": "jserror",
+                            "url": document.location.href,
+                            "exception": {
+                              "message": e.message,
+                              "error": {
+                                "stack": stack
+                              },
+                              "filename": e.filename,
+                              "lineno": e.lineno,
+                              "colno": e.colno
+                            }
+                          });
+});
