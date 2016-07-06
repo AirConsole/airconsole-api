@@ -1,7 +1,7 @@
 /**
  * AirConsole.
- * @copyright 2016 by N-Dream AG, Switzerland. All rights reserved.
- * @version 1.5.0
+ * @copyright 2015 by N-Dream AG, Switzerland. All rights reserved.
+ * @version 1.4.0
  *
  * IMPORTANT:
  *
@@ -358,23 +358,19 @@ AirConsole.prototype.getNickname = function(device_id) {
 
 /**
  * Returns the url to a profile picture of the user.
- * @param {number|undefined} device_id_or_uid - The device id or uid for which
- *                                              you want the profile picture.
- *                                              Default is the current user.
- *                                              Screens don't have profile
- *                                              pictures.
+ * @param {number|undefined} device_id - The device id for which you want the
+ *                                       profile picture. Default is this
+ *                                       device. Screens don't have profile
+ *                                       pictures.
  * @param {number|undefined} size - The size of in pixels of the picture.
  *                                  Default is 64.
  * @return {string|undefined}
  */
-AirConsole.prototype.getProfilePicture = function(device_id_or_uid, size) {
-  if (device_id_or_uid === undefined) {
-    device_id_or_uid = this.device_id;
-  } else if (typeof device_id_or_uid == "string") {
-    return "https://www.airconsole.com/api/profile-picture?uid=" +
-        device_id_or_uid + "&size=" + (size||64);
+AirConsole.prototype.getProfilePicture = function(device_id, size) {
+  if (device_id === undefined) {
+    device_id = this.device_id;
   }
-  var device_data = this.devices[device_id_or_uid];
+  var device_data = this.devices[device_id];
   if (device_data) {
     var url = "https://www.airconsole.com/api/profile-picture?uid=" +
         device_data.uid + "&size=" + (size||64);
@@ -384,6 +380,7 @@ AirConsole.prototype.getProfilePicture = function(device_id_or_uid, size) {
     return url;
   }
 };
+
 
 /**
  * Returns the device ID of the master controller.
@@ -580,36 +577,6 @@ AirConsole.prototype.showAd = function() {
 };
 
 /**
- * Stores a high score of the current user. May be returned to anyone. Do not
- * include sensitive data.
- * @param {String} level_name - The name of the level the user was playing
- * @param {String} level_version - The version of the level the user was playing
- * @param {number} score - The score the user has achieved
- * @param {mixed|undefined} data - Custom high score data (e.g. can be used to
- *                                 implement Ghost modes or include data to
- *                                 verify that it is not a fake high score).
- */
-AirConsole.prototype.storeHighScore = function(level_name, level_version,
-                                               score, data) {
-
-};
-
-/**
- * Requests high score data for the current user and other users.
- * @param {String} level_name - The name of the level
- * @param {String} level_version - The version of the level
- */
-AirConsole.prototype.requestHighScores = function(level_name, level_version) {
-
-};
-
-/**
- * Gets called when high scores are returned after calling requestHighScores.
- * @param {Array<AirConsole~HighScores>} high_scores - The high scores.
- */
-AirConsole.prototype.onHighScores = function(high_scores) {};
-
-/**
  * DeviceState contains information about a device in this session.
  * Use the helper methods getUID, getNickname, getProfilePicture and
  * getCustomDeviceState to access this data.
@@ -623,29 +590,6 @@ AirConsole.prototype.onHighScores = function(high_scores) {};
  */
 
 
-/**
- * HighScore contains information about a users high score
- * @typedef {object} AirConsole~HighScore
- * @property {string} id - A unique ID of a high score.
- * @property {String} level_name - The name of the level the user was playing
- * @property {String} level_version - The version of the level the user was
- *                                    playing
- * @property {number} score - The score the user has achieved
- * @property {mixed|undefined} data - Custom high score data
- * @property {String} uid - The unique ID of the user that was playing.
- * @property {number} timestamp - The timestamp of the high score
- * @property {String} relationship - How the user relates to the current user
- *                                 - "me" (the same user, highest score)
- *                                 - "airconsole"(played AirConsole together)
- *                                 - "facebook" (a facebook friend)
- *                                 - "other" (nearby or about same skill level)
- * @property {String} relationship_text - A human readable version of the
- *                                        relationship e.g.
- *                                        "Facebook friend" or
- *                                        "#1 in California"
- *
- */
-
 /* --------------------- ONLY PRIVATE FUNCTIONS BELLOW --------------------- */
 
 /**
@@ -656,7 +600,7 @@ AirConsole.prototype.onHighScores = function(high_scores) {};
 AirConsole.prototype.init_ = function(opts) {
   opts = opts || {};
   var me = this;
-  me.version = "1.5.0";
+  me.version = "1.4.0";
   me.devices = [];
   me.server_time_offset = opts.synchronize_time ? 0 : false;
   window.addEventListener(
