@@ -581,26 +581,44 @@ AirConsole.prototype.showAd = function() {
 
 /**
  * Stores a high score of the current user. May be returned to anyone. Do not
- * include sensitive data.
+ * include sensitive data. Only updates the high score if it has a higher or
+ * same score. Should probably be called from the controller.
  * @param {String} level_name - The name of the level the user was playing
  * @param {String} level_version - The version of the level the user was playing
  * @param {number} score - The score the user has achieved
  * @param {mixed|undefined} data - Custom high score data (e.g. can be used to
  *                                 implement Ghost modes or include data to
  *                                 verify that it is not a fake high score).
+ * @param {boolean|undefined} fetch_new_data - If true, fetches new data and
+ *                                             calls onHighScores
  */
 AirConsole.prototype.storeHighScore = function(level_name, level_version,
-                                               score, data) {
-
+                                               score, data, fetch_new_data) {
+  if (score == NaN || typeof score != "number") {
+    throw "Score needs to be a number and not NaN!"
+  }
+  this.set_("highscore",
+            {
+              "level_name": level_name,
+              "level_version": level_version,
+              "score": score,
+              "data": data,
+              "fetch": fetch_new_data
+            });
 };
 
 /**
- * Requests high score data for the current user and other users.
+ * Requests high score data for the current user and other users and will call
+ * onHighScores when data was received.
  * @param {String} level_name - The name of the level
  * @param {String} level_version - The version of the level
  */
 AirConsole.prototype.requestHighScores = function(level_name, level_version) {
-
+  this.set_("highscores",
+            {
+              "level_name": level_name,
+              "level_version": level_version,
+            });
 };
 
 /**
@@ -622,27 +640,36 @@ AirConsole.prototype.onHighScores = function(high_scores) {};
  *                                                 server latency.
  */
 
-
 /**
  * HighScore contains information about a users high score
  * @typedef {object} AirConsole~HighScore
- * @property {string} id - A unique ID of a high score.
  * @property {String} level_name - The name of the level the user was playing
  * @property {String} level_version - The version of the level the user was
  *                                    playing
  * @property {number} score - The score the user has achieved
- * @property {mixed|undefined} data - Custom high score data
+ * @property {Array<mixed>} data_array - An array of custom high score data.
+ *                                       The last element in the array is the
+ *                                       custom high score data of when the
+ *                                       high score was achieved.
+ *                                       Can be used to implement Ghost modes
+ *                                       or to verify that it is not a fake
+ *                                       high score. The reason for it to be an
+ *                                       array of custom high score data is so
+ *                                       you can add some variety to ghosts.
  * @property {String} uid - The unique ID of the user that was playing.
  * @property {number} timestamp - The timestamp of the high score
+ * @property {number} played - Amount of times the user played this level
+ * @property {String} nickname - The nickname of the user
  * @property {String} relationship - How the user relates to the current user
  *                                 - "me" (the same user, highest score)
- *                                 - "airconsole"(played AirConsole together)
+ *                                 - "airconsole" (played AirConsole together)
  *                                 - "facebook" (a facebook friend)
+ *                                 - "top" (best in city, region, country)
  *                                 - "other" (nearby or about same skill level)
  * @property {String} relationship_text - A human readable version of the
  *                                        relationship e.g.
  *                                        "Facebook friend" or
- *                                        "#1 in California"
+ *                                        "#1 in San Francisco"
  *
  */
 
@@ -750,6 +777,8 @@ AirConsole.prototype.init_ = function(opts) {
           } else {
             me.onAdComplete(data.complete);
           }
+        } else if (data.action == "highscores") {
+          me.onHighScores(data.highscores);
         }
       },
       false);
