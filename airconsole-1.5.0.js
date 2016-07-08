@@ -580,9 +580,10 @@ AirConsole.prototype.showAd = function() {
 };
 
 /**
- * Stores a high score of the current user. May be returned to anyone. Do not
- * include sensitive data. Only updates the high score if it has a higher or
- * same score. Should probably be called from the controller.
+ * Stores a high score of the current user on the AirConsole servers. May be
+ * returned to anyone. Do not include sensitive data. Only updates the high
+ * score if it has a higher or same score. Should probably be called from
+ * the controller. In development mode it stores the data only locally.
  * @param {String} level_name - The name of the level the user was playing
  * @param {String} level_version - The version of the level the user was playing
  * @param {number} score - The score the user has achieved
