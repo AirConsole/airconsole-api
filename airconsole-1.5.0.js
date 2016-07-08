@@ -666,10 +666,8 @@ AirConsole.prototype.onHighScores = function(high_scores) {};
  *                                 - "facebook" (a facebook friend)
  *                                 - "top" (best in city, region, country)
  *                                 - "other" (nearby or about same skill level)
- * @property {String} relationship_text - A human readable version of the
- *                                        relationship e.g.
- *                                        "Facebook friend" or
- *                                        "#1 in San Francisco"
+ * @property {String} status - A human readable version of the relationship
+ *                             e.g. "Facebook friend" or "#1 in San Francisco"
  *
  */
 
