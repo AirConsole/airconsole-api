@@ -582,49 +582,72 @@ AirConsole.prototype.showAd = function() {
 /**
  * Stores a high score of the current user on the AirConsole servers. May be
  * returned to anyone. Do not include sensitive data. Only updates the high
- * score if it has a higher or same score. Should probably be called from
- * the controller. In development mode it stores the data only locally.
+ * score if it was a higher or same score.
  * @param {String} level_name - The name of the level the user was playing
  * @param {String} level_version - The version of the level the user was playing
  * @param {number} score - The score the user has achieved
+ * @param {String|undefined} uid - The UID of the user that achieved the
+ *                                 high score. Default is the uid of this
+ *                                 device.
  * @param {mixed|undefined} data - Custom high score data (e.g. can be used to
  *                                 implement Ghost modes or include data to
  *                                 verify that it is not a fake high score).
- * @param {boolean|undefined} fetch_new_data - If true, fetches new data and
- *                                             calls onHighScores
  */
 AirConsole.prototype.storeHighScore = function(level_name, level_version,
-                                               score, data, fetch_new_data) {
+                                               score, uid, data) {
   if (score == NaN || typeof score != "number") {
     throw "Score needs to be a number and not NaN!"
   }
+  if (!uid) {
+    uid = this.getUID();
+  }
   this.set_("highscore",
             {
+              "uid": uid,
               "level_name": level_name,
               "level_version": level_version,
               "score": score,
-              "data": data,
-              "fetch": fetch_new_data
+              "data": data
             });
 };
 
 /**
- * Requests high score data for the current user and other users and will call
- * onHighScores when data was received.
+ * Requests high score data. Will call onHighScores when data was received.
  * @param {String} level_name - The name of the level
  * @param {String} level_version - The version of the level
+ * @params {Array<String>|undefined} - An array of UIDs of the users should
+ *                                     be included in the result.
+ *                                     Default is all connected controllers.
+ *                                     Will return also the friends of these
+ *                                     users and other users with similar
+ *                                     scores.
  */
-AirConsole.prototype.requestHighScores = function(level_name, level_version) {
+AirConsole.prototype.requestHighScores = function(level_name, level_version,
+                                                  uids) {
+  if (!uids) {
+    uids = [];
+    var device_ids = this.getControllerDeviceIds();
+    for (var i = 0; i < device_ids.length; ++i) {
+      uids.push(this.getUID(device_ids[i]));
+    }
+  }
   this.set_("highscores",
             {
               "level_name": level_name,
               "level_version": level_version,
+              "uids": uids
             });
 };
 
 /**
+ * Gets called when a high score was successfully stored.
+ * @param {AirConsole~HighScore} high_score - The stored high score.
+ */
+AirConsole.prototype.onHighScoreStored = function(high_scores) {};
+
+/**
  * Gets called when high scores are returned after calling requestHighScores.
- * @param {Array<AirConsole~HighScores>} high_scores - The high scores.
+ * @param {Array<AirConsole~HighScore>} high_scores - The high scores.
  */
 AirConsole.prototype.onHighScores = function(high_scores) {};
 
@@ -648,6 +671,7 @@ AirConsole.prototype.onHighScores = function(high_scores) {};
  * @property {String} level_version - The version of the level the user was
  *                                    playing
  * @property {number} score - The score the user has achieved
+ * @property {Array<AirConsole~HighScoreRank>} ranks - An array of ranks.
  * @property {Array<mixed>} data_array - An array of custom high score data.
  *                                       The last element in the array is the
  *                                       custom high score data of when the
@@ -659,18 +683,28 @@ AirConsole.prototype.onHighScores = function(high_scores) {};
  *                                       you can add some variety to ghosts.
  * @property {String} uid - The unique ID of the user that was playing.
  * @property {number} timestamp - The timestamp of the high score
- * @property {number} played - Amount of times the user played this level
  * @property {String} nickname - The nickname of the user
  * @property {String} relationship - How the user relates to the current user
- *                                 - "me" (the same user, highest score)
+ *                                 - "requested" (a user which was requested)
  *                                 - "airconsole" (played AirConsole together)
  *                                 - "facebook" (a facebook friend)
- *                                 - "top" (best in city, region, country)
- *                                 - "other" (nearby or about same skill level)
- * @property {String} status - A human readable version of the relationship
- *                             e.g. "Facebook friend" or "#1 in San Francisco"
+ *                                 - "other" (about same skill level)
  *
  */
+
+/**
+ * HighScoreRank tell you how well a user ranks compared to other users.
+ * @typedef {object} AirConsole~HighScoreRank
+ * @property {number} rank - The rank in a specific location.
+ * @property {String} location_type - The type of the location. One of:
+ *                                  - "world"
+ *                                  - "country"
+ *                                  - "region"
+ *                                  - "city"
+ * @property {String} location_name - The name of the location.
+ *                                    e.g. "World", "United States",
+ *                                    "California" or "San Francisco"
+
 
 /* --------------------- ONLY PRIVATE FUNCTIONS BELLOW --------------------- */
 
@@ -778,6 +812,8 @@ AirConsole.prototype.init_ = function(opts) {
           }
         } else if (data.action == "highscores") {
           me.onHighScores(data.highscores);
+        } else if (data.action == "highscore") {
+          me.onHighScoreStored(data.highscore);
         }
       },
       false);
