@@ -611,6 +611,15 @@ AirConsole.prototype.storeHighScore = function(level_name, level_version,
             });
 };
 
+
+/**
+ * Gets called when a high score was successfully stored.
+ * @param {AirConsole~HighScore|false} high_score - The stored high score if
+ *                                                  it is a new best for the
+ *                                                  user or else false.
+ */
+AirConsole.prototype.onHighScoreStored = function(high_score) {};
+
 /**
  * Requests high score data. Will call onHighScores when data was received.
  * @param {String} level_name - The name of the level
@@ -638,12 +647,6 @@ AirConsole.prototype.requestHighScores = function(level_name, level_version,
               "uids": uids
             });
 };
-
-/**
- * Gets called when a high score was successfully stored.
- * @param {AirConsole~HighScore} high_score - The stored high score.
- */
-AirConsole.prototype.onHighScoreStored = function(high_scores) {};
 
 /**
  * Gets called when high scores are returned after calling requestHighScores.
