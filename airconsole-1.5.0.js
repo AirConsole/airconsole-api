@@ -592,9 +592,15 @@ AirConsole.prototype.showAd = function() {
  * @param {mixed|undefined} data - Custom high score data (e.g. can be used to
  *                                 implement Ghost modes or include data to
  *                                 verify that it is not a fake high score).
+ * @param {String|undefined} score_string - A short human readable
+ *                                          representation of the score.
+ *                                          (e.g. "4 points in 3s").
+ *                                          Defaults to "X points" where x is
+ *                                          the score converted to an integer.
  */
 AirConsole.prototype.storeHighScore = function(level_name, level_version,
-                                               score, uid, data) {
+                                               score, uid, data,
+                                               score_string) {
   if (score == NaN || typeof score != "number") {
     throw "Score needs to be a number and not NaN!"
   }
@@ -607,7 +613,8 @@ AirConsole.prototype.storeHighScore = function(level_name, level_version,
               "level_name": level_name,
               "level_version": level_version,
               "score": score,
-              "data": data
+              "data": data,
+              "score_string": score_string
             });
 };
 
@@ -674,6 +681,7 @@ AirConsole.prototype.onHighScores = function(high_scores) {};
  * @property {String} level_version - The version of the level the user was
  *                                    playing
  * @property {number} score - The score the user has achieved
+ * @property {String} score_string - A human readable version of score.
  * @property {Array<AirConsole~HighScoreRank>} ranks - An array of ranks.
  * @property {Array<mixed>} data_array - An array of custom high score data.
  *                                       The last element in the array is the
@@ -692,7 +700,10 @@ AirConsole.prototype.onHighScores = function(high_scores) {};
  *                                 - "airconsole" (played AirConsole together)
  *                                 - "facebook" (a facebook friend)
  *                                 - "other" (about same skill level)
- *
+ * @property {String} share_url - The URL that should be used to share this
+ *                                high score.
+ * @property {String} share_image - The URL to an image that displays this
+ *                                  high score.
  */
 
 /**
