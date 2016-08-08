@@ -582,9 +582,14 @@ AirConsole.prototype.showAd = function() {
 /**
  * Stores a high score of the current user on the AirConsole servers. May be
  * returned to anyone. Do not include sensitive data. Only updates the high
- * score if it was a higher or same score.
- * @param {String} level_name - The name of the level the user was playing
- * @param {String} level_version - The version of the level the user was playing
+ * score if it was a higher or same score. Calls onHighScoreStored when
+ * the request is done.
+ * @param {String} level_name - The name of the level the user was playing.
+ *                              This should be a human readable string because
+ *                              it appears in the high score sharing image.
+ *                              You can also just pass an empty string.
+ * @param {String} level_version - The version of the level the user was
+ *                                 playing. This is for your internal use.
  * @param {number} score - The score the user has achieved
  * @param {String|undefined} uid - The UID of the user that achieved the
  *                                 high score. Default is the uid of this
@@ -628,7 +633,8 @@ AirConsole.prototype.storeHighScore = function(level_name, level_version,
 AirConsole.prototype.onHighScoreStored = function(high_score) {};
 
 /**
- * Requests high score data. Will call onHighScores when data was received.
+ * Requests high score data of players (including global high scores and
+ * friends). Will call onHighScores when data was received.
  * @param {String} level_name - The name of the level
  * @param {String} level_version - The version of the level
  * @params {Array<String>|undefined} - An array of UIDs of the users should
