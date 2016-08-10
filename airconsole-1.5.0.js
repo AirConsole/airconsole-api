@@ -626,9 +626,9 @@ AirConsole.prototype.storeHighScore = function(level_name, level_version,
 
 /**
  * Gets called when a high score was successfully stored.
- * @param {AirConsole~HighScore|false} high_score - The stored high score if
+ * @param {AirConsole~HighScore|null} high_score - The stored high score if
  *                                                  it is a new best for the
- *                                                  user or else false.
+ *                                                  user or else null.
  */
 AirConsole.prototype.onHighScoreStored = function(high_score) {};
 
