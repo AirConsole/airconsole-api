@@ -689,15 +689,9 @@ AirConsole.prototype.onHighScores = function(high_scores) {};
  * @property {number} score - The score the user has achieved
  * @property {String} score_string - A human readable version of score.
  * @property {Array<AirConsole~HighScoreRank>} ranks - An array of ranks.
- * @property {Array<mixed>} data_array - An array of custom high score data.
- *                                       The last element in the array is the
- *                                       custom high score data of when the
- *                                       high score was achieved.
- *                                       Can be used to implement Ghost modes
- *                                       or to verify that it is not a fake
- *                                       high score. The reason for it to be an
- *                                       array of custom high score data is so
- *                                       you can add some variety to ghosts.
+ * @property {mixed} data - Custom High Score data. Can be used to implement
+ *                          Ghost modes or to verify that it is not a fake
+ *                          high score.
  * @property {String} uid - The unique ID of the user that was playing.
  * @property {number} timestamp - The timestamp of the high score
  * @property {String} nickname - The nickname of the user
