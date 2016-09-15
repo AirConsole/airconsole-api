@@ -591,9 +591,11 @@ AirConsole.prototype.showAd = function() {
  * @param {String} level_version - The version of the level the user was
  *                                 playing. This is for your internal use.
  * @param {number} score - The score the user has achieved
- * @param {String|undefined} uid - The UID of the user that achieved the
- *                                 high score. Default is the uid of this
- *                                 device.
+ * @param {String|Array<String>|undefined} uid - The UIDs of the users that
+ *                                               achieved the high score.
+ *                                               Can be a single uid or an
+ *                                               array of uids. Default is the
+ *                                               uid of this device.
  * @param {mixed|undefined} data - Custom high score data (e.g. can be used to
  *                                 implement Ghost modes or include data to
  *                                 verify that it is not a fake high score).
@@ -611,6 +613,9 @@ AirConsole.prototype.storeHighScore = function(level_name, level_version,
   }
   if (!uid) {
     uid = this.getUID();
+  }
+  if (uid.constructor == Array) {
+    uid = uid.join("|");
   }
   this.set_("highscore",
             {
@@ -692,9 +697,10 @@ AirConsole.prototype.onHighScores = function(high_scores) {};
  * @property {mixed} data - Custom High Score data. Can be used to implement
  *                          Ghost modes or to verify that it is not a fake
  *                          high score.
- * @property {String} uid - The unique ID of the user that was playing.
+ * @property {String} uids - The unique ID of the users that achieved the
+ *                           high score.
  * @property {number} timestamp - The timestamp of the high score
- * @property {String} nickname - The nickname of the user
+ * @property {String} nicknames - The nicknames of the users
  * @property {String} relationship - How the user relates to the current user
  *                                 - "requested" (a user which was requested)
  *                                 - "airconsole" (played AirConsole together)
