@@ -662,7 +662,6 @@ AirConsole.prototype.requestHighScores = function(level_name, level_version,
   if (!ranks) {
     ranks = ["world"];
   }
-  ranks = ranks.join(",");
   if (!uids) {
     uids = [];
     var device_ids = this.getControllerDeviceIds();
