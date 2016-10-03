@@ -705,7 +705,7 @@ AirConsole.prototype.onHighScores = function(high_scores) {};
  *                                    playing
  * @property {number} score - The score the user has achieved
  * @property {String} score_string - A human readable version of score.
- * @property {Array<AirConsole~HighScoreRank>} ranks - An array of ranks.
+ * @property {Object} ranks - A dictionary of rank type to actual rank.
  * @property {mixed} data - Custom High Score data. Can be used to implement
  *                          Ghost modes or to verify that it is not a fake
  *                          high score.
@@ -727,18 +727,6 @@ AirConsole.prototype.onHighScores = function(high_scores) {};
  *                                high score.
  * @property {String} share_image - The URL to an image that displays this
  *                                  high score.
- */
-
-/**
- * HighScoreRank tell you how well a user ranks compared to other users.
- * @typedef {object} AirConsole~HighScoreRank
- * @property {number} rank - The rank in a specific location.
- * @property {String} type - The type of the rank. One of:
- *                           - "world"
- *                           - "country"
- *                           - "region"
- *                           - "city"
- *                           - "friends"
  */
 
 /* --------------------- ONLY PRIVATE FUNCTIONS BELLOW --------------------- */
