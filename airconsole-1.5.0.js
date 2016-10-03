@@ -632,8 +632,11 @@ AirConsole.prototype.storeHighScore = function(level_name, level_version,
 /**
  * Gets called when a high score was successfully stored.
  * @param {AirConsole~HighScore|null} high_score - The stored high score if
- *                                                  it is a new best for the
- *                                                  user or else null.
+ *                                                 it is a new best for the
+ *                                                 user or else null.
+ *                                                 Ranks include "world",
+ *                                                 "country", "region", "city"
+ *                                                 if a high score is passed.
  */
 AirConsole.prototype.onHighScoreStored = function(high_score) {};
 
@@ -642,15 +645,24 @@ AirConsole.prototype.onHighScoreStored = function(high_score) {};
  * friends). Will call onHighScores when data was received.
  * @param {String} level_name - The name of the level
  * @param {String} level_version - The version of the level
- * @params {Array<String>|undefined} - An array of UIDs of the users should
- *                                     be included in the result.
- *                                     Default is all connected controllers.
- *                                     Will return also the friends of these
- *                                     users and other users with similar
- *                                     scores.
+ * @param {Array<String>|undefined} uids - An array of UIDs of the users should
+ *                                         be included in the result.
+ *                                         Default is all connected controllers
+ * @param {Array<String>|undefined} ranks - An array of high score rank types.
+ *                                          High score rank types can include
+ *                                          data from across the world, only a
+ *                                          specific area or a users friends.
+ *                                          Valid array entries are "world",
+ *                                          "country",  "region", "city",
+ *                                          "friends".
+ *                                          Default is ["world"].
  */
 AirConsole.prototype.requestHighScores = function(level_name, level_version,
-                                                  uids) {
+                                                  uids, ranks) {
+  if (!ranks) {
+    ranks = ["world"];
+  }
+  ranks = ranks.join(",");
   if (!uids) {
     uids = [];
     var device_ids = this.getControllerDeviceIds();
@@ -662,7 +674,8 @@ AirConsole.prototype.requestHighScores = function(level_name, level_version,
             {
               "level_name": level_name,
               "level_version": level_version,
-              "uids": uids
+              "uids": uids,
+              "ranks": ranks
             });
 };
 
@@ -706,6 +719,11 @@ AirConsole.prototype.onHighScores = function(high_scores) {};
  *                                 - "airconsole" (played AirConsole together)
  *                                 - "facebook" (a facebook friend)
  *                                 - "other" (about same skill level)
+ * @property {String} location_country_code - The iso3166 country code
+ * @property {String} location_country_name - The name of the country
+ * @property {String} location_region_code - The iso3166 region code
+ * @property {String} location_region_name - The name of the region
+ * @property {String} location_city_name - The name of the city
  * @property {String} share_url - The URL that should be used to share this
  *                                high score.
  * @property {String} share_image - The URL to an image that displays this
@@ -716,15 +734,13 @@ AirConsole.prototype.onHighScores = function(high_scores) {};
  * HighScoreRank tell you how well a user ranks compared to other users.
  * @typedef {object} AirConsole~HighScoreRank
  * @property {number} rank - The rank in a specific location.
- * @property {String} location_type - The type of the location. One of:
- *                                  - "world"
- *                                  - "country"
- *                                  - "region"
- *                                  - "city"
- * @property {String} location_name - The name of the location.
- *                                    e.g. "World", "United States",
- *                                    "California" or "San Francisco"
-
+ * @property {String} type - The type of the rank. One of:
+ *                           - "world"
+ *                           - "country"
+ *                           - "region"
+ *                           - "city"
+ *                           - "friends"
+ */
 
 /* --------------------- ONLY PRIVATE FUNCTIONS BELLOW --------------------- */
 
