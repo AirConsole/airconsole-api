@@ -656,9 +656,13 @@ AirConsole.prototype.onHighScoreStored = function(high_score) {};
  *                                          "country",  "region", "city",
  *                                          "friends".
  *                                          Default is ["world"].
+ * @param {number|undefined} total - Amount of high scores to return per rank
+ *                                   type. Default is 8.
+ * @param {number|undefined} top - Amount of top high scores to return per rank
+ *                                 type. Default is 5.
  */
 AirConsole.prototype.requestHighScores = function(level_name, level_version,
-                                                  uids, ranks) {
+                                                  uids, ranks, total, top) {
   if (!ranks) {
     ranks = ["world"];
   }
@@ -669,12 +673,20 @@ AirConsole.prototype.requestHighScores = function(level_name, level_version,
       uids.push(this.getUID(device_ids[i]));
     }
   }
+  if (total == undefined) {
+    total = 8;
+  }
+  if (top == undefined) {
+    top = 5;
+  }
   this.set_("highscores",
             {
               "level_name": level_name,
               "level_version": level_version,
               "uids": uids,
-              "ranks": ranks
+              "ranks": ranks,
+              "total": total,
+              "top": top
             });
 };
 
