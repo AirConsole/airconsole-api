@@ -659,7 +659,7 @@ AirConsole.prototype.onHighScoreStored = function(high_score) {};
  * @param {number|undefined} total - Amount of high scores to return per rank
  *                                   type. Default is 8.
  * @param {number|undefined} top - Amount of top high scores to return per rank
- *                                 type. Default is 5.
+ *                                 type. top is part of total. Default is 5.
  */
 AirConsole.prototype.requestHighScores = function(level_name, level_version,
                                                   uids, ranks, total, top) {
