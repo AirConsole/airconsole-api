@@ -358,11 +358,13 @@ AirConsole.prototype.getNickname = function(device_id) {
 
 /**
  * Returns the url to a profile picture of the user.
- * @param {number|undefined} device_id_or_uid - The device id or uid for which
- *                                              you want the profile picture.
- *                                              Default is the current user.
- *                                              Screens don't have profile
- *                                              pictures.
+ * @param {number|string|undefined} device_id_or_uid - The device id or uid for
+ *                                                     which you want the
+ *                                                     profile picture.
+ *                                                     Default is the current
+ *                                                     user.
+ *                                                     Screens don't have
+ *                                                     profile pictures.
  * @param {number|undefined} size - The size of in pixels of the picture.
  *                                  Default is 64.
  * @return {string|undefined}
