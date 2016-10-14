@@ -583,19 +583,17 @@ AirConsole.prototype.showAd = function() {
 
 /**
  * Gets called when persistent data was stored from storePersistentData().
+ * @abstract
  * @param {String} uid - The uid for which the data was stored.
  */
-AirConsole.prototype.onPersistentDataStored = function(uid) {
-
-};
+AirConsole.prototype.onPersistentDataStored = function(uid) {};
 
 /**
  * Gets called when persistent data was loaded from requestPersistentData().
+ * @abstract
  * @param {Object} data - An object mapping uids to all key value pairs.
  */
-AirConsole.prototype.onPersistentDataLoaded = function(data) {
-
-};
+AirConsole.prototype.onPersistentDataLoaded = function(data) {};
 
 /**
  * Requests persistent data from the servers.
@@ -607,29 +605,31 @@ AirConsole.prototype.requestPersistentData = function(uids) {
   if (!uids) {
     uids = [this.getUID()];
   }
-  this.set_("requestPersistentData", uids)
+  this.set_("persistentrequest", {"uids": uids})
 };
 
 /**
  * Stores a key-value pair persistently on the AirConsole servers.
  * Storage is per game. Total storage can not exceed 1 MB per game and uid.
+ * Storage is public, not secure and anyone can request and tamper with it.
+ * Do not store sensitive data.
  * @param {String} key - The key of the data entry.
  * @param {mixed} value - The value of the data entry.
  * @param {String|undefiend} uid - The uid for which the data should be stored.
  *                                 Default is the uid of this device.
  */
-Airconsole.prototype.storePersistentData = function(key, value, uid) {
+AirConsole.prototype.storePersistentData = function(key, value, uid) {
   if (!uid) {
     uid = this.getUID();
   }
-  this.set_("storePersistentData", {"key": key, "value": value, "uid": uid});
+  this.set_("persistentstore", {"key": key, "value": value, "uid": uid});
 };
 
 /**
- * Stores a high score of the current user on the AirConsole servers. May be
- * returned to anyone. Do not include sensitive data. Only updates the high
- * score if it was a higher or same score. Calls onHighScoreStored when
- * the request is done.
+ * Stores a high score of the current user on the AirConsole servers.
+ * High Scores are public, not secure and anyone can request and tamper with
+ * them. Do not store sensitive data. Only updates the high score if it was a
+ * higher or same score. Calls onHighScoreStored when the request is done.
  * @param {String} level_name - The name of the level the user was playing.
  *                              This should be a human readable string because
  *                              it appears in the high score sharing image.
@@ -895,9 +895,9 @@ AirConsole.prototype.init_ = function(opts) {
           me.onHighScores(data.highscores);
         } else if (data.action == "highscore") {
           me.onHighScoreStored(data.highscore);
-        } else if (data.action == "persistentDataStored") {
+        } else if (data.action == "persistentstore") {
           me.onPersistentDataStored(data.uid);
-        } else if (data.action == "persistentDataLoaded") {
+        } else if (data.action == "persistentrequest") {
           me.onPersistentDataLoaded(data.data);
         }
       },
