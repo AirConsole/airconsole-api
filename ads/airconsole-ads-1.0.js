@@ -387,6 +387,50 @@ AirConsoleAd.prototype.adComplete = function() {
   this.set_("ad", false);
 };
 
+/**
+ * Gets called when persistent data was stored from storePersistentData().
+ * @abstract
+ * @param {String} uid - The uid for which the data was stored.
+ */
+AirConsoleAd.prototype.onPersistentDataStored = function(uid) {};
+
+/**
+ * Gets called when persistent data was loaded from requestPersistentData().
+ * @abstract
+ * @param {Object} data - An object mapping uids to all key value pairs.
+ */
+AirConsoleAd.prototype.onPersistentDataLoaded = function(data) {};
+
+/**
+ * Requests persistent data from the servers.
+ * @param {Array<String>|undefined} uids - The uids for which you would like
+ *                                         to request the persistent data.
+ *                                         Default is the uid of this device.
+ */
+AirConsoleAd.prototype.requestPersistentData = function(uids) {
+  if (!uids) {
+    uids = [this.getUID()];
+  }
+  this.set_("adpersistentrequest", {"uids": uids})
+};
+
+/**
+ * Stores a key-value pair persistently on the AirConsole servers.
+ * Storage is per game. Total storage can not exceed 1 MB per game and uid.
+ * Storage is public, not secure and anyone can request and tamper with it.
+ * Do not store sensitive data.
+ * @param {String} key - The key of the data entry.
+ * @param {mixed} value - The value of the data entry.
+ * @param {String|undefiend} uid - The uid for which the data should be stored.
+ *                                 Default is the uid of this device.
+ */
+AirConsoleAd.prototype.storePersistentData = function(key, value, uid) {
+  if (!uid) {
+    uid = this.getUID();
+  }
+  this.set_("adpersistentstore", {"key": key, "value": value, "uid": uid});
+};
+
 /* --------------------- ONLY PRIVATE FUNCTIONS BELLOW --------------------- */
 
 /**
@@ -455,6 +499,10 @@ AirConsoleAd.prototype.init_ = function(opts) {
           }
         } else if (data.action == "ademail") {
           me.onEmailAddress(data.email);
+        } else if (data.action == "adpersistentstore") {
+          me.onPersistentDataStored(data.uid);
+        } else if (data.action == "adpersistentrequest") {
+          me.onPersistentDataLoaded(data.data);
         }
       },
       false);
@@ -550,6 +598,12 @@ AirConsoleAd.prototype.setupDocument_ = function() {
   document.addEventListener('touchmove', function (e) {
     e.preventDefault();
   });
+  if (navigator.userAgent.indexOf("Windows Phone ") != -1 &&
+      navigator.userAgent.indexOf("Edge/") != -1) {
+    document.oncontextmenu = document.body.oncontextmenu = function () {
+      return false;
+    }
+  }
 };
 
 window.addEventListener('error', function(e) {
