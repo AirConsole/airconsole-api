@@ -691,8 +691,8 @@ AirConsole.prototype.onHighScoreStored = function(high_score) {};
  * friends). Will call onHighScores when data was received.
  * @param {String} level_name - The name of the level
  * @param {String} level_version - The version of the level
- * @param {Array<String>|undefined} uids - An array of UIDs of the users should
- *                                         be included in the result.
+ * @param {Array<String>|undefined} uids - An array of UIDs of the users that
+ *                                         should be included in the result.
  *                                         Default is all connected controllers
  * @param {Array<String>|undefined} ranks - An array of high score rank types.
  *                                          High score rank types can include
