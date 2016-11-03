@@ -630,6 +630,7 @@ AirConsole.prototype.storePersistentData = function(key, value, uid) {
  * High Scores are public, not secure and anyone can request and tamper with
  * them. Do not store sensitive data. Only updates the high score if it was a
  * higher or same score. Calls onHighScoreStored when the request is done.
+ * We highly recommend to read the High Score guide (developers.airconsole.com)
  * @param {String} level_name - The name of the level the user was playing.
  *                              This should be a human readable string because
  *                              it appears in the high score sharing image.
@@ -677,6 +678,7 @@ AirConsole.prototype.storeHighScore = function(level_name, level_version,
 
 /**
  * Gets called when a high score was successfully stored.
+ * We highly recommend to read the High Score guide (developers.airconsole.com)
  * @param {AirConsole~HighScore|null} high_score - The stored high score if
  *                                                 it is a new best for the
  *                                                 user or else null.
@@ -689,6 +691,7 @@ AirConsole.prototype.onHighScoreStored = function(high_score) {};
 /**
  * Requests high score data of players (including global high scores and
  * friends). Will call onHighScores when data was received.
+ * We highly recommend to read the High Score guide (developers.airconsole.com)
  * @param {String} level_name - The name of the level
  * @param {String} level_version - The version of the level
  * @param {Array<String>|undefined} uids - An array of UIDs of the users that
@@ -738,6 +741,7 @@ AirConsole.prototype.requestHighScores = function(level_name, level_version,
 
 /**
  * Gets called when high scores are returned after calling requestHighScores.
+ * We highly recommend to read the High Score guide (developers.airconsole.com)
  * @param {Array<AirConsole~HighScore>} high_scores - The high scores.
  */
 AirConsole.prototype.onHighScores = function(high_scores) {};
@@ -757,6 +761,7 @@ AirConsole.prototype.onHighScores = function(high_scores) {};
 
 /**
  * HighScore contains information about a users high score
+ * We highly recommend to read the High Score guide (developers.airconsole.com)
  * @typedef {object} AirConsole~HighScore
  * @property {String} level_name - The name of the level the user was playing
  * @property {String} level_version - The version of the level the user was
