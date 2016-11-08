@@ -53,9 +53,9 @@ function AirConsole(opts) {
  */
 
 
-/* ------------------------------------------------------------------------- */
-/*                               CONSTANTS                                   */
-/* ------------------------------------------------------------------------- */
+/** ------------------------------------------------------------------------ *
+ *                               CONSTANTS                                   *
+ * ------------------------------------------------------------------------- */
 
 /**
  * The device ID of the game screen.
@@ -76,10 +76,10 @@ AirConsole.ORIENTATION_PORTRAIT = "portrait";
 AirConsole.ORIENTATION_LANDSCAPE = "landscape";
 
 
-/* ------------------------------------------------------------------------- */
-/*                         BASIC FUNCTIONALITY                               */
-/*         @see http://developers.airconsole.com/#!/guides/pong              */
-/* ------------------------------------------------------------------------- */
+/** ------------------------------------------------------------------------ *
+ *                         BASIC FUNCTIONALITY                               *
+ *         @see http://developers.airconsole.com/#!/guides/pong              *
+ * ------------------------------------------------------------------------- */
 
 /**
  * Gets called when the game console is ready.
@@ -220,10 +220,10 @@ AirConsole.prototype.getServerTime = function() {
 AirConsole.prototype.onDeviceMotion = function(data) {};
 
 
-/* ------------------------------------------------------------------------- */
-/*                             DEVICE STATES                                 */
-/*   @see http://developers.airconsole.com/#!/guides/device_ids_and_states   */
-/* ------------------------------------------------------------------------- */
+/** ------------------------------------------------------------------------ *
+ *                             DEVICE STATES                                 *
+ *   @see http://developers.airconsole.com/#!/guides/device_ids_and_states   * 
+ * ------------------------------------------------------------------------- */
 
 /**
  * Gets the custom DeviceState of a device.
@@ -297,9 +297,9 @@ AirConsole.prototype.onCustomDeviceStateChange = function(device_id,
 AirConsole.prototype.onDeviceStateChange = function(device_id, device_data) {};
 
 
-/* ------------------------------------------------------------------------- */
-/*                                PROFILE                                    */
-/* ------------------------------------------------------------------------- */
+/** ------------------------------------------------------------------------ *
+ *                                PROFILE                                    *
+ * ------------------------------------------------------------------------- */
 
 /**
  * Returns the globally unique id of a device.
@@ -421,10 +421,10 @@ AirConsole.prototype.editProfile = function() {
 };
 
 
-/* ------------------------------------------------------------------------- */
-/*                            ACTIVE PLAYERS                                 */
-/*  @see http://developers.airconsole.com/#!/guides/device_ids_and_states    */
-/* ------------------------------------------------------------------------- */
+/** ------------------------------------------------------------------------ *
+ *                            ACTIVE PLAYERS                                 *
+ *  @see http://developers.airconsole.com/#!/guides/device_ids_and_states    *
+ * ------------------------------------------------------------------------- */
 
 /**
  * Takes all currently connected controllers and assigns them a player number.
@@ -512,9 +512,9 @@ AirConsole.prototype.convertDeviceIdToPlayerNumber = function(device_id) {
 };
 
 
-/* ------------------------------------------------------------------------- */
-/*                                   ADS                                     */
-/* ------------------------------------------------------------------------- */
+/** ------------------------------------------------------------------------ *
+ *                                   ADS                                     *
+ * ------------------------------------------------------------------------- */
 
 /**
  * Requests that AirConsole shows a multiscreen advertisment.
@@ -547,9 +547,9 @@ AirConsole.prototype.onAdShow = function() {};
 AirConsole.prototype.onAdComplete = function(ad_was_shown) {};
 
 
-/* ------------------------------------------------------------------------- */
-/*                                PREMIUM                                    */
-/* ------------------------------------------------------------------------- */
+/** ------------------------------------------------------------------------ *
+ *                                PREMIUM                                    *
+ * ------------------------------------------------------------------------- */
 
 /**
  * Returns true if the device is premium
@@ -602,9 +602,9 @@ AirConsole.prototype.getPremium = function() {
 AirConsole.prototype.onPremium = function(device_id) {};
 
 
-/* ------------------------------------------------------------------------- */
-/*                                NAVIGATION                                 */
-/* ------------------------------------------------------------------------- */
+/** ------------------------------------------------------------------------ *
+ *                                NAVIGATION                                 *
+ * ------------------------------------------------------------------------- */
 
 /**
  * Request that all devices return to the AirConsole store.
@@ -640,9 +640,9 @@ AirConsole.prototype.openExternalUrl = function(url) {
 };
 
 
-/* ------------------------------------------------------------------------- */
-/*                              USER INTERFACE                               */
-/* ------------------------------------------------------------------------- */
+/** ------------------------------------------------------------------------ *
+ *                              USER INTERFACE                               *
+ * ------------------------------------------------------------------------- */
 
 /**
  * Shows or hides the default UI.
@@ -662,9 +662,9 @@ AirConsole.prototype.setOrientation = function(orientation) {
 };
 
 
-/* ------------------------------------------------------------------------- */
-/*                              PERSISTENT DATA                              */
-/* ------------------------------------------------------------------------- */
+/** ------------------------------------------------------------------------ *
+ *                              PERSISTENT DATA                              *
+ * ------------------------------------------------------------------------- */
 
 /**
  * Requests persistent data from the servers.
@@ -711,10 +711,10 @@ AirConsole.prototype.storePersistentData = function(key, value, uid) {
 AirConsole.prototype.onPersistentDataStored = function(uid) {};
 
 
-/* ------------------------------------------------------------------------- */
-/*                               HIGH SCORES                                 */
-/*        @see http://developers.airconsole.com/#!/guides/highscore          */
-/* ------------------------------------------------------------------------- */
+/* ------------------------------------------------------------------------- *
+ *                               HIGH SCORES                                 *
+ *        @see http://developers.airconsole.com/#!/guides/highscore          *
+ * ------------------------------------------------------------------------- */
 
 /**
  * Stores a high score of the current user on the AirConsole servers.
@@ -883,9 +883,9 @@ AirConsole.prototype.onHighScores = function(high_scores) {};
  */
 
 
-/* ------------------------------------------------------------------------- */
-/*                   ONLY PRIVATE FUNCTIONS BELLOW                           */
-/* ------------------------------------------------------------------------- */
+/** ------------------------------------------------------------------------ *
+ *                   ONLY PRIVATE FUNCTIONS BELLOW                           *
+ * ------------------------------------------------------------------------- */
 
 /**
  * Initializes the AirConsole.
