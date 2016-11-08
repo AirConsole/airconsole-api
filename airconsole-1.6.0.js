@@ -54,7 +54,7 @@ function AirConsole(opts) {
 
 
 /** ------------------------------------------------------------------------ *
- *                               CONSTANTS                                   *
+ * @chapter                      CONSTANTS                                   *
  * ------------------------------------------------------------------------- */
 
 /**
@@ -77,7 +77,7 @@ AirConsole.ORIENTATION_LANDSCAPE = "landscape";
 
 
 /** ------------------------------------------------------------------------ *
- *                         BASIC FUNCTIONALITY                               *
+ * @chapter                BASIC FUNCTIONALITY                               *
  * @see         http://developers.airconsole.com/#!/guides/pong              *
  * ------------------------------------------------------------------------- */
 
@@ -221,7 +221,7 @@ AirConsole.prototype.onDeviceMotion = function(data) {};
 
 
 /** ------------------------------------------------------------------------ *
- *                             DEVICE STATES                                 *
+ * @chapter                    DEVICE STATES                                 *
  * @see   http://developers.airconsole.com/#!/guides/device_ids_and_states   *
  * ------------------------------------------------------------------------- */
 
@@ -298,7 +298,7 @@ AirConsole.prototype.onDeviceStateChange = function(device_id, device_data) {};
 
 
 /** ------------------------------------------------------------------------ *
- *                                PROFILE                                    *
+ * @chapter                       PROFILE                                    *
  * ------------------------------------------------------------------------- */
 
 /**
@@ -422,7 +422,7 @@ AirConsole.prototype.editProfile = function() {
 
 
 /** ------------------------------------------------------------------------ *
- *                            ACTIVE PLAYERS                                 *
+ * @chapter                   ACTIVE PLAYERS                                 *
  * @see   http://developers.airconsole.com/#!/guides/device_ids_and_states   *
  * ------------------------------------------------------------------------- */
 
@@ -513,7 +513,7 @@ AirConsole.prototype.convertDeviceIdToPlayerNumber = function(device_id) {
 
 
 /** ------------------------------------------------------------------------ *
- *                                   ADS                                     *
+ * @chapter                          ADS                                     *
  * ------------------------------------------------------------------------- */
 
 /**
@@ -548,7 +548,7 @@ AirConsole.prototype.onAdComplete = function(ad_was_shown) {};
 
 
 /** ------------------------------------------------------------------------ *
- *                                PREMIUM                                    *
+ * @chapter                       PREMIUM                                    *
  * ------------------------------------------------------------------------- */
 
 /**
@@ -603,7 +603,7 @@ AirConsole.prototype.onPremium = function(device_id) {};
 
 
 /** ------------------------------------------------------------------------ *
- *                                NAVIGATION                                 *
+ * @chapter                       NAVIGATION                                 *
  * ------------------------------------------------------------------------- */
 
 /**
@@ -641,7 +641,7 @@ AirConsole.prototype.openExternalUrl = function(url) {
 
 
 /** ------------------------------------------------------------------------ *
- *                              USER INTERFACE                               *
+ * @chapter                     USER INTERFACE                               *
  * ------------------------------------------------------------------------- */
 
 /**
@@ -663,7 +663,7 @@ AirConsole.prototype.setOrientation = function(orientation) {
 
 
 /** ------------------------------------------------------------------------ *
- *                              PERSISTENT DATA                              *
+ * @chapter                     PERSISTENT DATA                              *
  * ------------------------------------------------------------------------- */
 
 /**
@@ -712,7 +712,7 @@ AirConsole.prototype.onPersistentDataStored = function(uid) {};
 
 
 /** ------------------------------------------------------------------------ *
- *                               HIGH SCORES                                 *
+ * @chapter                      HIGH SCORES                                 *
  * @see       http://developers.airconsole.com/#!/guides/highscore           *
  * ------------------------------------------------------------------------- */
 
@@ -884,7 +884,7 @@ AirConsole.prototype.onHighScores = function(high_scores) {};
 
 
 /** ------------------------------------------------------------------------ *
- *                   ONLY PRIVATE FUNCTIONS BELLOW                           *
+ * @chapter          ONLY PRIVATE FUNCTIONS BELLOW                           *
  * ------------------------------------------------------------------------- */
 
 /**
