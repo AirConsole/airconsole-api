@@ -884,7 +884,7 @@ AirConsole.prototype.onHighScores = function(high_scores) {};
 
 
 /** ------------------------------------------------------------------------ *
- * @chapter          ONLY PRIVATE FUNCTIONS BELLOW                           *
+ *                   ONLY PRIVATE FUNCTIONS BELLOW                           *
  * ------------------------------------------------------------------------- */
 
 /**
