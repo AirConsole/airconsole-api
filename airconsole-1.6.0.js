@@ -3,7 +3,8 @@
  * @copyright 2016 by N-Dream AG, Switzerland. All rights reserved.
  * @version 1.6.0
  *
- * IMPORTANT: See http://developers.airconsole.com/ for API documentation
+ * IMPORTANT:
+ * @see http://developers.airconsole.com/ for API documentation
  *
  * This file is grouped into the following chapters:
  * - Constants: Constants you should use
@@ -19,8 +20,8 @@
  * - High Scores: Storing and retrieving high scores
  *
  * If your prefer an event driven api with .on() .off() and .dispatch()
- * interface instead of sending messages, use:
- * http://github.com/AirConsole/airconsole-events/
+ * interface instead of sending messages,
+ * @see http://github.com/AirConsole/airconsole-events/
  *
  */
 
@@ -77,7 +78,7 @@ AirConsole.ORIENTATION_LANDSCAPE = "landscape";
 
 /* ------------------------------------------------------------------------- */
 /*                         BASIC FUNCTIONALITY                               */
-/*       See guide: http://developers.airconsole.com/#!/guides/pong          */
+/*         @see http://developers.airconsole.com/#!/guides/pong              */
 /* ------------------------------------------------------------------------- */
 
 /**
@@ -131,7 +132,7 @@ AirConsole.prototype.broadcast = function(data) {
  * Gets called when a message is received from another device
  * that called message() or broadcast().
  * If you dont want to parse messages yourself and prefer an event driven
- * approach, have a look at http://github.com/AirConsole/airconsole-events/
+ * approach, @see http://github.com/AirConsole/airconsole-events/
  * @abstract
  * @param {number} device_id - The device ID that sent the message.
  * @param {serializable} data - The data that was sent.
@@ -157,8 +158,7 @@ AirConsole.prototype.onMessage = function(device_id, data) {};
  * device_id in a session. Every device_id remains reserved for the device that
  * originally got it.
  *
- * For more info read
- * http:// developers.airconsole.com/#/guides/device_ids_and_states
+ * @see http:// developers.airconsole.com/#/guides/device_ids_and_states
  *
  * @return {number}
  */
@@ -222,7 +222,7 @@ AirConsole.prototype.onDeviceMotion = function(data) {};
 
 /* ------------------------------------------------------------------------- */
 /*                             DEVICE STATES                                 */
-/*  Guide: http://developers.airconsole.com/#!/guides/device_ids_and_states  */
+/*   @see http://developers.airconsole.com/#!/guides/device_ids_and_states   */
 /* ------------------------------------------------------------------------- */
 
 /**
@@ -275,7 +275,7 @@ AirConsole.prototype.setCustomDeviceStateProperty = function(key, value) {
  * Gets called when a device updates it's custom DeviceState
  * by calling setCustomDeviceState or setCustomDeviceStateProperty.
  * Make sure you understand the power of device states:
- * http://developers.airconsole.com/#/guides/device_ids_and_states
+ * @see http://developers.airconsole.com/#/guides/device_ids_and_states
  * @abstract
  * @param {number} device_id - the device ID that changed its custom
  *                             DeviceState.
@@ -423,7 +423,7 @@ AirConsole.prototype.editProfile = function() {
 
 /* ------------------------------------------------------------------------- */
 /*                            ACTIVE PLAYERS                                 */
-/*  Guide: http://developers.airconsole.com/#!/guides/device_ids_and_states  */
+/*  @see http://developers.airconsole.com/#!/guides/device_ids_and_states    */
 /* ------------------------------------------------------------------------- */
 
 /**
@@ -713,7 +713,7 @@ AirConsole.prototype.onPersistentDataStored = function(uid) {};
 
 /* ------------------------------------------------------------------------- */
 /*                               HIGH SCORES                                 */
-/*      See guide: http://developers.airconsole.com/#!/guides/highscore      */
+/*        @see http://developers.airconsole.com/#!/guides/highscore          */
 /* ------------------------------------------------------------------------- */
 
 /**
