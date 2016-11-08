@@ -54,7 +54,7 @@ function AirConsole(opts) {
 
 
 /** ------------------------------------------------------------------------ *
- *                               CONSTANTS                                   *
+ * @chapter                      CONSTANTS                                   *
  * ------------------------------------------------------------------------- */
 
 /**
@@ -77,8 +77,8 @@ AirConsole.ORIENTATION_LANDSCAPE = "landscape";
 
 
 /** ------------------------------------------------------------------------ *
- *                         BASIC FUNCTIONALITY                               *
- *         @see http://developers.airconsole.com/#!/guides/pong              *
+ * @chapter                BASIC FUNCTIONALITY                               *
+ * @see         http://developers.airconsole.com/#!/guides/pong              *
  * ------------------------------------------------------------------------- */
 
 /**
@@ -221,8 +221,8 @@ AirConsole.prototype.onDeviceMotion = function(data) {};
 
 
 /** ------------------------------------------------------------------------ *
- *                             DEVICE STATES                                 *
- *   @see http://developers.airconsole.com/#!/guides/device_ids_and_states   * 
+ * @chapter                    DEVICE STATES                                 *
+ * @see   http://developers.airconsole.com/#!/guides/device_ids_and_states   *
  * ------------------------------------------------------------------------- */
 
 /**
@@ -298,7 +298,7 @@ AirConsole.prototype.onDeviceStateChange = function(device_id, device_data) {};
 
 
 /** ------------------------------------------------------------------------ *
- *                                PROFILE                                    *
+ * @chapter                       PROFILE                                    *
  * ------------------------------------------------------------------------- */
 
 /**
@@ -422,8 +422,8 @@ AirConsole.prototype.editProfile = function() {
 
 
 /** ------------------------------------------------------------------------ *
- *                            ACTIVE PLAYERS                                 *
- *  @see http://developers.airconsole.com/#!/guides/device_ids_and_states    *
+ * @chapter                   ACTIVE PLAYERS                                 *
+ * @see   http://developers.airconsole.com/#!/guides/device_ids_and_states   *
  * ------------------------------------------------------------------------- */
 
 /**
@@ -513,7 +513,7 @@ AirConsole.prototype.convertDeviceIdToPlayerNumber = function(device_id) {
 
 
 /** ------------------------------------------------------------------------ *
- *                                   ADS                                     *
+ * @chapter                          ADS                                     *
  * ------------------------------------------------------------------------- */
 
 /**
@@ -548,7 +548,7 @@ AirConsole.prototype.onAdComplete = function(ad_was_shown) {};
 
 
 /** ------------------------------------------------------------------------ *
- *                                PREMIUM                                    *
+ * @chapter                       PREMIUM                                    *
  * ------------------------------------------------------------------------- */
 
 /**
@@ -603,7 +603,7 @@ AirConsole.prototype.onPremium = function(device_id) {};
 
 
 /** ------------------------------------------------------------------------ *
- *                                NAVIGATION                                 *
+ * @chapter                       NAVIGATION                                 *
  * ------------------------------------------------------------------------- */
 
 /**
@@ -641,7 +641,7 @@ AirConsole.prototype.openExternalUrl = function(url) {
 
 
 /** ------------------------------------------------------------------------ *
- *                              USER INTERFACE                               *
+ * @chapter                     USER INTERFACE                               *
  * ------------------------------------------------------------------------- */
 
 /**
@@ -663,7 +663,7 @@ AirConsole.prototype.setOrientation = function(orientation) {
 
 
 /** ------------------------------------------------------------------------ *
- *                              PERSISTENT DATA                              *
+ * @chapter                     PERSISTENT DATA                              *
  * ------------------------------------------------------------------------- */
 
 /**
@@ -711,9 +711,9 @@ AirConsole.prototype.storePersistentData = function(key, value, uid) {
 AirConsole.prototype.onPersistentDataStored = function(uid) {};
 
 
-/* ------------------------------------------------------------------------- *
- *                               HIGH SCORES                                 *
- *        @see http://developers.airconsole.com/#!/guides/highscore          *
+/** ------------------------------------------------------------------------ *
+ * @chapter                      HIGH SCORES                                 *
+ * @see       http://developers.airconsole.com/#!/guides/highscore           *
  * ------------------------------------------------------------------------- */
 
 /**
@@ -884,7 +884,7 @@ AirConsole.prototype.onHighScores = function(high_scores) {};
 
 
 /** ------------------------------------------------------------------------ *
- *                   ONLY PRIVATE FUNCTIONS BELLOW                           *
+ * @chapter          ONLY PRIVATE FUNCTIONS BELLOW                           *
  * ------------------------------------------------------------------------- */
 
 /**
@@ -1026,8 +1026,7 @@ AirConsole.prototype.init_ = function(opts) {
                             synchronize_time: opts.synchronize_time,
                             location: document.location.href
                           });
-}
-
+};
 
 /**
  * @private
@@ -1065,7 +1064,6 @@ AirConsole.postMessage_ = function(data) {
   }
 };
 
-
 /**
  * Sets a variable in the external AirConsole framework.
  * @private
@@ -1075,7 +1073,6 @@ AirConsole.postMessage_ = function(data) {
 AirConsole.prototype.set_ = function(key, value) {
   AirConsole.postMessage_({ action: "set", key: key, value: value });
 };
-
 
 /**
  * Adds default css rules to documents so nothing is selectable, zoom is
