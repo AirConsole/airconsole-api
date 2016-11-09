@@ -168,10 +168,16 @@ AirConsole.prototype.getDeviceId = function() {
 
 /**
  * Returns the device ID of the master controller.
+ * Premium devices are prioritzed.
  * @return {number|undefined}
  */
 AirConsole.prototype.getMasterControllerDeviceId = function() {
-  return this.getControllerDeviceIds()[0];
+  var premium_ids = this.getPremiumDeviceIds();
+  if (premium_ids.length) {
+    return premium_ids[0];
+  } else  {
+    return this.getControllerDeviceIds()[0];
+  }
 };
 
 /**
