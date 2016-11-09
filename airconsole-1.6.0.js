@@ -8,10 +8,12 @@
  *
  * This file is grouped into the following chapters:
  * - Constants: Constants you should use
- * - Basic functionality: Messaging between devices, device ids and connections
+ * - Connectivity: Device Ids, connects and disconnects
+ * - Messaging: Sending messages between devices
  * - Device States: Setting data for a device that is readable for all devices
  * - Profile data: User profile data, including nicknames and profile pictures
  * - Active players: Setting a couple of devices as active players for a game
+ * - Controller Inputs: Special device inputs like device motion
  * - Ads: Showing ads and handling their events
  * - Premium: Handling premium users
  * - Navigation: Changing games and opening external links
@@ -77,7 +79,7 @@ AirConsole.ORIENTATION_LANDSCAPE = "landscape";
 
 
 /** ------------------------------------------------------------------------ *
- * @chapter                BASIC FUNCTIONALITY                               *
+ * @chapter                     CONNECTIVITY                                 *
  * @see         http://developers.airconsole.com/#!/guides/pong              *
  * ------------------------------------------------------------------------- */
 
@@ -105,39 +107,6 @@ AirConsole.prototype.onConnect = function(device_id) {};
  * @param {number} device_id - the device ID that left the game.
  */
 AirConsole.prototype.onDisconnect = function(device_id) {};
-
-/**
- * Sends a message to another device.
- * @param device_id {number|undefined} - The device ID to send the message to.
- *                                       If "device_id" is undefined, the
- *                                       message is sent to all devices (except
- *                                       this one).
- * @param data
- */
-AirConsole.prototype.message = function(device_id, data) {
-  if (this.device_id !== undefined) {
-    AirConsole.postMessage_({ action: "message", to: device_id, data: data });
-  }
-};
-
-/**
- * Sends a message to all connected devices.
- * @param data
- */
-AirConsole.prototype.broadcast = function(data) {
-  this.message(undefined, data);
-};
-
-/**
- * Gets called when a message is received from another device
- * that called message() or broadcast().
- * If you dont want to parse messages yourself and prefer an event driven
- * approach, @see http://github.com/AirConsole/airconsole-events/
- * @abstract
- * @param {number} device_id - The device ID that sent the message.
- * @param {serializable} data - The data that was sent.
- */
-AirConsole.prototype.onMessage = function(device_id, data) {};
 
 /**
  * Returns the device_id of this device.
@@ -212,18 +181,43 @@ AirConsole.prototype.getServerTime = function() {
   return new Date().getTime() + this.server_time_offset;
 };
 
+/** ------------------------------------------------------------------------ *
+ * @chapter                     MESSAGING                                    *
+ * @see         http://developers.airconsole.com/#!/guides/pong              *
+ * ------------------------------------------------------------------------- */
+
 /**
- * Gets called every X milliseconds with device motion data iff the
- * AirConsole was instantiated with the "device_motion" opts set to the
- * interval in milliseconds. Only works for controllers.
- * Note: Some browsers do not allow games to access accelerometer and gyroscope
- *       in an iframe (your game). So use this method if you need gyroscope
- *       or accelerometer data.
- * @abstract
- * @param {object} data - data.x, data.y, data.z for accelerometer
- *                        data.alpha, data.beta, data.gamma for gyroscope
+ * Sends a message to another device.
+ * @param device_id {number|undefined} - The device ID to send the message to.
+ *                                       If "device_id" is undefined, the
+ *                                       message is sent to all devices (except
+ *                                       this one).
+ * @param data
  */
-AirConsole.prototype.onDeviceMotion = function(data) {};
+AirConsole.prototype.message = function(device_id, data) {
+  if (this.device_id !== undefined) {
+    AirConsole.postMessage_({ action: "message", to: device_id, data: data });
+  }
+};
+
+/**
+ * Sends a message to all connected devices.
+ * @param data
+ */
+AirConsole.prototype.broadcast = function(data) {
+  this.message(undefined, data);
+};
+
+/**
+ * Gets called when a message is received from another device
+ * that called message() or broadcast().
+ * If you dont want to parse messages yourself and prefer an event driven
+ * approach, @see http://github.com/AirConsole/airconsole-events/
+ * @abstract
+ * @param {number} device_id - The device ID that sent the message.
+ * @param {serializable} data - The data that was sent.
+ */
+AirConsole.prototype.onMessage = function(device_id, data) {};
 
 
 /** ------------------------------------------------------------------------ *
@@ -516,6 +510,24 @@ AirConsole.prototype.convertDeviceIdToPlayerNumber = function(device_id) {
   }
   return this.device_id_to_player_cache[device_id];
 };
+
+
+/** ------------------------------------------------------------------------ *
+ * @chapter                 CONTROLLER INPUTS                                *
+ * ------------------------------------------------------------------------- */
+
+/**
+ * Gets called every X milliseconds with device motion data iff the
+ * AirConsole was instantiated with the "device_motion" opts set to the
+ * interval in milliseconds. Only works for controllers.
+ * Note: Some browsers do not allow games to access accelerometer and gyroscope
+ *       in an iframe (your game). So use this method if you need gyroscope
+ *       or accelerometer data.
+ * @abstract
+ * @param {object} data - data.x, data.y, data.z for accelerometer
+ *                        data.alpha, data.beta, data.gamma for gyroscope
+ */
+AirConsole.prototype.onDeviceMotion = function(data) {};
 
 
 /** ------------------------------------------------------------------------ *
