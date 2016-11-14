@@ -467,7 +467,10 @@ AirConsoleAd.prototype.init_ = function(opts) {
             } else if (disconnect) {
               me.onDisconnect(data.device_id);
             } else if (data.device_data &&
-                data.device_data._is_ad_custom_update) {
+                       (data.device_data._is_ad_custom_update ||
+                        (connect &&
+                         data.device_data["ad"] &&
+                         data.device_data["ad"]["custom"]))) {
               me.onCustomAdStateChange(data.device_id,
                                        me.getCustomAdState(data.device_id));
             } else if (data.device_data &&

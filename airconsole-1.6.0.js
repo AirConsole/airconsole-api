@@ -943,21 +943,23 @@ AirConsole.prototype.init_ = function(opts) {
             }
             me.devices[data.device_id] = data.device_data;
             me.onDeviceStateChange(data.device_id, data.device_data);
-            if (game_url_before != game_url && game_url_after == game_url) {
+            var is_connect = (game_url_before != game_url &&
+                              game_url_after == game_url);
+            if (is_connect) {
               me.onConnect(data.device_id);
-              if (me.isPremium(data.device_id)) {
-                me.onPremium(data.device_id);
-              }
             } else if (game_url_before == game_url &&
                 game_url_after != game_url) {
               me.onDisconnect(data.device_id);
             } else if (data.device_data &&
-                data.device_data._is_custom_update &&
+                (data.device_data._is_custom_update ||
+                 is_connect && data.device_data.custom) &&
                 game_url_after == game_url) {
               me.onCustomDeviceStateChange(data.device_id,
                                            data.device_data.custom);
             } else if (data.device_data &&
-                data.device_data._is_players_update &&
+                (data.device_data._is_players_update ||
+                 data.device_id == AirConsole.SCREEN &&
+                 data.device_data.players && is_connect) &&
                 game_url_after == game_url) {
               me.device_id_to_player_cache = null;
               me.onActivePlayersChange(me.convertDeviceIdToPlayerNumber(
@@ -974,7 +976,7 @@ AirConsole.prototype.init_ = function(opts) {
                 me.onAdComplete(data.ad.complete);
               }
             } else if (data.device_data &&
-                       data.device_data._is_premium_update &&
+                       (data.device_data._is_premium_update || is_connect) &&
                        data.device_data.premium) {
               me.onPremium(data.device_id);
             }
