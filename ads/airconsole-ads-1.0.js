@@ -220,7 +220,12 @@ AirConsoleAd.prototype.getProfilePicture = function(device_id, size) {
  * @return {number|undefined}
  */
 AirConsoleAd.prototype.getMasterControllerDeviceId = function() {
-  return this.getControllerDeviceIds()[0];
+  var premium_ids = this.getPremiumDeviceIds();
+  if (premium_ids.length) {
+    return premium_ids[0];
+  } else  {
+    return this.getControllerDeviceIds()[0];
+  }
 };
 
 
@@ -431,6 +436,57 @@ AirConsoleAd.prototype.storePersistentData = function(key, value, uid) {
   this.set_("adpersistentstore", {"key": key, "value": value, "uid": uid});
 };
 
+/**
+ * Returns true if the device is premium
+ * @param {number} device_id - The device_id that should be checked.
+ *                             Only controllers can be premium.
+ *                             Default is this device.
+ * @return {boolean|undefined} Returns true or false for a valid device_id and
+ *                             undefined if the device_id is not valid.
+ *
+ */
+AirConsoleAd.prototype.isPremium = function(device_id) {
+  if (device_id === undefined) {
+    device_id = this.device_id;
+  }
+  var device_data = this.devices[device_id];
+  if (device_data && device_id != AirConsoleAd.SCREEN) {
+    return !!device_data.premium;
+  }
+};
+
+/**
+ * Returns all device ids that are premium.
+ * @return {Array<number>}
+ */
+AirConsoleAd.prototype.getPremiumDeviceIds = function() {
+  var premium = [];
+  for (var i = 1; i < this.devices.length; ++i) {
+    if (this.isPremium(i)) {
+      premium.push(i);
+    }
+  }
+  return premium;
+};
+
+/**
+ * Offers the user to become a premium member.
+ * Can only be called from controllers.
+ * If you call getPremium in development mode, the device becomes premium
+ * immediately.
+ */
+AirConsoleAd.prototype.getPremium = function() {
+  this.set_("premium", true);
+};
+
+/**
+ * Gets called when a device becomes premium or when a premium device connects.
+ * @abstract
+ * @param {number} device_id - The device id of the premium device.
+ */
+AirConsoleAd.prototype.onPremium = function(device_id) {};
+
+
 /* --------------------- ONLY PRIVATE FUNCTIONS BELLOW --------------------- */
 
 /**
@@ -476,6 +532,10 @@ AirConsoleAd.prototype.init_ = function(opts) {
             } else if (data.device_data &&
                 data.device_data._is_profile_update) {
               me.onDeviceProfileChange(data.device_id);
+            } else if (data.device_data &&
+                (data.device_data._is_premium_update || connect) &&
+                data.device_data.premium) {
+              me.onPremium(data.device_id);
             }
           }
         } else if (data.action == "adready") {
@@ -488,6 +548,9 @@ AirConsoleAd.prototype.init_ = function(opts) {
               var custom_state = me.getCustomAdState(i);
               if (custom_state !== undefined) {
                 me.onCustomAdStateChange(i, custom_state);
+              }
+              if (me.isPremium(i)) {
+                me.onPremium(i);
               }
             }
           }
@@ -506,6 +569,9 @@ AirConsoleAd.prototype.init_ = function(opts) {
           me.onPersistentDataStored(data.uid);
         } else if (data.action == "adpersistentrequest") {
           me.onPersistentDataLoaded(data.data);
+        } else if (data.action == "premium") {
+          me.devices[data.device_id].premium = true;
+          me.onPremium(data.device_id);
         }
       },
       false);
