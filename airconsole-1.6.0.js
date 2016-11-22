@@ -1001,6 +1001,7 @@ AirConsole.prototype.init_ = function(opts) {
                   me.onCustomDeviceStateChange(i, custom_state);
                 }
                 if (i == AirConsole.SCREEN && me.devices[i].players) {
+                  me.device_id_to_player_cache = null;
                   me.onActivePlayersChange(me.convertDeviceIdToPlayerNumber(
                       me.getDeviceId()));
                 }
