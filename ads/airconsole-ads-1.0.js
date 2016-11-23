@@ -549,9 +549,9 @@ AirConsoleAd.prototype.init_ = function(opts) {
               if (custom_state !== undefined) {
                 me.onCustomAdStateChange(i, custom_state);
               }
-              if (me.isPremium(i)) {
-                me.onPremium(i);
-              }
+            }
+            if (me.isPremium(i)) {
+              me.onPremium(i);
             }
           }
         } else if (data.action == "profile") {
