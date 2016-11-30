@@ -935,7 +935,7 @@ AirConsole.prototype.init_ = function(opts) {
 /**
  * Handler when parent message posts a message
  * @private
- * @param {Object} data - the data to be sent to the parent window.
+ * @param {Event} event - Event object
  */
 AirConsole.prototype.onPostMessage_ = function(event) {
   var me = this;
