@@ -917,7 +917,7 @@ AirConsole.prototype.init_ = function(opts) {
   me.devices = [];
   me.server_time_offset = opts.synchronize_time ? 0 : false;
   window.addEventListener("message", function(event) {
-    me.onPostMessage_.call(me, event);
+    me.onPostMessage_(event);
   }, false);
   this.set_("orientation", opts.orientation);
   if (opts.setup_document !== false) {
@@ -933,7 +933,7 @@ AirConsole.prototype.init_ = function(opts) {
 };
 
 /**
- * Handler when parent message posts a message
+ * Handling onMessage events
  * @private
  * @param {Event} event - Event object
  */
