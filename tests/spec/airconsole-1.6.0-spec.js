@@ -142,17 +142,6 @@ describe("AirConsole 1.6.0", function() {
       expect(actual_id).toEqual(expected_id);
     });
 
-    it ("Should return the correct premium master device id", function() {
-      var expected_id = 5;
-      airconsole.devices = [];
-      airconsole.devices[AirConsole.SCREEN] = {"device": "screen"};
-      airconsole.devices[2] = { "device": "Na na na batman", location: LOCATION };
-      airconsole.devices[expected_id] = { "device": "unicorn", premium: true, location: LOCATION};
-      //
-      var actual_id = airconsole.getMasterControllerDeviceId();
-      expect(actual_id).toEqual(expected_id);
-    });
-
     it ("Should return undefined for master device ID when no devices are connected",
         function() {
       airconsole.devices = [];
