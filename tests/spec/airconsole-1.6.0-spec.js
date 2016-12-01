@@ -3,9 +3,10 @@ describe("AirConsole 1.6.0", function() {
   var DEVICE_ID = 2;
   var LOCATION = document.location.href;
 
-  function dispatchCustomMessageEvent (data) {
+  function dispatchCustomMessageEvent (data, event_type) {
+    event_type = event_type || 'message';
     var fake_event = document.createEvent('CustomEvent');  // MUST be 'CustomEvent'
-    fake_event.initCustomEvent('message', false, false, null);
+    fake_event.initCustomEvent(event_type, false, false, null);
     fake_event.data = data || {};
     window.dispatchEvent(fake_event);
   };
@@ -103,6 +104,12 @@ describe("AirConsole 1.6.0", function() {
       expect(airconsole.getServerTime.bind(airconsole)).toThrow();
     });
 
+    it ("Should call postMessage_ on error", function() {
+      spyOn(AirConsole, 'postMessage_');
+      dispatchCustomMessageEvent({}, 'error');
+      expect(AirConsole.postMessage_).toHaveBeenCalled();
+    });
+
   });
 
   /**
@@ -122,8 +129,9 @@ describe("AirConsole 1.6.0", function() {
 
     it ("Should return all connected controller device ids", function() {
       airconsole.devices = [];
-      airconsole.devices[AirConsole.SCREEN] = {"device": "screen"};
-      airconsole.devices[2] = { "device": "unicorn", location: LOCATION };
+      airconsole.devices[AirConsole.SCREEN] = { "device": "screen" };
+      airconsole.devices[2]  = { "device": "unicorn", location: LOCATION };
+      airconsole.devices[5]  = { "device": "Not in this game", location: "another.location" };
       airconsole.devices[10] = { "device": "Na na na batman", location: LOCATION };
       //
       var actual_ids = airconsole.getControllerDeviceIds();
@@ -184,45 +192,6 @@ describe("AirConsole 1.6.0", function() {
       expect(airconsole.onDeviceStateChange).toHaveBeenCalledWith(DEVICE_ID, device_data);
     });
 
-    it ("Should handle event action message", function() {
-      var custom_data = { eat: "burger" };
-      spyOn(airconsole, 'onMessage');
-      dispatchCustomMessageEvent({
-      action: "message",
-      from: DEVICE_ID,
-      data: custom_data
-      });
-      expect(airconsole.onMessage).toHaveBeenCalledWith(DEVICE_ID, custom_data);
-    });
-
-    it ("Should call custom device state change when a device changes custom data", function() {
-      spyOn(airconsole, 'onCustomDeviceStateChange');
-      var expected_data = { francois: true };
-      dispatchCustomMessageEvent({
-        action: "update",
-        device_id: DEVICE_ID,
-        device_data: {
-          location: LOCATION,
-          _is_custom_update: true,
-          custom: expected_data
-        }
-      });
-      expect(airconsole.onCustomDeviceStateChange).toHaveBeenCalledWith(DEVICE_ID, expected_data);
-    });
-
-    it ("Should call profile change handler when device changes profile", function() {
-      spyOn(airconsole, 'onDeviceProfileChange');
-      dispatchCustomMessageEvent({
-        action: "update",
-        device_id: DEVICE_ID,
-        device_data: {
-          location: LOCATION,
-          _is_profile_update: true
-        }
-      });
-      expect(airconsole.onDeviceProfileChange).toHaveBeenCalledWith(DEVICE_ID);
-    });
-
     it ("Should call onReady", function() {
       spyOn(airconsole, 'onReady');
       spyOn(airconsole, 'onConnect');
@@ -242,6 +211,50 @@ describe("AirConsole 1.6.0", function() {
 
   });
 
+/**
+  ======================================================================================
+  COMMON FUNCTIONALITY
+*/
+
+  describe("Messaging", function() {
+
+    beforeEach(function() {
+      initAirConsole();
+    });
+
+    afterEach(function() {
+      tearDown();
+    });
+
+    it ("Should call postMessage_ function when calling message()", function() {
+      var expected_data = { msg: "Ninja Turtle" };
+      var expected_params = { action: "message", to: DEVICE_ID, data: expected_data };
+      spyOn(AirConsole, 'postMessage_');
+      airconsole.message(DEVICE_ID, expected_data);
+      expect(AirConsole.postMessage_).toHaveBeenCalledWith(expected_params);
+    });
+
+    it ("Should call postMessage_ function when calling broadcast()", function() {
+      var expected_data = { msg: "Ninja Turtle" };
+      var expected_params = { action: "message", to: undefined, data: expected_data };
+      spyOn(AirConsole, 'postMessage_');
+      airconsole.broadcast(expected_data);
+      expect(AirConsole.postMessage_).toHaveBeenCalledWith(expected_params);
+    });
+
+    it ("Should handle postMessage with action 'message' correctly", function() {
+      var custom_data = { eat: "burger" };
+      spyOn(airconsole, 'onMessage');
+      dispatchCustomMessageEvent({
+      action: "message",
+      from: DEVICE_ID,
+      data: custom_data
+      });
+      expect(airconsole.onMessage).toHaveBeenCalledWith(DEVICE_ID, custom_data);
+    });
+
+  });
+
   /**
     ======================================================================================
     TEST DEVICE STATES
@@ -255,6 +268,53 @@ describe("AirConsole 1.6.0", function() {
 
     afterEach(function() {
       tearDown();
+    });
+
+    it ("Should call postMessage_ method when setting custom device data", function() {
+      var expected_data = { msg: "Pen Apple Pi" };
+      var expected_params = { action: "set", key: "custom", value: expected_data };
+      airconsole.devices[0].location = LOCATION;
+      spyOn(AirConsole, 'postMessage_');
+      airconsole.setCustomDeviceState(expected_data);
+      // Check data
+      var actual_data = airconsole.getCustomDeviceState();
+      expect(actual_data).toEqual(expected_data);
+      //
+      expect(AirConsole.postMessage_).toHaveBeenCalledWith(expected_params);
+    });
+
+    it ("Should call postMessage_ method when setting custom device state property", function() {
+      var expected_data = {
+        prev_data: "true",
+        msg: "fruits"
+      };
+      airconsole.device_id = DEVICE_ID;
+      // Prefill data
+      var prev_data = { prev_data: "true" };
+      airconsole.devices[DEVICE_ID]["custom"] = prev_data;
+      // Check prefilled data
+      var actual_data = airconsole.getCustomDeviceState(DEVICE_ID);
+      expect(actual_data).toEqual(prev_data);
+      //
+      var expected_params = { action: "set", key: "custom", value: expected_data };
+      spyOn(AirConsole, 'postMessage_');
+      airconsole.setCustomDeviceStateProperty("msg", "fruits");
+      expect(AirConsole.postMessage_).toHaveBeenCalledWith(expected_params);
+    });
+
+    it ("Should call custom device state change when a device changes custom data", function() {
+      spyOn(airconsole, 'onCustomDeviceStateChange');
+      var expected_data = { francois: true };
+      dispatchCustomMessageEvent({
+        action: "update",
+        device_id: DEVICE_ID,
+        device_data: {
+          location: LOCATION,
+          _is_custom_update: true,
+          custom: expected_data
+        }
+      });
+      expect(airconsole.onCustomDeviceStateChange).toHaveBeenCalledWith(DEVICE_ID, expected_data);
     });
 
   });
@@ -357,6 +417,20 @@ describe("AirConsole 1.6.0", function() {
       spyOn(AirConsole, 'postMessage_');
       airconsole.requestEmailAddress();
       expect(AirConsole.postMessage_).toHaveBeenCalledWith(expected_data);
+    });
+
+
+    it ("Should call profile change handler when device changes profile", function() {
+      spyOn(airconsole, 'onDeviceProfileChange');
+      dispatchCustomMessageEvent({
+        action: "update",
+        device_id: DEVICE_ID,
+        device_data: {
+          location: LOCATION,
+          _is_profile_update: true
+        }
+      });
+      expect(airconsole.onDeviceProfileChange).toHaveBeenCalledWith(DEVICE_ID);
     });
 
   });
