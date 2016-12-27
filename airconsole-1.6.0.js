@@ -989,14 +989,6 @@ AirConsole.prototype.onPostMessage_ = function(event) {
           me.onDeviceProfileChange(data.device_id);
         }
       }
-      if (data._is_ad_update) {
-        if (data.ad.show != undefined) {
-          me.onAdShow();
-        }
-        if (data.ad.complete != undefined) {
-          me.onAdComplete(data.ad.complete);
-        }
-      }
     }
   } else if (data.action == "ready") {
     me.device_id = data.device_id;
