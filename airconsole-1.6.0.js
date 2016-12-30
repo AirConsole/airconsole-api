@@ -524,6 +524,14 @@ AirConsole.prototype.convertDeviceIdToPlayerNumber = function(device_id) {
  */
 AirConsole.prototype.onDeviceMotion = function(data) {};
 
+/**
+ * Vibrates the device for a specific amount of time. Only works for controllers.
+ * Note: iOS ignores the specified time and vibrates for a pre-set amount of time.
+ * @param {Number} time - Milliseconds to vibrate the device
+ */
+AirConsole.prototype.vibrate = function(time) {
+  this.set_("vibrate", time);
+};
 
 /** ------------------------------------------------------------------------ *
  * @chapter                          ADS                                     *
