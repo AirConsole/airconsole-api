@@ -195,7 +195,12 @@ describe("AirConsole 1.6.0", function() {
     it ("Should call onReady", function() {
       spyOn(airconsole, 'onReady');
       spyOn(airconsole, 'onConnect');
+      spyOn(airconsole, 'onCustomDeviceStateChange');
       var device_data = airconsole.devices[DEVICE_ID];
+      var custom_data = {
+        "somekey": "somevalue"
+      };
+      device_data.custom = custom_data;
       dispatchCustomMessageEvent({
         action: "ready",
         code: 1237,
@@ -207,6 +212,7 @@ describe("AirConsole 1.6.0", function() {
       });
       expect(airconsole.onReady).toHaveBeenCalledWith(1237);
       expect(airconsole.onConnect).toHaveBeenCalledWith(DEVICE_ID);
+      expect(airconsole.onCustomDeviceStateChange).toHaveBeenCalledWith(DEVICE_ID, custom_data);
     });
 
   });
