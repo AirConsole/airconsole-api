@@ -609,34 +609,20 @@ describe("AirConsole 1.6.0", function() {
       expect(AirConsole.postMessage_).toHaveBeenCalledWith(expected_data);
     });
 
-    it ("Should call ad-handler on post message update", function() {
+    it ("Should call ad-handler on post message 'ad'", function() {
       spyOn(airconsole, 'onAdShow');
       dispatchCustomMessageEvent({
-        action: "update",
-        ad: {
-          show: "www.url.test"
-        },
-        _is_ad_update: true,
-        device_id: DEVICE_ID,
-        device_data: {
-          location: LOCATION
-        }
+        action: "ad",
+        complete: undefined
       });
       expect(airconsole.onAdShow).toHaveBeenCalledWith();
     });
 
-    it ("Should call ad-complete-handler on post message update", function() {
+    it ("Should call ad-complete-handler on post message 'ad'", function() {
       spyOn(airconsole, 'onAdComplete');
       dispatchCustomMessageEvent({
-        action: "update",
-        ad: {
-          complete: true
-        },
-        _is_ad_update: true,
-        device_id: DEVICE_ID,
-        device_data: {
-          location: LOCATION
-        }
+        action: "ad",
+        complete: true
       });
       expect(airconsole.onAdComplete).toHaveBeenCalledWith(true);
     });
