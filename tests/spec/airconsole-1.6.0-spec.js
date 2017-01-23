@@ -644,7 +644,7 @@ describe("AirConsole 1.6.0", function() {
       tearDown();
     });
 
-    it ("Should call onPremium when a premium device joins or updates", function() {
+    it ("Should call onPremium when a device updates to premium", function() {
       spyOn(airconsole, 'onPremium');
       dispatchCustomMessageEvent({
         action: "update",
@@ -655,10 +655,29 @@ describe("AirConsole 1.6.0", function() {
           premium: true
         }
       });
+      expect(airconsole.onPremium).toHaveBeenCalledTimes(1);
       expect(airconsole.onPremium).toHaveBeenCalledWith(DEVICE_ID);
     });
 
-    it ("Should not call onPremium when a non premium device joins or updates", function() {
+    it ("Should call onPremium when a premium device joins", function() {
+      spyOn(airconsole, 'onPremium');
+      spyOn(airconsole, 'onConnect');
+      airconsole.devices[DEVICE_ID].location = "location_before";
+      dispatchCustomMessageEvent({
+        action: "update",
+        device_id: DEVICE_ID,
+        device_data: {
+          location: LOCATION,
+          _is_premium_update: false, // FALSE!
+          premium: true
+        }
+      });
+      expect(airconsole.onPremium).toHaveBeenCalledTimes(1);
+      expect(airconsole.onPremium).toHaveBeenCalledWith(DEVICE_ID);
+      expect(airconsole.onConnect).toHaveBeenCalledWith(DEVICE_ID);
+    });
+
+    it ("Should not call onPremium when a non premium device updates", function() {
       spyOn(airconsole, 'onPremium');
       dispatchCustomMessageEvent({
         action: "update",
@@ -669,7 +688,22 @@ describe("AirConsole 1.6.0", function() {
           premium: false
         }
       });
-      expect(airconsole.onPremium).not.toHaveBeenCalledWith(DEVICE_ID);
+      expect(airconsole.onPremium).not.toHaveBeenCalled();
+    });
+
+    it ("Should not call onPremium when a non premium device joins", function() {
+      spyOn(airconsole, 'onPremium');
+      airconsole.devices[DEVICE_ID].location = "location_before";
+      dispatchCustomMessageEvent({
+        action: "update",
+        device_id: DEVICE_ID,
+        device_data: {
+          location: LOCATION,
+          //_is_premium_update: true,
+          premium: false
+        }
+      });
+      expect(airconsole.onPremium).not.toHaveBeenCalled();
     });
 
     it ("Should call onPremium when device calls onReady", function() {
@@ -678,6 +712,13 @@ describe("AirConsole 1.6.0", function() {
       spyOn(airconsole, 'onPremium');
       var device_data = airconsole.devices[DEVICE_ID];
       device_data.premium = true;
+
+      var device_data_4 = {
+        uid: 'def4',
+        location: LOCATION,
+        premium: false
+      };
+      airconsole.devices[4] = device_data_4;
       //
       dispatchCustomMessageEvent({
         action: "ready",
@@ -686,11 +727,13 @@ describe("AirConsole 1.6.0", function() {
         device_data: {
           location: LOCATION
         },
-        devices: [{}, undefined, device_data]
+        devices: [{}, undefined, device_data, undefined, device_data_4]
       });
       expect(airconsole.onReady).toHaveBeenCalledWith(1237);
       expect(airconsole.onConnect).toHaveBeenCalledWith(DEVICE_ID);
+      expect(airconsole.onConnect).toHaveBeenCalledTimes(2);
       expect(airconsole.onPremium).toHaveBeenCalledWith(DEVICE_ID);
+      expect(airconsole.onPremium).toHaveBeenCalledTimes(1);
     });
 
     it ("Should get all premium device ids correctly", function() {
