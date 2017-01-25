@@ -568,7 +568,7 @@ describe("AirConsole 1.6.0", function() {
 
   /**
     ======================================================================================
-    TEST DEVICE MOTION
+    TEST CTRL INPUTS
   */
 
   describe("Controller Inputs", function() {
@@ -589,6 +589,14 @@ describe("AirConsole 1.6.0", function() {
        data: custom_data,
       });
       expect(airconsole.onDeviceMotion).toHaveBeenCalledWith(custom_data);
+    });
+
+    it ("Should handle action vibrate", function() {
+      var time = 100;
+      spyOn(AirConsole, 'postMessage_');
+      airconsole.vibrate(time);
+      var expected_data = { action: "set", key: "vibrate", value: time };
+      expect(AirConsole.postMessage_).toHaveBeenCalledWith(expected_data);
     });
 
   });
