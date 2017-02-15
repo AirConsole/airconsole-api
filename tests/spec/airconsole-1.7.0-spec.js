@@ -1,9 +1,8 @@
-describe("AirConsole 1.6.0", function() {
+describe("AirConsole 1.7.0", function() {
+  var overwrites = {};
 
   // Overwrite functions
-  AirConsole.postMessage_ = function(data) {
-    //console.info("Calling Mock AirConsole.postMessage_", data);
-  };
+  AirConsole.postMessage_ = function(data) {};
 
   function initAirConsole() {
     //
@@ -49,7 +48,7 @@ describe("AirConsole 1.6.0", function() {
       tearDown();
     });
 
-    testSetup("1.6.0");
+    testSetup("1.7.0");
 
   });
 
@@ -58,7 +57,7 @@ describe("AirConsole 1.6.0", function() {
     TEST CONNECTIVTY
   */
 
-  describe("Connectiviy", function() {
+  describe("Connectivity", function() {
 
     beforeEach(function() {
       initAirConsole();
@@ -68,7 +67,23 @@ describe("AirConsole 1.6.0", function() {
       tearDown();
     });
 
-    testConnectivity();
+    overwrites["Should return the correct master device id"] = function() {
+      var expected_id = 5;
+      airconsole.devices = [];
+      airconsole.devices[AirConsole.SCREEN] = {"device": "screen"};
+      airconsole.devices[3] = { "device": "unicorn", location: LOCATION };
+      airconsole.devices[expected_id] = {
+        "device": "hero",
+        location: LOCATION,
+        premium: true
+      };
+      airconsole.devices[6] = { "device": "other hero", location: LOCATION, premium: true };
+      //
+      var actual_id = airconsole.getMasterControllerDeviceId();
+      expect(actual_id).toEqual(expected_id);
+    };
+
+    testConnectivity(overwrites);
 
   });
 
