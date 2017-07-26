@@ -1026,21 +1026,6 @@ AirConsole.prototype.setupDocument_ = function() {
   document.addEventListener('touchmove', function (e) {
     e.preventDefault();
   });
-  document.addEventListener('touchstart', function(e) {
-    var els = ['DIV', 'IMG', 'SPAN', 'BODY', 'TD', 'TH', 'CANVAS', 'P', 'B',
-      'CENTER', 'EM', 'FONT', 'H1', 'H2', 'H3', 'H4',
-      'H5', 'H6', 'HR', 'I', 'LI', 'PRE', 'SMALL', 'STRONG', 'U'];
-    if (els.indexOf(e.target.nodeName) != -1) {
-      var parent = e.target.parentNode;
-      while (parent && parent.nodeName != "BODY") {
-        if (parent.nodeName == "A") {
-          return;
-        }
-        parent = parent.parentNode;
-      }
-      e.preventDefault();
-    }
-  });
   if (navigator.userAgent.indexOf("Windows Phone ") != -1 &&
       navigator.userAgent.indexOf("Edge/") != -1) {
     document.oncontextmenu = document.body.oncontextmenu = function () {
