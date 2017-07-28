@@ -666,6 +666,8 @@ AirConsole.prototype.init_ = function(opts) {
             me.server_time_offset = data.server_time_offset || 0;
           }
           me.onReady(data.code);
+          var client = me.devices[data.device_id].client;
+          me.bindTouchFix_(client);
           var game_url = me.getGameUrl_(document.location.href);
           for (var i = 0; i < me.devices.length; ++i) {
             if (i != me.getDeviceId() && me.devices[i] &&
@@ -822,6 +824,37 @@ AirConsole.prototype.setupDocument_ = function() {
       return false;
     }
   }
+};
+
+/**
+ * Fixes delay in touchstart by calling preventDefault.
+ */
+AirConsole.prototype.bindTouchFix_ = function(client) {
+  if (!navigator.userAgent.match(/Android/)) {
+    return;
+  }
+  document.addEventListener('touchstart', function(e) {
+    var els = ['DIV', 'IMG', 'SPAN', 'BODY', 'TD', 'TH', 'CANVAS', 'P', 'B',
+      'CENTER', 'EM', 'FONT', 'H1', 'H2', 'H3', 'H4',
+      'H5', 'H6', 'HR', 'I', 'LI', 'PRE', 'SMALL', 'STRONG', 'U'];
+    if (els.indexOf(e.target.nodeName) != -1) {
+      // Check if one of the parent elements is a link
+      var parent = e.target.parentNode;
+      while (parent && parent.nodeName != "BODY") {
+        if (parent.nodeName == "A") {
+          return;
+        }
+        parent = parent.parentNode;
+      }
+      e.preventDefault();
+      // preventDefault cancels click events in crosswalk, so we trigger it ourselves
+      if (client && client.app === "intel-xdk") {
+        setTimeout(function() {
+          e.target.click();
+        }, 200);
+      }
+    }
+  });
 };
 
 window.addEventListener('error', function(e) {
