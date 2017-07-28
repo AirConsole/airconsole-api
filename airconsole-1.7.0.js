@@ -1185,8 +1185,8 @@ AirConsole.prototype.bindTouchFix_ = function(client) {
     var els = ['DIV', 'IMG', 'SPAN', 'BODY', 'TD', 'TH', 'CANVAS', 'P', 'B',
       'CENTER', 'EM', 'FONT', 'H1', 'H2', 'H3', 'H4',
       'H5', 'H6', 'HR', 'I', 'LI', 'PRE', 'SMALL', 'STRONG', 'U'];
-    // Check if one of the parent elements is a link
     if (els.indexOf(e.target.nodeName) != -1) {
+      // Check if one of the parent elements is a link
       var parent = e.target.parentNode;
       while (parent && parent.nodeName != "BODY") {
         if (parent.nodeName == "A") {
