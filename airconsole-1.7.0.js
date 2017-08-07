@@ -1188,7 +1188,7 @@ AirConsole.prototype.bindTouchFix_ = function(client) {
 
   // Some older chrome version break with our fix
   if (!is_app && ua.indexOf("Chrome") !== -1) {
-    var chrome_version = ua.match(/Chrome\/\d\d/);
+    var chrome_version = ua.match(/Chrome\/\d+/);
     if (chrome_version && chrome_version[0]) {
       var version = parseInt(chrome_version[0].replace("Chrome/", ""), 10);
       // Version 59 handles the fix right
