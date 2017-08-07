@@ -1040,9 +1040,26 @@ AirConsole.prototype.setupDocument_ = function() {
  * Fixes delay in touchstart by calling preventDefault.
  */
 AirConsole.prototype.bindTouchFix_ = function(client) {
-  if (!navigator.userAgent.match(/Android/)) {
+  var is_app = client && client.app === "intel-xdk";
+  var ua = navigator.userAgent;
+
+  // This fix is only necessary for Android devices
+  if (!ua.match(/Android/)) {
     return;
   }
+
+  // Some older chrome version break with our fix
+  if (!is_app && ua.indexOf("Chrome") !== -1) {
+    var chrome_version = ua.match(/Chrome\/\d+/);
+    if (chrome_version && chrome_version[0]) {
+      var version = parseInt(chrome_version[0].replace("Chrome/", ""), 10);
+      // Version 59 handles the fix right
+      if (version < 59) {
+        return;
+      }
+    }
+  }
+
   document.addEventListener('touchstart', function(e) {
     var els = ['DIV', 'IMG', 'SPAN', 'BODY', 'TD', 'TH', 'CANVAS', 'P', 'B',
       'CENTER', 'EM', 'FONT', 'H1', 'H2', 'H3', 'H4',
@@ -1058,7 +1075,7 @@ AirConsole.prototype.bindTouchFix_ = function(client) {
       }
       e.preventDefault();
       // preventDefault cancels click events in crosswalk, so we trigger it ourselves
-      if (client && client.app === "intel-xdk") {
+      if (is_app) {
         setTimeout(function() {
           e.target.click();
         }, 200);
