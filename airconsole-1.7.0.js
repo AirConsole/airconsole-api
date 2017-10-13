@@ -639,7 +639,7 @@ AirConsole.prototype.navigateHome = function() {
 };
 
 /**
- * Request that all devices load a game by url.
+ * Request that all devices load a game by url or game id.
  * @param {string} url - The base url of the game to navigate to
  *                       (excluding screen.html or controller.html).
  *                       Instead of a url you may also pass a game id.
@@ -654,14 +654,15 @@ AirConsole.prototype.navigateHome = function() {
  */
 AirConsole.prototype.navigateTo = function(url, parameters) {
   if (url.indexOf(".") == 0) {
-    var full_path = document.location.href.split("#")[0].split("/")
+    var current_location = this.getLocationUrl_();
+    var full_path = current_location.split("#")[0].split("/");
     full_path.pop();
     var relative = url.split("/");
     for (var i = 0; i < relative.length; ++i) {
       if (relative[i] == "..") {
         full_path.pop();
       } else if (relative[i] != "." && relative[i] != "") {
-        full_path.push(relative[i])
+        full_path.push(relative[i]);
       }
     }
     url = full_path.join("/") + "/";
@@ -1213,6 +1214,14 @@ AirConsole.prototype.setupDocument_ = function() {
       return false;
     }
   }
+};
+
+/**
+ * Returns the location url
+ * @return {string}
+ */
+AirConsole.prototype.getLocationUrl_ = function() {
+  return document.location.href;
 };
 
 /**

@@ -237,6 +237,51 @@ describe("AirConsole 1.7.0", function() {
 
     testNavigation();
 
+    it ("Should call postMessage_ method when using navigateTo by game_id", function() {
+      var url = 'com.airconsole.games.test';
+      var expected_data = { action: "set", key: "home", value: url };
+      airconsole.device_id = 1;
+      spyOn(AirConsole, 'postMessage_');
+      airconsole.navigateTo(url);
+      expect(AirConsole.postMessage_).toHaveBeenCalledWith(expected_data);
+    });
+
+    it ("Should call postMessage_ method when using navigateTo by navigating relatively", function() {
+      spyOn(AirConsole, 'postMessage_');
+      airconsole.device_id = 1;
+
+      var root_url = "http://storage.airconsole.com/root/";
+      var mock_url = root_url + "one/two/three/";
+      spyOn(airconsole, 'getLocationUrl_').and.returnValue(mock_url);
+
+      // Navigate to parent
+      var url = '..';
+      var expected_root_url = root_url + "one/two/";
+      var expected_root_data = { action: "set", key: "home", value: expected_root_url };
+      airconsole.navigateTo(url);
+      expect(AirConsole.postMessage_).toHaveBeenCalledWith(expected_root_data);
+
+      mock_url = root_url + "one/";
+      var expected_root_data = { action: "set", key: "home", value: expected_root_url };
+      airconsole.navigateTo(url);
+      expect(AirConsole.postMessage_).toHaveBeenCalledWith(expected_root_data);
+
+      mock_url = root_url;
+      var expected_root_data = { action: "set", key: "home", value: expected_root_url };
+      airconsole.navigateTo(url);
+      expect(AirConsole.postMessage_).toHaveBeenCalledWith(expected_root_data);
+
+      // Navigate to a subdir
+      var url = "./subdir";
+      mock_url = root_url;
+      console.log(root_url)
+      var expected_root_url = root_url + "subdir/";
+      var expected_root_data = { action: "set", key: "home", value: expected_root_url };
+      airconsole.navigateTo(url);
+      expect(AirConsole.postMessage_).toHaveBeenCalledWith(expected_root_data);
+
+    });
+
   });
 
   /**
