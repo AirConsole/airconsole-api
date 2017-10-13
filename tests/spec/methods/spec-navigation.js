@@ -1,5 +1,6 @@
 function testNavigation() {
-  it ("Should call postMessage_ method when using navigateTo", function() {
+
+  it ("Should call postMessage_ method when using navigateTo by url", function() {
     var url = 'http://airconsole.com';
     var expected_data = { action: "set", key: "home", value: url };
     airconsole.device_id = 1;
