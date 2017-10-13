@@ -256,30 +256,60 @@ describe("AirConsole 1.7.0", function() {
 
       // Navigate to parent
       var url = '..';
-      var expected_root_url = root_url + "one/two/";
-      var expected_root_data = { action: "set", key: "home", value: expected_root_url };
+      var expected_url = root_url + "one/two/";
+      var expected_root_data = { action: "set", key: "home", value: expected_url };
       airconsole.navigateTo(url);
       expect(AirConsole.postMessage_).toHaveBeenCalledWith(expected_root_data);
 
-      mock_url = root_url + "one/";
-      var expected_root_data = { action: "set", key: "home", value: expected_root_url };
+      airconsole.getLocationUrl_.and.returnValue(expected_url);
+      expected_url = root_url + "one/";
+      var expected_root_data = { action: "set", key: "home", value: expected_url };
       airconsole.navigateTo(url);
       expect(AirConsole.postMessage_).toHaveBeenCalledWith(expected_root_data);
 
-      mock_url = root_url;
-      var expected_root_data = { action: "set", key: "home", value: expected_root_url };
+      airconsole.getLocationUrl_.and.returnValue(expected_url);
+      expected_url = root_url;
+      var expected_root_data = { action: "set", key: "home", value: expected_url };
+      airconsole.navigateTo(url);
+      expect(AirConsole.postMessage_).toHaveBeenCalledWith(expected_root_data);
+
+      // Already at root dir
+      airconsole.getLocationUrl_.and.returnValue(expected_url);
+      expected_url = root_url;
+      var expected_root_data = { action: "set", key: "home", value: expected_url };
+      airconsole.navigateTo(url);
+      expect(AirConsole.postMessage_).toHaveBeenCalledWith(expected_root_data);
+
+      airconsole.getLocationUrl_.and.returnValue(expected_url);
+      expected_url = root_url;
+      var expected_root_data = { action: "set", key: "home", value: expected_url };
       airconsole.navigateTo(url);
       expect(AirConsole.postMessage_).toHaveBeenCalledWith(expected_root_data);
 
       // Navigate to a subdir
       var url = "./subdir";
-      mock_url = root_url;
-      console.log(root_url)
-      var expected_root_url = root_url + "subdir/";
-      var expected_root_data = { action: "set", key: "home", value: expected_root_url };
+      airconsole.getLocationUrl_.and.returnValue(root_url);
+      expected_url = root_url + "subdir/";
+      var expected_root_data = { action: "set", key: "home", value: expected_url };
       airconsole.navigateTo(url);
       expect(AirConsole.postMessage_).toHaveBeenCalledWith(expected_root_data);
 
+      var url = "./second";
+      airconsole.getLocationUrl_.and.returnValue(expected_url + "#%7B%22my_value%22%3Atrue%7D");
+      expected_url = root_url + "subdir/second/";
+      var expected_root_data = { action: "set", key: "home", value: expected_url };
+      airconsole.navigateTo(url);
+      expect(AirConsole.postMessage_).toHaveBeenCalledWith(expected_root_data);
+
+      // Navigate with Params
+      var url = "./third";
+      airconsole.getLocationUrl_.and.returnValue(expected_url);
+      var params = { my_value: true };
+      var expected_params = encodeURIComponent(JSON.stringify(params));
+      expected_url = root_url + "subdir/second/third/#" + expected_params;
+      var expected_root_data = { action: "set", key: "home", value: expected_url };
+      airconsole.navigateTo(url, params);
+      expect(AirConsole.postMessage_).toHaveBeenCalledWith(expected_root_data);
     });
 
   });
