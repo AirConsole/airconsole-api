@@ -642,9 +642,50 @@ AirConsole.prototype.navigateHome = function() {
  * Request that all devices load a game by url.
  * @param {string} url - The base url of the game to navigate to
  *                       (excluding screen.html or controller.html).
+ *                       Instead of a url you may also pass a game id.
+ *                       You can also navigate relatively to your current
+ *                       game directory: To navigate to a subdirectory,
+ *                       pass "./DIRECTORY_NAME". To navigate to a parent
+ *                       directory pass "..".
+ * @param {object} parameters - You can pass parameters to the game that gets
+ *                              loaded. Any jsonizable object is fine.
+ *                              The parameters will be appended to the url
+ *                              using a url hash.
  */
-AirConsole.prototype.navigateTo = function(url) {
+AirConsole.prototype.navigateTo = function(url, parameters) {
+  if (url.indexOf(".") == 0) {
+    var full_path = document.location.href.split("#")[0].split("/")
+    full_path.pop();
+    var relative = url.split("/");
+    for (var i = 0; i < relative.length; ++i) {
+      if (relative[i] == "..") {
+        full_path.pop();
+      } else if (relative[i] != "." && relative[i] != "") {
+        full_path.push(relative[i])
+      }
+    }
+    url = full_path.join("/") + "/";
+  }
+  if (parameters) {
+    url += "#" + encodeURIComponent(JSON.stringify(parameters));
+  }
   this.set_("home", url);
+};
+
+/**
+ * Get the parameters in the loaded game that were passed to navigateTo.
+ * @returns {*}
+ */
+AirConsole.prototype.getNavigateParameters = function() {
+  if (this.navigate_parameters_cache_) {
+    return this.navigate_parameters_cache_;
+  }
+  if (document.location.hash.length > 1) {
+    var result = JSON.parse(decodeURIComponent(
+        document.location.hash.substr(1)));
+    this.navigate_parameters_cache_ = result;
+    return result;
+  }
 };
 
 /**
