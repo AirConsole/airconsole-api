@@ -1217,8 +1217,9 @@ AirConsole.prototype.setupDocument_ = function() {
 };
 
 /**
- * Returns the location url
+ * Returns the current location url
  * @return {string}
+ * @private
  */
 AirConsole.prototype.getLocationUrl_ = function() {
   return document.location.href;
@@ -1226,6 +1227,8 @@ AirConsole.prototype.getLocationUrl_ = function() {
 
 /**
  * Fixes delay in touchstart by calling preventDefault.
+ * @param {Object} client - The client object
+ * @private
  */
 AirConsole.prototype.bindTouchFix_ = function(client) {
   var is_app = client && client.app === "intel-xdk";
