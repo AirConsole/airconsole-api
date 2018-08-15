@@ -154,7 +154,7 @@ AirConsole.prototype.getMasterControllerDeviceId = function() {
  */
 AirConsole.prototype.getControllerDeviceIds = function() {
   var result = [];
-  var game_url = this.getGameUrl_(document.location.href);
+  var game_url = this.getGameUrl_(this.getLocationUrl_());
   for (var i = AirConsole.SCREEN + 1; i < this.devices.length; ++i) {
     if (this.devices[i] &&
         this.getGameUrl_(this.devices[i].location) == game_url) {
@@ -235,7 +235,7 @@ AirConsole.prototype.getCustomDeviceState = function(device_id) {
     device_id = this.device_id;
   }
   var device_data = this.devices[device_id];
-  if (device_data && this.getGameUrl_(document.location.href) ==
+  if (device_data && this.getGameUrl_(this.getLocationUrl_()) ==
       this.getGameUrl_(device_data.location)) {
     return device_data["custom"];
   }
@@ -968,16 +968,16 @@ AirConsole.prototype.init_ = function(opts) {
   window.addEventListener("message", function(event) {
     me.onPostMessage_(event);
   }, false);
-  this.set_("orientation", opts.orientation);
+  me.set_("orientation", opts.orientation);
   if (opts.setup_document !== false) {
-    this.setupDocument_();
+    me.setupDocument_();
   }
   AirConsole.postMessage_({
                             action: "ready",
                             version: me.version,
                             device_motion: opts.device_motion,
                             synchronize_time: opts.synchronize_time,
-                            location: document.location.href
+                            location: me.getLocationUrl_()
                           });
 };
 
@@ -989,7 +989,7 @@ AirConsole.prototype.init_ = function(opts) {
 AirConsole.prototype.onPostMessage_ = function(event) {
   var me = this;
   var data = event.data;
-  var game_url = me.getGameUrl_(document.location.href);
+  var game_url = me.getGameUrl_(me.getLocationUrl_());
   if (data.action == "device_motion") {
     me.onDeviceMotion(data.data);
   } else if (data.action == "message") {
@@ -1053,7 +1053,7 @@ AirConsole.prototype.onPostMessage_ = function(event) {
     me.onReady(data.code);
     var client = me.devices[data.device_id].client;
     me.bindTouchFix_(client);
-    var game_url = me.getGameUrl_(document.location.href);
+    var game_url = me.getGameUrl_(me.getLocationUrl_());
     for (var i = 0; i < me.devices.length; ++i) {
       if (me.devices[i] &&
           me.getGameUrl_(me.devices[i].location) == game_url) {
