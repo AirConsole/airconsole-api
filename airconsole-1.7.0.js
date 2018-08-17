@@ -1102,6 +1102,25 @@ AirConsole.prototype.onPostMessage_ = function(event) {
   } else if (data.action == "premium") {
     me.devices[data.device_id].premium = true;
     me.onPremium(data.device_id);
+  } else if (data.action == "debug") {
+    if (data.debug == "fps") {
+      if (window.requestAnimationFrame) {
+        var second_animation_frame = function(start) {
+          window.requestAnimationFrame(function(end) {
+            if (start != end) {
+              var delta = end - start;
+              AirConsole.postMessage_({
+                                        "action": "debug",
+                                        "fps": (1000 / delta)
+                                      });
+            } else {
+              second_animation_frame(start);
+            }
+          });
+        };
+        window.requestAnimationFrame(second_animation_frame);
+      }
+    }
   }
 };
 
