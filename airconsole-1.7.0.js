@@ -1050,9 +1050,9 @@ AirConsole.prototype.onPostMessage_ = function(event) {
     if (me.server_time_offset !== false) {
       me.server_time_offset = data.server_time_offset || 0;
     }
-    me.onReady(data.code);
     var client = me.devices[data.device_id].client;
     me.bindTouchFix_(client);
+    me.onReady(data.code);
     var game_url = me.getGameUrl_(me.getLocationUrl_());
     for (var i = 0; i < me.devices.length; ++i) {
       if (me.devices[i] &&
