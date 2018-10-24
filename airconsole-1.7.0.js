@@ -1289,7 +1289,7 @@ AirConsole.prototype.bindTouchFix_ = function(client) {
         }
       }
     });
-  } else if (/iPad|iPhone|iPod/.test(ua) && !window.MSStream && is_app) {
+  } else if (/iPad|iPhone|iPod/.test(ua) && !window.MSStream) {
     var addTouchMoveStopToNodes = function(nodes) {
       for (var i = 0; i < nodes.length; ++i) {
         nodes[i].addEventListener('touchmove', function(e) {
