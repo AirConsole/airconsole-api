@@ -1245,7 +1245,7 @@ AirConsole.prototype.getLocationUrl_ = function() {
 };
 
 /**
- * Fixes delay in touchstart for Android and bounce scrolling issues for iOS.
+ * Fixes delay in touchstart by calling preventDefault.
  * @param {Object} client - The client object
  * @private
  */
@@ -1253,62 +1253,45 @@ AirConsole.prototype.bindTouchFix_ = function(client) {
   var is_app = client && client.app === "intel-xdk";
   var ua = navigator.userAgent;
 
-  if (ua.match(/Android/)) {
-    // Some older chrome version break with our fix
-    if (!is_app && ua.indexOf("Chrome") !== -1) {
-      var chrome_version = ua.match(/Chrome\/\d+/);
-      if (chrome_version && chrome_version[0]) {
-        var version = parseInt(chrome_version[0].replace("Chrome/", ""), 10);
-        // Version 59 handles the fix right
-        if (version < 59) {
-          return;
-        }
-      }
-    }
+  // This fix is only necessary for Android devices
+  if (!ua.match(/Android/)) {
+    return;
+  }
 
-    document.addEventListener('touchstart', function (e) {
-      var els = ['DIV', 'IMG', 'SPAN', 'BODY', 'TD', 'TH', 'CANVAS', 'P', 'B',
-        'CENTER', 'EM', 'FONT', 'H1', 'H2', 'H3', 'H4',
-        'H5', 'H6', 'HR', 'I', 'LI', 'PRE', 'SMALL', 'STRONG', 'U'];
-      if (els.indexOf(e.target.nodeName) != -1) {
-        // Check if one of the parent elements is a link
-        var parent = e.target.parentNode;
-        while (parent && parent.nodeName != "BODY") {
-          if (parent.nodeName == "A") {
-            return;
-          }
-          parent = parent.parentNode;
-        }
-        e.preventDefault();
-        // preventDefault cancels click events in crosswalk,
-        // so we trigger it ourselves
-        if (is_app) {
-          setTimeout(function () {
-            e.target.click();
-          }, 200);
-        }
+  // Some older chrome version break with our fix
+  if (!is_app && ua.indexOf("Chrome") !== -1) {
+    var chrome_version = ua.match(/Chrome\/\d+/);
+    if (chrome_version && chrome_version[0]) {
+      var version = parseInt(chrome_version[0].replace("Chrome/", ""), 10);
+      // Version 59 handles the fix right
+      if (version < 59) {
+        return;
       }
-    });
-  } else if (/iPad|iPhone|iPod/.test(ua) && !window.MSStream) {
-    var addTouchMoveStopToNodes = function(nodes) {
-      for (var i = 0; i < nodes.length; ++i) {
-        nodes[i].addEventListener('touchmove', function(e) {
-          e.preventDefault()
-        });
-      }
-    }
-    addTouchMoveStopToNodes(document.body.childNodes);
-    if (window.MutationObserver) {
-      var observer = new MutationObserver(function (mutations) {
-        mutations.forEach(function (mutation) {
-          if (mutation.addedNodes) {
-            addTouchMoveStopToNodes(mutation.addedNodes);
-          }
-        });
-      });
-      observer.observe(document.body, {childList: true});
     }
   }
+
+  document.addEventListener('touchstart', function(e) {
+    var els = ['DIV', 'IMG', 'SPAN', 'BODY', 'TD', 'TH', 'CANVAS', 'P', 'B',
+      'CENTER', 'EM', 'FONT', 'H1', 'H2', 'H3', 'H4',
+      'H5', 'H6', 'HR', 'I', 'LI', 'PRE', 'SMALL', 'STRONG', 'U'];
+    if (els.indexOf(e.target.nodeName) != -1) {
+      // Check if one of the parent elements is a link
+      var parent = e.target.parentNode;
+      while (parent && parent.nodeName != "BODY") {
+        if (parent.nodeName == "A") {
+          return;
+        }
+        parent = parent.parentNode;
+      }
+      e.preventDefault();
+      // preventDefault cancels click events in crosswalk, so we trigger it ourselves
+      if (is_app) {
+        setTimeout(function() {
+          e.target.click();
+        }, 200);
+      }
+    }
+  });
 };
 
 window.addEventListener('error', function(e) {
