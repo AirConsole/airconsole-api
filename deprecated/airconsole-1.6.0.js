@@ -1171,51 +1171,35 @@ AirConsole.prototype.setupDocument_ = function() {
 };
 
 /**
- * Fixes delay in touchstart by calling preventDefault.
+ * Fixes delay in touchstart in crosswalk by calling preventDefault.
+ * @param {Object} client - The client object
+ * @private
  */
 AirConsole.prototype.bindTouchFix_ = function(client) {
-  var is_app = client && client.app === "intel-xdk";
-  var ua = navigator.userAgent;
-
-  // This fix is only necessary for Android devices
-  if (!ua.match(/Android/)) {
-    return;
-  }
-
-  // Some older chrome version break with our fix
-  if (!is_app && ua.indexOf("Chrome") !== -1) {
-    var chrome_version = ua.match(/Chrome\/\d+/);
-    if (chrome_version && chrome_version[0]) {
-      var version = parseInt(chrome_version[0].replace("Chrome/", ""), 10);
-      // Version 59 handles the fix right
-      if (version < 59) {
-        return;
-      }
-    }
-  }
-
-  document.addEventListener('touchstart', function(e) {
-    var els = ['DIV', 'IMG', 'SPAN', 'BODY', 'TD', 'TH', 'CANVAS', 'P', 'B',
-      'CENTER', 'EM', 'FONT', 'H1', 'H2', 'H3', 'H4',
-      'H5', 'H6', 'HR', 'I', 'LI', 'PRE', 'SMALL', 'STRONG', 'U'];
-    if (els.indexOf(e.target.nodeName) != -1) {
-      // Check if one of the parent elements is a link
-      var parent = e.target.parentNode;
-      while (parent && parent.nodeName != "BODY") {
-        if (parent.nodeName == "A") {
-          return;
+  // This fix is only necessary for Android Crosswalk
+  if (navigator.userAgent.match(/Android/) &&
+      client && client.app === "intel-xdk" ||
+      client.version <= 2.3) {
+    document.addEventListener('touchstart', function(e) {
+      var els = ['DIV', 'IMG', 'SPAN', 'BODY', 'TD', 'TH', 'CANVAS', 'P', 'B',
+        'CENTER', 'EM', 'FONT', 'H1', 'H2', 'H3', 'H4',
+        'H5', 'H6', 'HR', 'I', 'LI', 'PRE', 'SMALL', 'STRONG', 'U'];
+      if (els.indexOf(e.target.nodeName) != -1) {
+        // Check if one of the parent elements is a link
+        var parent = e.target.parentNode;
+        while (parent && parent.nodeName != "BODY") {
+          if (parent.nodeName == "A") {
+            return;
+          }
+          parent = parent.parentNode;
         }
-        parent = parent.parentNode;
-      }
-      e.preventDefault();
-      // preventDefault cancels click events in crosswalk, so we trigger it ourselves
-      if (is_app) {
+        e.preventDefault();
         setTimeout(function() {
           e.target.click();
         }, 200);
       }
-    }
-  });
+    });
+  }
 };
 
 window.addEventListener('error', function(e) {
