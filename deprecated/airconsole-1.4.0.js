@@ -834,7 +834,7 @@ AirConsole.prototype.setupDocument_ = function() {
 AirConsole.prototype.bindTouchFix_ = function(client) {
   // This fix is only necessary for Android Crosswalk
   if (navigator.userAgent.match(/Android/) &&
-      client && client.app === "intel-xdk" ||
+      client && client.app === "intel-xdk" &&
       client.version <= 2.3) {
     document.addEventListener('touchstart', function(e) {
       var els = ['DIV', 'IMG', 'SPAN', 'BODY', 'TD', 'TH', 'CANVAS', 'P', 'B',
