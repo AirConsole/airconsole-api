@@ -1027,7 +1027,7 @@ AirConsole.prototype.setupDocument_ = function() {
   head.appendChild(style);
   document.addEventListener('touchmove', function (e) {
     e.preventDefault();
-  });
+  }, {passive: false });
   if (navigator.userAgent.indexOf("Windows Phone ") != -1 &&
       navigator.userAgent.indexOf("Edge/") != -1) {
     document.oncontextmenu = document.body.oncontextmenu = function () {
