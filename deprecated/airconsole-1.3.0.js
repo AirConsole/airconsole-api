@@ -774,5 +774,5 @@ AirConsole.prototype.setupDocument_ = function() {
   head.appendChild(style);
   document.addEventListener('touchmove', function (e) {
     e.preventDefault();
-  });
+  }, {passive: false });
 };
