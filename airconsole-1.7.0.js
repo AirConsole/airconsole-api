@@ -712,7 +712,7 @@ AirConsole.prototype.openExternalUrl = function(url) {
  * ------------------------------------------------------------------------- */
 
 /**
- * Shows or hides the default UI.
+ * Shows or hides the default UI. Only has an effect on the screen.
  * @param {boolean} visible - Whether to show or hide the default UI.
  */
 AirConsole.prototype.showDefaultUI = function(visible) {
