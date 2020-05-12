@@ -52,6 +52,8 @@ function AirConsole(opts) {
  * @property {number|undefined} device_motion - If set, onDeviceMotion gets
  *           called every "device_motion" milliseconds with data from the
  *           accelerometer and the gyroscope. Only for controllers.
+ * @property {boolean} translation - If an AirConsole translation file should
+ *           be loaded.
  */
 
 
@@ -949,6 +951,39 @@ AirConsole.prototype.onHighScores = function(high_scores) {};
  *                                  high score.
  */
 
+/** ------------------------------------------------------------------------ *
+ * @chapter                     TRANSLATIONS                                 *
+ * @see       http://developers.airconsole.com/#!/guides/translations        *
+ * ------------------------------------------------------------------------- */
+
+/**
+ * Gets a translation for the users current browser language
+ * @param {String} id - The id of the translation string.
+ * @param {Object|undefined} values - Values that should be used for
+ *                                    replacement in the translated string.
+ *                                    E.g. if a translated string is
+ *                                    "Hi %name%" and values is {"name": "Tom"}
+ *                                    then this will be replaced to "Hi Tom".
+ */
+AirConsole.prototype.getTranslation = function(id, values) {
+  if (this.translations) {
+    if (this.translations[id]) {
+      var result = this.translations[id];
+      if (values && result) {
+        var parts = result.split("%");
+        for (var i = 1; i < parts.length; i += 2) {
+          if (parts[i].length) {
+            parts[i] = values[parts[i]] || "";
+          } else {
+            parts[i] = "%";
+          }
+        }
+        result = parts.join("");
+      }
+      return result;
+    }
+  }
+};
 
 /** ------------------------------------------------------------------------ *
  *                   ONLY PRIVATE FUNCTIONS BELLOW                           *
@@ -977,7 +1012,8 @@ AirConsole.prototype.init_ = function(opts) {
                             version: me.version,
                             device_motion: opts.device_motion,
                             synchronize_time: opts.synchronize_time,
-                            location: me.getLocationUrl_()
+                            location: me.getLocationUrl_(),
+                            translations: opts.translations
                           });
 };
 
@@ -1049,6 +1085,9 @@ AirConsole.prototype.onPostMessage_ = function(event) {
     me.devices = data.devices;
     if (me.server_time_offset !== false) {
       me.server_time_offset = data.server_time_offset || 0;
+    }
+    if (data.translations) {
+      me.translations = data.translations;
     }
     var client = me.devices[data.device_id].client;
     me.bindTouchFix_(client);
