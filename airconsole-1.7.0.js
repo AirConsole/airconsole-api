@@ -957,7 +957,8 @@ AirConsole.prototype.onHighScores = function(high_scores) {};
  * ------------------------------------------------------------------------- */
 
 /**
- * Gets a translation for the users current browser language
+ * Gets a translation for the users current language
+ * See http://developers.airconsole.com/#!/guides/translations
  * @param {String} id - The id of the translation string.
  * @param {Object|undefined} values - Values that should be used for
  *                                    replacement in the translated string.
@@ -982,6 +983,22 @@ AirConsole.prototype.getTranslation = function(id, values) {
       }
       return result;
     }
+  }
+};
+
+/**
+ * Returns the current IETF language tag of a device e.g. "en" or "en-US"
+ * @param {number|undefined} device_id - The device id for which you want the
+ *                                       language. Default is this device.
+ * @return {String} IETF language
+ */
+AirConsole.prototype.getLanguage = function(device_id) {
+  if (device_id === undefined) {
+    device_id = this.device_id;
+  }
+  var device_data = this.devices[device_id];
+  if (device_data) {
+    return device_data.language;
   }
 };
 
