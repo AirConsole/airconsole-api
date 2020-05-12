@@ -1105,6 +1105,11 @@ AirConsole.prototype.onPostMessage_ = function(event) {
     }
     if (data.translations) {
       me.translations = data.translations;
+      var elements = document.querySelectorAll("[data-translation]");
+      for (var i = 0; i < elements.length; ++i) {
+        elements[i].innerHTML = me.getTranslation(elements[i].getAttribute(
+            "data-translation"));
+      }
     }
     var client = me.devices[data.device_id].client;
     me.bindTouchFix_(client);
