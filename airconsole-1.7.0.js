@@ -1030,7 +1030,7 @@ AirConsole.prototype.init_ = function(opts) {
                             device_motion: opts.device_motion,
                             synchronize_time: opts.synchronize_time,
                             location: me.getLocationUrl_(),
-                            translations: opts.translations
+                            translation: opts.translation
                           });
 };
 
