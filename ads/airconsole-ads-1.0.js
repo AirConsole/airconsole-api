@@ -474,6 +474,7 @@ AirConsoleAd.prototype.getPremiumDeviceIds = function() {
  * Can only be called from controllers.
  * If you call getPremium in development mode, the device becomes premium
  * immediately.
+ * @param {boolean|object} config - True by default. Can be an object to pass down additional config.
  */
 AirConsoleAd.prototype.getPremium = function(config) {
   if (config === undefined) {
