@@ -475,8 +475,11 @@ AirConsoleAd.prototype.getPremiumDeviceIds = function() {
  * If you call getPremium in development mode, the device becomes premium
  * immediately.
  */
-AirConsoleAd.prototype.getPremium = function() {
-  this.set_("premium", true);
+AirConsoleAd.prototype.getPremium = function(config) {
+  if (config === undefined) {
+    config = true;
+  }
+  this.set_("premium", config);
 };
 
 /**
