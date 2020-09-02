@@ -15,11 +15,13 @@
 
 /**
  * The configuration for the AirConsoleAd.d constructor.
- * @typedef {object} AirConsoleAd.d~Config
+ * @typedef {object} AirConsoleAd~Config
  * @property {boolean|undefiend} setup_document - Sets up the document so
  *           nothing is selectable, zoom is fixed to 1 and scrolling is
  *           disabled (iOS 8 clients drop out of fullscreen when scrolling).
  *           Default: true
+ * @property {boolean} translation - If an AirConsole translation file should
+ *           be loaded. Default: false
  */
 
 /**
@@ -490,6 +492,51 @@ AirConsoleAd.prototype.getPremium = function(config) {
  */
 AirConsoleAd.prototype.onPremium = function(device_id) {};
 
+/**
+ * Gets a translation for the users current language
+ * See http://developers.airconsole.com/#!/guides/translations
+ * @param {String} id - The id of the translation string.
+ * @param {Object|undefined} values - Values that should be used for
+ *                                    replacement in the translated string.
+ *                                    E.g. if a translated string is
+ *                                    "Hi %name%" and values is {"name": "Tom"}
+ *                                    then this will be replaced to "Hi Tom".
+ */
+AirConsoleAd.prototype.getTranslation = function(id, values) {
+  if (this.translations) {
+    if (this.translations[id]) {
+      var result = this.translations[id];
+      if (values && result) {
+        var parts = result.split("%");
+        for (var i = 1; i < parts.length; i += 2) {
+          if (parts[i].length) {
+            parts[i] = values[parts[i]] || "";
+          } else {
+            parts[i] = "%";
+          }
+        }
+        result = parts.join("");
+      }
+      return result;
+    }
+  }
+};
+
+/**
+ * Returns the current IETF language tag of a device e.g. "en" or "en-US"
+ * @param {number|undefined} device_id - The device id for which you want the
+ *                                       language. Default is this device.
+ * @return {String} IETF language
+ */
+AirConsoleAd.prototype.getLanguage = function(device_id) {
+  if (device_id === undefined) {
+    device_id = this.device_id;
+  }
+  var device_data = this.devices[device_id];
+  if (device_data) {
+    return device_data.language;
+  }
+};
 
 /* --------------------- ONLY PRIVATE FUNCTIONS BELLOW --------------------- */
 
@@ -545,6 +592,14 @@ AirConsoleAd.prototype.init_ = function(opts) {
         } else if (data.action == "adready") {
           me.device_id = data.device_id;
           me.devices = data.devices;
+          if (data.translations) {
+            me.translations = data.translations;
+            var elements = document.querySelectorAll("[data-translation]");
+            for (var i = 0; i < elements.length; ++i) {
+              elements[i].innerHTML = me.getTranslation(elements[i].getAttribute(
+                  "data-translation"));
+            }
+          }
           me.onReady(data.code);
           for (var i = 0; i < me.devices.length; ++i) {
             if (i != me.getDeviceId() && me.devices[i]) {
@@ -585,7 +640,8 @@ AirConsoleAd.prototype.init_ = function(opts) {
   AirConsoleAd.postMessage_({
                       action: "adready",
                       version: me.version,
-                      location: document.location.href
+                      location: document.location.href,
+                      translation: opts.translation
                     });
 }
 
