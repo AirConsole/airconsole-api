@@ -1370,7 +1370,7 @@ window.addEventListener('unhandledrejection', function(e) {
                               "error": {
                                 "stack": stack
                               },
-                              "filename": "unhandledrejection",
+                              "filename": "unhandledrejection:" + e.reason,
                               "lineno": 0
                             }
                           });
