@@ -1356,3 +1356,22 @@ window.addEventListener('error', function(e) {
                             }
                           });
 });
+
+window.addEventListener('unhandledrejection', function(e) {
+  var stack = undefined;
+  if (e.reason && e.reason.stack) {
+    stack = e.reason.stack;
+  }
+  AirConsole.postMessage_({
+                            "action": "jserror",
+                            "url": document.location.href,
+                            "exception": {
+                              "message": "Unhandled promise rejection: " + e.reason,
+                              "error": {
+                                "stack": stack
+                              },
+                              "filename": "unhandledrejection",
+                              "lineno": 0
+                            }
+                          });
+});
