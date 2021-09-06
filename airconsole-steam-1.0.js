@@ -7,17 +7,17 @@
    * ------------------------------------------------------------------------- */
 
    if (!window["AirConsole"]) {
-    console.error("AirConsole object not found. Did you forgot to include the airconsole api (first)?");
+    console.error("AirConsole object not found. Did you forget to include the airconsole api (first)?");
     return;
    }
 
   /**
-    * Queries if the steam user has achieved an achievement. Use the onAchievement() method
+    * Queries if the steam user has achieved an achievement. Use the onSteamAchievement() method
     * to listen for the result object { method "request",
     *  achievement <String>, is_achieved <Boolean> }
     * @param {string} achievement - The achievement name as defined in the Steamworkshop
     */
-  AirConsole.prototype.getAchievement = function(achievement) {
+  AirConsole.prototype.getSteamAchievement = function(achievement) {
     this.set_("steam_api", {
       action: "client_steam_achievement",
       method: "request",
@@ -27,10 +27,10 @@
 
    /**
     * Unlocks an achievement for a steam user. You can listen for its success by using
-    * the onAchievement() method "unlock"
+    * the onSteamAchievement() method "unlock"
     * @param {string} achievement - The achievement name as defined in the Steamworkshop
     */
-  AirConsole.prototype.unlockAchievement = function(achievement) {
+  AirConsole.prototype.unlockSteamAchievement = function(achievement) {
     this.set_("steam_api", {
       action: "client_steam_achievement",
       method: "unlock",
@@ -39,12 +39,12 @@
   };
 
   /**
-   * Gets called when steam achievement relevant data is requested by unlockAchievement or
-   * getAchievement. Overwrite this message to use it.
+   * Gets called when steam achievement relevant data is requested by
+   * unlockSteamAchievement getSteamAchievement. Overwrite this message to use it.
    * @param {object} data - { achievement <String>, method <String>  }
    */
-  AirConsole.prototype.onAchievement = function(data) {
-    console.log("AirConsole::onAchievement", data);
+  AirConsole.prototype.onSteamAchievement = function(data) {
+    console.log("AirConsole::onSteamAchievement", data);
   };
 
   // Overwriting the original onPostMessage_ function
@@ -57,7 +57,7 @@
     if (data) {
       if (data.action === "steam_api") {
         if (data.value && data.value.action === "client_steam_achievement") {
-          me.onAchievement(data.value);
+          me.onSteamAchievement(data.value);
         }
       }
     }
