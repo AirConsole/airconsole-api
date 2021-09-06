@@ -11,13 +11,28 @@
     return;
    }
 
-  /**
-    * Queries if the steam user has achieved an achievement. Use the onSteamAchievement() method
-    * to listen for the result object { method "request",
-    *  achievement <String>, is_achieved <Boolean> }
-    * @param {string} achievement - The achievement name as defined in the Steamworkshop
+   /**
+    * Returns True if we are on the Screen
+    * @return {boolean}
     */
+   AirConsole.prototype.isScreen = function() {
+    var device_id = this.getDeviceId();
+    var device_data = this.devices[this.getDeviceId()];
+    return (device_data && this.getDeviceId() === AirConsole.SCREEN);
+   };
+
+  /**
+   * Queries if the steam user has achieved an achievement. Use the onSteamAchievement() method
+   * to listen for the result object { method "request",
+   *  achievement <String>, is_achieved <Boolean> }
+   * @param {string} achievement - The achievement name as defined in the Steamworkshop
+   */
   AirConsole.prototype.getSteamAchievement = function(achievement) {
+    if (!this.isScreen()) {
+      console.warn("You can call Steam related functions only on the AirConsole Screen");
+      return;
+    };
+
     this.set_("steam_api", {
       action: "client_steam_achievement",
       method: "request",
@@ -31,6 +46,11 @@
     * @param {string} achievement - The achievement name as defined in the Steamworkshop
     */
   AirConsole.prototype.unlockSteamAchievement = function(achievement) {
+    if (!this.isScreen()) {
+      console.warn("You can call Steam related functions only on the AirConsole Screen");
+      return;
+    };
+
     this.set_("steam_api", {
       action: "client_steam_achievement",
       method: "unlock",
