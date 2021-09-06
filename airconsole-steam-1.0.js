@@ -2,10 +2,12 @@
   /** ------------------------------------------------------------------------ *
    * @chapter                     STEAM                                        *
    * @see       http://developers.airconsole.com/#!/guides/steam               *
+   * @description Include this api after the airconsole-api. Use it to         *
+   *              communicate with the Steam client                            *
    * ------------------------------------------------------------------------- */
 
    if (!window["AirConsole"]) {
-    console.error("AirConsole object not found. Did you forgot to include the airconsole api first?");
+    console.error("AirConsole object not found. Did you forgot to include the airconsole api (first)?");
     return;
    }
 
