@@ -20,6 +20,7 @@
  * - User Interface: Changing orientation
  * - Persistent Data: Storing data across sessions
  * - High Scores: Storing and retrieving high scores
+ * - Environment Events: Events triggered by the real world
  *
  * If your prefer an event driven api with .on() .off() and .dispatch()
  * interface instead of sending messages,
