@@ -1000,13 +1000,13 @@ AirConsole.prototype.getLanguage = function(device_id) {
  * ------------------------------------------------------------------------- */
 
 /**
- * Gets called when the game should be paused.
+ * Gets called on the Screen when the game should be paused.
  * @abstract
  */
 AirConsole.prototype.onPause = function() {};
 
 /**
- * Gets called when the game should be resumed.
+ * Gets called on the Screen when the game should be resumed.
  * @abstract
  */
 AirConsole.prototype.onResume = function() {};
