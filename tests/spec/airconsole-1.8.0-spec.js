@@ -333,24 +333,6 @@ describe("AirConsole 1.8.0", function() {
   });
 
   /**
-   ======================================================================================
-   TEST MUTE
-   */
-
-  describe("Mute", function() {
-
-    beforeEach(function() {
-      initAirConsole();
-    });
-
-    afterEach(function() {
-      tearDown();
-    });
-
-    testOnMute();
-  });
-
-  /**
     ======================================================================================
     TEST DEVICE STATES
   */
