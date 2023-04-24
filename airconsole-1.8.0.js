@@ -46,7 +46,7 @@ function AirConsole(opts) {
  * @property {boolean|undefined} synchronize_time - If set to true, you can
  *           call getServerTime() to get the time on the game server.
  *           Default is false.
- * @property {boolean|undefiend} setup_document - Sets up the document so
+ * @property {boolean|undefined} setup_document - Sets up the document so
  *           nothing is selectable, zoom is fixed to 1 and scrolling is
  *           disabled (iOS 8 clients drop out of fullscreen when scrolling).
  *           Default: true
@@ -808,7 +808,7 @@ AirConsole.prototype.onPersistentDataStored = function(uid) {};
 AirConsole.prototype.storeHighScore = function(level_name, level_version,
                                                score, uid, data,
                                                score_string) {
-  if (score == NaN || typeof score != "number") {
+  if (isNaN(score) || typeof score != "number") {
     throw "Score needs to be a number and not NaN!"
   }
   if (!uid) {
@@ -1011,13 +1011,6 @@ AirConsole.prototype.onPause = function() {};
  */
 AirConsole.prototype.onResume = function() {};
 
-/**
- * Gets called when the game should mute / unmute any sound.
- * @param {Boolean} mute - If true mute all sounds, if false resume all sounds
- * @abstract
- */
-AirConsole.prototype.onMute = function(mute) {};
-
 /** ------------------------------------------------------------------------ *
  *                   ONLY PRIVATE FUNCTIONS BELLOW                           *
  * ------------------------------------------------------------------------- */
@@ -1183,8 +1176,6 @@ AirConsole.prototype.onPostMessage_ = function(event) {
     me.onPause();
   } else if (data.action == "resume") {
     me.onResume();
-  } else if (data.action == "mute") {
-    me.onMute(data.mute);
   } else if (data.action == "debug") {
     if (data.debug == "fps") {
       if (window.requestAnimationFrame) {
