@@ -1011,6 +1011,34 @@ AirConsole.prototype.onPause = function() {};
  */
 AirConsole.prototype.onResume = function() {};
 
+/**
+ * Sets the immersive state of the AirConsole game based on the provided options.
+ *
+ * The opts object can have the following properties:
+ *
+ * Sentiments:
+ * - `Ready`: Your turn to do something
+ * - `Negative`: Wrong button pressed
+ * - `Positive`: Right button pressed
+ * - `Sadness`: Loss in the game
+ * - `Happiness`: Victory in the game
+ * - `Anticipation`: Waiting for turn or honking
+ * - `Curious`: All gaming buttons
+ *
+ * System Events:
+ * - `Idle`: No emotions, stops the events
+ * - `SystemLoading`: Game or level is loading
+ * - `EndOfSession`: Disconnecting or leaving the game
+ *
+ * @param {Object} opts - The options object.
+ * @param {string} [opts.sentiment] - The emotional state or event.
+ * @param {string} [opts.color] - The specific color for the event.
+ * @param {number} [opts.intensity] - The specific intensity level for the event.
+ */
+AirConsole.prototype.setImmersiveState = function (opts) {
+  this.set_("immersive_state", opts);
+}
+
 /** ------------------------------------------------------------------------ *
  *                   ONLY PRIVATE FUNCTIONS BELLOW                           *
  * ------------------------------------------------------------------------- */
@@ -1023,13 +1051,14 @@ AirConsole.prototype.onResume = function() {};
 AirConsole.prototype.init_ = function(opts) {
   opts = opts || {};
   var me = this;
-  me.version = "1.8.0";
+  me.version = "1.8.1";
   me.devices = [];
   me.server_time_offset = opts.synchronize_time ? 0 : false;
   window.addEventListener("message", function(event) {
     me.onPostMessage_(event);
   }, false);
   me.set_("orientation", opts.orientation);
+  me.set_("immersive_state", null);
   if (opts.setup_document !== false) {
     me.setupDocument_();
   }
