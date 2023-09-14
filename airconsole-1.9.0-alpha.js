@@ -1,7 +1,7 @@
 /**
  * AirConsole.
  * @copyright 2022 by N-Dream AG, Switzerland. All rights reserved.
- * @version 1.8.0
+ * @version 1.9.0
  *
  * IMPORTANT:
  * @see http://developers.airconsole.com/ for API documentation
@@ -38,7 +38,6 @@
 function AirConsole(opts) {
   this.init_(opts);
 }
-
 /**
  * The configuration for the AirConsole constructor.
  * @typedef {object} AirConsole~Config
@@ -56,8 +55,6 @@ function AirConsole(opts) {
  *           accelerometer and the gyroscope. Only for controllers.
  * @property {boolean} translation - If an AirConsole translation file should
  *           be loaded.
- * @property {boolean}  silence_players - If set to true, players will not be
- *           able to join while a game session is ongoing. Game Sessions are started by calling setActivePlayers and ended by calling setNoPlayersActive.
  */
 
 
@@ -98,24 +95,21 @@ AirConsole.ORIENTATION_LANDSCAPE = "landscape";
  * @abstract
  * @param {string} code - The AirConsole join code.
  */
-AirConsole.prototype.onReady = function (code) {
-};
+AirConsole.prototype.onReady = function(code) {};
 
 /**
  * Gets called when a device has connected and loaded the game.
  * @abstract
  * @param {number} device_id - the device ID that loaded the game.
  */
-AirConsole.prototype.onConnect = function (device_id) {
-};
+AirConsole.prototype.onConnect = function(device_id) {};
 
 /**
  * Gets called when a device has left the game.
  * @abstract
  * @param {number} device_id - the device ID that left the game.
  */
-AirConsole.prototype.onDisconnect = function (device_id) {
-};
+AirConsole.prototype.onDisconnect = function(device_id) {};
 
 /**
  * Returns the device_id of this device.
@@ -140,7 +134,7 @@ AirConsole.prototype.onDisconnect = function (device_id) {
  *
  * @return {number}
  */
-AirConsole.prototype.getDeviceId = function () {
+AirConsole.prototype.getDeviceId = function() {
   return this.device_id;
 };
 
@@ -149,7 +143,7 @@ AirConsole.prototype.getDeviceId = function () {
  * Premium devices are prioritzed.
  * @return {number|undefined}
  */
-AirConsole.prototype.getMasterControllerDeviceId = function () {
+AirConsole.prototype.getMasterControllerDeviceId = function() {
   var premium_device_ids = this.getPremiumDeviceIds();
   if (premium_device_ids.length) {
     return premium_device_ids[0];
@@ -161,7 +155,7 @@ AirConsole.prototype.getMasterControllerDeviceId = function () {
  * Returns all controller device ids that have loaded your game.
  * @return {Array}
  */
-AirConsole.prototype.getControllerDeviceIds = function () {
+AirConsole.prototype.getControllerDeviceIds = function() {
   var result = [];
   var game_url = this.getGameUrl_(this.getLocationUrl_());
   for (var i = AirConsole.SCREEN + 1; i < this.devices.length; ++i) {
@@ -181,18 +175,13 @@ AirConsole.prototype.getControllerDeviceIds = function () {
  * with the "synchronize_time" opts set to true and after onReady was called.
  * @return {number} Timestamp in milliseconds.
  */
-AirConsole.prototype.getServerTime = function () {
+AirConsole.prototype.getServerTime = function() {
   if (this.server_time_offset === false) {
     throw "AirConsole constructor was not called with " +
     "{synchronize_time: true}";
   }
   return new Date().getTime() + this.server_time_offset;
 };
-
-// TODO: Add documentation
-AirConsole.prototype.getPlayersAreSilenced = function () {
-  return this.silence_players && this.getActivePlayerDeviceIds() > 0;
-}
 
 /** ------------------------------------------------------------------------ *
  * @chapter                     MESSAGING                                    *
@@ -207,7 +196,7 @@ AirConsole.prototype.getPlayersAreSilenced = function () {
  *                                       this one).
  * @param data
  */
-AirConsole.prototype.message = function (device_id, data) {
+AirConsole.prototype.message = function(device_id, data) {
   if (this.device_id !== undefined) {
     AirConsole.postMessage_({ action: "message", to: device_id, data: data });
   }
@@ -217,7 +206,7 @@ AirConsole.prototype.message = function (device_id, data) {
  * Sends a message to all connected devices.
  * @param data
  */
-AirConsole.prototype.broadcast = function (data) {
+AirConsole.prototype.broadcast = function(data) {
   this.message(undefined, data);
 };
 
@@ -230,8 +219,7 @@ AirConsole.prototype.broadcast = function (data) {
  * @param {number} device_id - The device ID that sent the message.
  * @param {serializable} data - The data that was sent.
  */
-AirConsole.prototype.onMessage = function (device_id, data) {
-};
+AirConsole.prototype.onMessage = function(device_id, data) {};
 
 
 /** ------------------------------------------------------------------------ *
@@ -245,11 +233,11 @@ AirConsole.prototype.onMessage = function (device_id, data) {
  *                                       custom state. Default is this device.
  * @return {Object|undefined} The custom data previously set by the device.
  */
-AirConsole.prototype.getCustomDeviceState = function (device_id) {
+AirConsole.prototype.getCustomDeviceState = function(device_id) {
   if (device_id === undefined) {
     device_id = this.device_id;
   }
-  const device_data = this.devices[device_id];
+  var device_data = this.devices[device_id];
   if (device_data && this.getGameUrl_(this.getLocationUrl_()) ==
     this.getGameUrl_(device_data.location)) {
     return device_data["custom"];
@@ -260,7 +248,7 @@ AirConsole.prototype.getCustomDeviceState = function (device_id) {
  * Sets the custom DeviceState of this device.
  * @param {Object} data - The custom data to set.
  */
-AirConsole.prototype.setCustomDeviceState = function (data) {
+AirConsole.prototype.setCustomDeviceState = function(data) {
   if (this.device_id !== undefined) {
     this.devices[this.device_id]["custom"] = data;
     this.set_("custom", data);
@@ -272,7 +260,7 @@ AirConsole.prototype.setCustomDeviceState = function (data) {
  * @param {String} key - The property name.
  * @param {mixed} value - The property value.
  */
-AirConsole.prototype.setCustomDeviceStateProperty = function (key, value) {
+AirConsole.prototype.setCustomDeviceStateProperty = function(key, value) {
   if (this.device_id !== undefined) {
     var state = this.getCustomDeviceState();
     if (state === undefined) {
@@ -295,9 +283,8 @@ AirConsole.prototype.setCustomDeviceStateProperty = function (key, value) {
  *                             DeviceState.
  * @param {Object} custom_data - The custom DeviceState data value
  */
-AirConsole.prototype.onCustomDeviceStateChange = function (device_id,
-                                                           custom_data) {
-};
+AirConsole.prototype.onCustomDeviceStateChange = function(device_id,
+                                                          custom_data) {};
 /**
  * Gets called when a device joins/leaves a game session or updates its
  * DeviceState (custom DeviceState, profile pic, nickname, internal state).
@@ -309,8 +296,7 @@ AirConsole.prototype.onCustomDeviceStateChange = function (device_id,
  * @param user_data {AirConsole~DeviceState} - the data of that device.
  *        If undefined, the device has left.
  */
-AirConsole.prototype.onDeviceStateChange = function (device_id, device_data) {
-};
+AirConsole.prototype.onDeviceStateChange = function(device_id, device_data) {};
 
 
 /** ------------------------------------------------------------------------ *
@@ -323,7 +309,7 @@ AirConsole.prototype.onDeviceStateChange = function (device_id, device_data) {
  *                                       uid. Default is this device.
  * @return {string|undefined}
  */
-AirConsole.prototype.getUID = function (device_id) {
+AirConsole.prototype.getUID = function(device_id) {
   if (device_id === undefined) {
     device_id = this.device_id;
   }
@@ -340,7 +326,7 @@ AirConsole.prototype.getUID = function (device_id) {
  *                                       Screens don't have nicknames.
  * @return {string|undefined}
  */
-AirConsole.prototype.getNickname = function (device_id) {
+AirConsole.prototype.getNickname = function(device_id) {
   if (device_id === undefined) {
     device_id = this.device_id;
   }
@@ -363,17 +349,17 @@ AirConsole.prototype.getNickname = function (device_id) {
  *                                  Default is 64.
  * @return {string|undefined}
  */
-AirConsole.prototype.getProfilePicture = function (device_id_or_uid, size) {
+AirConsole.prototype.getProfilePicture = function(device_id_or_uid, size) {
   if (device_id_or_uid === undefined) {
     device_id_or_uid = this.device_id;
   } else if (typeof device_id_or_uid == "string") {
     return "https://www.airconsole.com/api/profile-picture?uid=" +
-      device_id_or_uid + "&size=" + (size || 64);
+      device_id_or_uid + "&size=" + (size||64);
   }
   var device_data = this.devices[device_id_or_uid];
   if (device_data) {
     var url = "https://www.airconsole.com/api/profile-picture?uid=" +
-      device_data.uid + "&size=" + (size || 64);
+      device_data.uid + "&size=" + (size||64);
     if (device_data.picture) {
       url += "&v=" + device_data.picture;
     }
@@ -386,8 +372,7 @@ AirConsole.prototype.getProfilePicture = function (device_id_or_uid, size) {
  * @abstract
  * @param {number} device_id - The device_id that changed its profile.
  */
-AirConsole.prototype.onDeviceProfileChange = function (device_id) {
-};
+AirConsole.prototype.onDeviceProfileChange = function(device_id) {};
 
 /**
  * Returns true if a user is logged in.
@@ -395,7 +380,7 @@ AirConsole.prototype.onDeviceProfileChange = function (device_id) {
  *                                       Default is this device.
  * @returns {boolean}
  */
-AirConsole.prototype.isUserLoggedIn = function (device_id) {
+AirConsole.prototype.isUserLoggedIn = function(device_id) {
   if (device_id == undefined) {
     device_id = this.device_id;
   }
@@ -412,7 +397,7 @@ AirConsole.prototype.isUserLoggedIn = function (device_id) {
  * game, contact developers@airconsole.com. For development purposes, localhost
  * is always allowed.
  */
-AirConsole.prototype.requestEmailAddress = function () {
+AirConsole.prototype.requestEmailAddress = function() {
   this.set_("email", true);
 };
 
@@ -426,15 +411,14 @@ AirConsole.prototype.requestEmailAddress = function () {
  * @param {string|undefined} email_address - The email address of the user if
  *        it was set.
  */
-AirConsole.prototype.onEmailAddress = function (email_address) {
-};
+AirConsole.prototype.onEmailAddress = function(email_address) {};
 
 /**
  * Lets the user change his nickname, profile picture and email address.
  * If you need a real nickname of the user, use this function.
  * onDeviceProfileChange will be called if the user logs in.
  */
-AirConsole.prototype.editProfile = function () {
+AirConsole.prototype.editProfile = function() {
   this.set_("login", true);
 };
 
@@ -444,7 +428,6 @@ AirConsole.prototype.editProfile = function () {
  * @see   http://developers.airconsole.com/#!/guides/device_ids_and_states   *
  * ------------------------------------------------------------------------- */
 
-// TODO: The wording implies that setActivePlayers is not relevant (can be convenient) but later on claims that the screen can call this function every time a game round starts. This is confusing and misleading.
 /**
  * Takes all currently connected controllers and assigns them a player number.
  * Can only be called by the screen. You don't have to use this helper
@@ -462,7 +445,7 @@ AirConsole.prototype.editProfile = function () {
  * @param {number} max_players - The maximum number of controllers that should
  *                               get a player number assigned.
  */
-AirConsole.prototype.setActivePlayers = function (max_players) {
+AirConsole.prototype.setActivePlayers = function(max_players) {
   if (this.getDeviceId() != AirConsole.SCREEN) {
     throw "Only the AirConsole.SCREEN can set the active players!";
   }
@@ -475,16 +458,6 @@ AirConsole.prototype.setActivePlayers = function (max_players) {
   this.set_("players", players);
 };
 
-// TODO: Add documentation
-AirConsole.prototype.setNoPlayersActive = function () {
-  if (this.getDeviceId() != AirConsole.SCREEN) {
-    throw "Only the AirConsole.SCREEN can set the active players!";
-  }
-  this.device_id_to_player_cache = undefined;
-  this.devices[AirConsole.SCREEN]["players"] = [];
-  this.set_("players", []);
-}
-
 /**
  * Gets called when the screen sets the active players by calling
  * setActivePlayers().
@@ -493,8 +466,7 @@ AirConsole.prototype.setNoPlayersActive = function () {
  *                                           Can be undefined if this device
  *                                           is not part of the active players.
  */
-AirConsole.prototype.onActivePlayersChange = function (player_number) {
-};
+AirConsole.prototype.onActivePlayersChange = function(player_number) {};
 
 /**
  * Returns an array of device_ids of the active players previously set by the
@@ -502,7 +474,7 @@ AirConsole.prototype.onActivePlayersChange = function (player_number) {
  * first player, the second device_id in the array is the second player, ...
  * @returns {Array}
  */
-AirConsole.prototype.getActivePlayerDeviceIds = function () {
+AirConsole.prototype.getActivePlayerDeviceIds = function() {
   return this.devices[AirConsole.SCREEN]["players"] || [];
 };
 
@@ -514,7 +486,7 @@ AirConsole.prototype.getActivePlayerDeviceIds = function () {
  * @param player_number
  * @returns {number|undefined}
  */
-AirConsole.prototype.convertPlayerNumberToDeviceId = function (player_number) {
+AirConsole.prototype.convertPlayerNumberToDeviceId = function(player_number) {
   return this.getActivePlayerDeviceIds()[player_number];
 };
 
@@ -526,7 +498,7 @@ AirConsole.prototype.convertPlayerNumberToDeviceId = function (player_number) {
  * @param device_id
  * @returns {number|undefined}
  */
-AirConsole.prototype.convertDeviceIdToPlayerNumber = function (device_id) {
+AirConsole.prototype.convertDeviceIdToPlayerNumber = function(device_id) {
   if (!this.devices[AirConsole.SCREEN] ||
     !this.devices[AirConsole.SCREEN]["players"]) {
     return;
@@ -557,15 +529,14 @@ AirConsole.prototype.convertDeviceIdToPlayerNumber = function (device_id) {
  * @param {object} data - data.x, data.y, data.z for accelerometer
  *                        data.alpha, data.beta, data.gamma for gyroscope
  */
-AirConsole.prototype.onDeviceMotion = function (data) {
-};
+AirConsole.prototype.onDeviceMotion = function(data) {};
 
 /**
  * Vibrates the device for a specific amount of time. Only works for controllers.
  * Note: iOS ignores the specified time and vibrates for a pre-set amount of time.
  * @param {Number} time - Milliseconds to vibrate the device
  */
-AirConsole.prototype.vibrate = function (time) {
+AirConsole.prototype.vibrate = function(time) {
   this.set_("vibrate", time);
 };
 
@@ -581,7 +552,7 @@ AirConsole.prototype.vibrate = function (time) {
  * onAdComplete is called on all connected devices when the
  * advertisement is complete or no advertisement was shown.
  */
-AirConsole.prototype.showAd = function () {
+AirConsole.prototype.showAd = function() {
   if (this.device_id != AirConsole.SCREEN) {
     throw "Only the AirConsole.SCREEN can call showAd!";
   }
@@ -593,8 +564,7 @@ AirConsole.prototype.showAd = function () {
  * In case this event gets called, please mute all sounds.
  * @abstract
  */
-AirConsole.prototype.onAdShow = function () {
-};
+AirConsole.prototype.onAdShow = function() {};
 
 /**
  * Gets called when an advertisement is finished or no advertisement was shown.
@@ -602,8 +572,7 @@ AirConsole.prototype.onAdShow = function () {
  * @param {boolean} ad_was_shown - True iff an ad was shown and onAdShow was
  *                                 called.
  */
-AirConsole.prototype.onAdComplete = function (ad_was_shown) {
-};
+AirConsole.prototype.onAdComplete = function(ad_was_shown) {};
 
 
 /** ------------------------------------------------------------------------ *
@@ -619,7 +588,7 @@ AirConsole.prototype.onAdComplete = function (ad_was_shown) {
  *                             undefined if the device_id is not valid.
  *
  */
-AirConsole.prototype.isPremium = function (device_id) {
+AirConsole.prototype.isPremium = function(device_id) {
   if (device_id === undefined) {
     device_id = this.device_id;
   }
@@ -633,7 +602,7 @@ AirConsole.prototype.isPremium = function (device_id) {
  * Returns all device ids that are premium.
  * @return {Array<number>}
  */
-AirConsole.prototype.getPremiumDeviceIds = function () {
+AirConsole.prototype.getPremiumDeviceIds = function() {
   var premium = [];
   for (var i = 1; i < this.devices.length; ++i) {
     if (this.isPremium(i)) {
@@ -649,7 +618,7 @@ AirConsole.prototype.getPremiumDeviceIds = function () {
  * If you call getPremium in development mode, the device becomes premium
  * immediately.
  */
-AirConsole.prototype.getPremium = function () {
+AirConsole.prototype.getPremium = function() {
   this.set_("premium", true);
 };
 
@@ -658,8 +627,7 @@ AirConsole.prototype.getPremium = function () {
  * @abstract
  * @param {number} device_id - The device id of the premium device.
  */
-AirConsole.prototype.onPremium = function (device_id) {
-};
+AirConsole.prototype.onPremium = function(device_id) {};
 
 
 /** ------------------------------------------------------------------------ *
@@ -669,7 +637,7 @@ AirConsole.prototype.onPremium = function (device_id) {
 /**
  * Request that all devices return to the AirConsole store.
  */
-AirConsole.prototype.navigateHome = function () {
+AirConsole.prototype.navigateHome = function() {
   this.set_("home", true);
 };
 
@@ -687,7 +655,7 @@ AirConsole.prototype.navigateHome = function () {
  *                              The parameters will be appended to the url
  *                              using a url hash.
  */
-AirConsole.prototype.navigateTo = function (url, parameters) {
+AirConsole.prototype.navigateTo = function(url, parameters) {
   if (url.indexOf(".") == 0) {
     var current_location = this.getLocationUrl_();
     var full_path = current_location.split("#")[0].split("/");
@@ -712,7 +680,7 @@ AirConsole.prototype.navigateTo = function (url, parameters) {
  * Get the parameters in the loaded game that were passed to navigateTo.
  * @returns {*}
  */
-AirConsole.prototype.getNavigateParameters = function () {
+AirConsole.prototype.getNavigateParameters = function() {
   if (this.navigate_parameters_cache_) {
     return this.navigate_parameters_cache_;
   }
@@ -732,7 +700,7 @@ AirConsole.prototype.getNavigateParameters = function () {
  * OR in JS with assigning element.onclick.
  * @param {string} url - The url to open
  */
-AirConsole.prototype.openExternalUrl = function (url) {
+AirConsole.prototype.openExternalUrl = function(url) {
   var data = this.devices[this.device_id];
   if (data.client && data.client.pass_external_url === true) {
     this.set_("pass_external_url", url);
@@ -751,7 +719,7 @@ AirConsole.prototype.openExternalUrl = function (url) {
  * @param {string} orientation - AirConsole.ORIENTATION_PORTRAIT or
  *                               AirConsole.ORIENTATION_LANDSCAPE.
  */
-AirConsole.prototype.setOrientation = function (orientation) {
+AirConsole.prototype.setOrientation = function(orientation) {
   this.set_("orientation", orientation);
 };
 
@@ -766,11 +734,11 @@ AirConsole.prototype.setOrientation = function (orientation) {
  *                                         to request the persistent data.
  *                                         Default is the uid of this device.
  */
-AirConsole.prototype.requestPersistentData = function (uids) {
+AirConsole.prototype.requestPersistentData = function(uids) {
   if (!uids) {
-    uids = [ this.getUID() ];
+    uids = [this.getUID()];
   }
-  this.set_("persistentrequest", { "uids": uids })
+  this.set_("persistentrequest", {"uids": uids})
 };
 
 /**
@@ -778,8 +746,7 @@ AirConsole.prototype.requestPersistentData = function (uids) {
  * @abstract
  * @param {Object} data - An object mapping uids to all key value pairs.
  */
-AirConsole.prototype.onPersistentDataLoaded = function (data) {
-};
+AirConsole.prototype.onPersistentDataLoaded = function(data) {};
 
 /**
  * Stores a key-value pair persistently on the AirConsole servers.
@@ -791,11 +758,11 @@ AirConsole.prototype.onPersistentDataLoaded = function (data) {
  * @param {String|undefiend} uid - The uid for which the data should be stored.
  *                                 Default is the uid of this device.
  */
-AirConsole.prototype.storePersistentData = function (key, value, uid) {
+AirConsole.prototype.storePersistentData = function(key, value, uid) {
   if (!uid) {
     uid = this.getUID();
   }
-  this.set_("persistentstore", { "key": key, "value": value, "uid": uid });
+  this.set_("persistentstore", {"key": key, "value": value, "uid": uid});
 };
 
 /**
@@ -803,8 +770,7 @@ AirConsole.prototype.storePersistentData = function (key, value, uid) {
  * @abstract
  * @param {String} uid - The uid for which the data was stored.
  */
-AirConsole.prototype.onPersistentDataStored = function (uid) {
-};
+AirConsole.prototype.onPersistentDataStored = function(uid) {};
 
 
 /** ------------------------------------------------------------------------ *
@@ -839,9 +805,9 @@ AirConsole.prototype.onPersistentDataStored = function (uid) {
  *                                          Defaults to "X points" where x is
  *                                          the score converted to an integer.
  */
-AirConsole.prototype.storeHighScore = function (level_name, level_version,
-                                                score, uid, data,
-                                                score_string) {
+AirConsole.prototype.storeHighScore = function(level_name, level_version,
+                                               score, uid, data,
+                                               score_string) {
   if (isNaN(score) || typeof score != "number") {
     throw "Score needs to be a number and not NaN!"
   }
@@ -872,8 +838,7 @@ AirConsole.prototype.storeHighScore = function (level_name, level_version,
  *                                                 "country", "region", "city"
  *                                                 if a high score is passed.
  */
-AirConsole.prototype.onHighScoreStored = function (high_score) {
-};
+AirConsole.prototype.onHighScoreStored = function(high_score) {};
 
 /**
  * Requests high score data of players (including global high scores and
@@ -897,10 +862,10 @@ AirConsole.prototype.onHighScoreStored = function (high_score) {
  * @param {number|undefined} top - Amount of top high scores to return per rank
  *                                 type. top is part of total. Default is 5.
  */
-AirConsole.prototype.requestHighScores = function (level_name, level_version,
-                                                   uids, ranks, total, top) {
+AirConsole.prototype.requestHighScores = function(level_name, level_version,
+                                                  uids, ranks, total, top) {
   if (!ranks) {
-    ranks = [ "world" ];
+    ranks = ["world"];
   }
   if (!uids) {
     uids = [];
@@ -931,8 +896,7 @@ AirConsole.prototype.requestHighScores = function (level_name, level_version,
  * We highly recommend to read the High Score guide (developers.airconsole.com)
  * @param {Array<AirConsole~HighScore>} high_scores - The high scores.
  */
-AirConsole.prototype.onHighScores = function (high_scores) {
-};
+AirConsole.prototype.onHighScores = function(high_scores) {};
 
 /**
  * DeviceState contains information about a device in this session.
@@ -995,7 +959,7 @@ AirConsole.prototype.onHighScores = function (high_scores) {
  *                                    "Hi %name%" and values is {"name": "Tom"}
  *                                    then this will be replaced to "Hi Tom".
  */
-AirConsole.prototype.getTranslation = function (id, values) {
+AirConsole.prototype.getTranslation = function(id, values) {
   if (this.translations) {
     if (this.translations[id]) {
       var result = this.translations[id];
@@ -1021,7 +985,7 @@ AirConsole.prototype.getTranslation = function (id, values) {
  *                                       language. Default is this device.
  * @return {String} IETF language
  */
-AirConsole.prototype.getLanguage = function (device_id) {
+AirConsole.prototype.getLanguage = function(device_id) {
   if (device_id === undefined) {
     device_id = this.device_id;
   }
@@ -1039,15 +1003,13 @@ AirConsole.prototype.getLanguage = function (device_id) {
  * Gets called on the Screen when the game should be paused.
  * @abstract
  */
-AirConsole.prototype.onPause = function () {
-};
+AirConsole.prototype.onPause = function() {};
 
 /**
  * Gets called on the Screen when the game should be resumed.
  * @abstract
  */
-AirConsole.prototype.onResume = function () {
-};
+AirConsole.prototype.onResume = function() {};
 
 /** ------------------------------------------------------------------------ *
  *                   ONLY PRIVATE FUNCTIONS BELLOW                           *
@@ -1058,14 +1020,13 @@ AirConsole.prototype.onResume = function () {
  * @param {AirConsole~Config} opts - The Config.
  * @private
  */
-AirConsole.prototype.init_ = function (opts) {
+AirConsole.prototype.init_ = function(opts) {
   opts = opts || {};
   var me = this;
   me.version = "1.9.0";
   me.devices = [];
-  me.silence_players = opts.silence_players || false;  // Default matches behavior before 1.9.0.
   me.server_time_offset = opts.synchronize_time ? 0 : false;
-  window.addEventListener("message", function (event) {
+  window.addEventListener("message", function(event) {
     me.onPostMessage_(event);
   }, false);
   me.set_("orientation", opts.orientation);
@@ -1082,26 +1043,12 @@ AirConsole.prototype.init_ = function (opts) {
   });
 };
 
-AirConsole.prototype.isDeviceInSameLocation_ = function (location, sender_id) {
-  return this.devices[sender_id] && location === this.getGameUrl_(this.devices[sender_id].location);
-}
-// document function
-AirConsole.prototype.receiverNotSilenced = function (receiver_id) {
-  return this.convertDeviceIdToPlayerNumber(receiver_id) !== undefined;
-}
-
-AirConsole.prototype.deviceNotSilenced = function (sender_id) {
-  return this.getCustomDeviceState(AirConsole.SCREEN).silence_players &&
-    this.convertDeviceIdToPlayerNumber(sender_id) !== undefined &&
-    this.convertDeviceIdToPlayerNumber(this.getDeviceId());
-}
-
 /**
  * Handling onMessage events
  * @private
  * @param {Event} event - Event object
  */
-AirConsole.prototype.onPostMessage_ = function (event) {
+AirConsole.prototype.onPostMessage_ = function(event) {
   var me = this;
   var data = event.data;
   var game_url = me.getGameUrl_(me.getLocationUrl_());
@@ -1109,11 +1056,8 @@ AirConsole.prototype.onPostMessage_ = function (event) {
     me.onDeviceMotion(data.data);
   } else if (data.action == "message") {
     if (me.device_id !== undefined) {
-      // if (me.isDeviceInSameLocation_(game_url, data.from)) {
-      if (me.isDeviceInSameLocation_(game_url, data.from) &&
-        me.deviceNotSilenced(data.from)) {
-        // if (me.devices[data.from] &&
-        //   game_url === me.getGameUrl_(me.devices[data.from].location)) {
+      if (me.devices[data.from] &&
+        game_url == me.getGameUrl_(me.devices[data.from].location)) {
         me.onMessage(data.from, data.data);
       }
     }
@@ -1235,8 +1179,8 @@ AirConsole.prototype.onPostMessage_ = function (event) {
   } else if (data.action == "debug") {
     if (data.debug == "fps") {
       if (window.requestAnimationFrame) {
-        var second_animation_frame = function (start) {
-          window.requestAnimationFrame(function (end) {
+        var second_animation_frame = function(start) {
+          window.requestAnimationFrame(function(end) {
             if (start != end) {
               var delta = end - start;
               AirConsole.postMessage_({
@@ -1259,7 +1203,7 @@ AirConsole.prototype.onPostMessage_ = function (event) {
  * @param {String} url - A url.
  * @return {String} Returns the root game url over http.
  */
-AirConsole.prototype.getGameUrl_ = function (url) {
+AirConsole.prototype.getGameUrl_ = function(url) {
   if (!url) {
     return;
   }
@@ -1271,7 +1215,7 @@ AirConsole.prototype.getGameUrl_ = function (url) {
   if (url.indexOf("controller.html", url.length - 15) !== -1) {
     url = url.substr(0, url.length - 15);
   }
-  if (url.indexOf("https://") == 0) {
+  if (url.indexOf("https://") == 0)  {
     url = "http://" + url.substr(8);
   }
   return url;
@@ -1282,10 +1226,10 @@ AirConsole.prototype.getGameUrl_ = function (url) {
  * @private
  * @param {Object} data - the data to be sent to the parent window.
  */
-AirConsole.postMessage_ = function (data) {
+AirConsole.postMessage_ = function(data) {
   try {
     window.parent.postMessage(data, document.referrer);
-  } catch (e) {
+  } catch(e) {
     console.log("Posting message to parent failed: " + JSON.stringify(data));
   }
 };
@@ -1296,7 +1240,7 @@ AirConsole.postMessage_ = function (data) {
  * @param {string} key - The key to set.
  * @param {serializable} value - The value to set.
  */
-AirConsole.prototype.set_ = function (key, value) {
+AirConsole.prototype.set_ = function(key, value) {
   AirConsole.postMessage_({ action: "set", key: key, value: value });
 };
 
@@ -1306,7 +1250,7 @@ AirConsole.prototype.set_ = function (key, value) {
  * fullscreen when scrolling).
  * @private
  */
-AirConsole.prototype.setupDocument_ = function () {
+AirConsole.prototype.setupDocument_ = function() {
   var style = document.createElement("style");
   style.type = "text/css";
   var css_code =
@@ -1356,7 +1300,7 @@ AirConsole.prototype.setupDocument_ = function () {
   head.appendChild(style);
   document.addEventListener('touchmove', function (e) {
     e.preventDefault();
-  }, { passive: false });
+  }, {passive: false });
   if (navigator.userAgent.indexOf("Windows Phone ") != -1 &&
     navigator.userAgent.indexOf("Edge/") != -1) {
     document.oncontextmenu = document.body.oncontextmenu = function () {
@@ -1370,7 +1314,7 @@ AirConsole.prototype.setupDocument_ = function () {
  * @return {string}
  * @private
  */
-AirConsole.prototype.getLocationUrl_ = function () {
+AirConsole.prototype.getLocationUrl_ = function() {
   return document.location.href;
 };
 
@@ -1379,15 +1323,15 @@ AirConsole.prototype.getLocationUrl_ = function () {
  * @param {Object} client - The client object
  * @private
  */
-AirConsole.prototype.bindTouchFix_ = function (client) {
+AirConsole.prototype.bindTouchFix_ = function(client) {
   // This fix is only necessary for Android Crosswalk
   if (navigator.userAgent.match(/Android/) &&
     client && client.app === "intel-xdk" &&
     client.version <= 2.3) {
-    document.addEventListener('touchstart', function (e) {
-      var els = [ 'DIV', 'IMG', 'SPAN', 'BODY', 'TD', 'TH', 'CANVAS', 'P', 'B',
+    document.addEventListener('touchstart', function(e) {
+      var els = ['DIV', 'IMG', 'SPAN', 'BODY', 'TD', 'TH', 'CANVAS', 'P', 'B',
         'CENTER', 'EM', 'FONT', 'H1', 'H2', 'H3', 'H4',
-        'H5', 'H6', 'HR', 'I', 'LI', 'PRE', 'SMALL', 'STRONG', 'U' ];
+        'H5', 'H6', 'HR', 'I', 'LI', 'PRE', 'SMALL', 'STRONG', 'U'];
       if (els.indexOf(e.target.nodeName) != -1) {
         // Check if one of the parent elements is a link
         var parent = e.target.parentNode;
@@ -1398,7 +1342,7 @@ AirConsole.prototype.bindTouchFix_ = function (client) {
           parent = parent.parentNode;
         }
         e.preventDefault();
-        setTimeout(function () {
+        setTimeout(function() {
           e.target.click();
         }, 200);
       }
@@ -1406,7 +1350,7 @@ AirConsole.prototype.bindTouchFix_ = function (client) {
   }
 };
 
-window.addEventListener('error', function (e) {
+window.addEventListener('error', function(e) {
   var stack = undefined;
   if (e.error && e.error.stack) {
     stack = e.error.stack;
@@ -1426,7 +1370,7 @@ window.addEventListener('error', function (e) {
   });
 });
 
-window.addEventListener('unhandledrejection', function (e) {
+window.addEventListener('unhandledrejection', function(e) {
   var stack = undefined;
   if (e.reason && e.reason.stack) {
     stack = e.reason.stack;

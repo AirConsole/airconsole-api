@@ -1,4 +1,4 @@
-describe("AirConsole 1.8.0", function () {
+describe("AirConsole 1.9.0", function () {
   var overwrites = {};
 
   // Overwrite functions
@@ -49,7 +49,7 @@ describe("AirConsole 1.8.0", function () {
       tearDown();
     });
 
-    testSetup("1.8.0");
+    testSetup("1.9.0");
 
   });
 
