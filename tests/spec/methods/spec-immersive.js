@@ -1,7 +1,7 @@
 function testImmersive() {
 
   it('Should call setCustomDeviceState with the correct object when called from screen with zoneId', function(){
-    var payload = {color: "#fff", zoneId: 1};
+    var payload = [{color: "#fff", zoneId: 1}];
     var expected_data = {__AC_IMMERSIVE_STATE__: {1: {color: "#fff"}}};
     var expected_params = {action: "set", key: "custom", value: expected_data};
     airconsole.devices[0].location = LOCATION;
@@ -19,7 +19,7 @@ function testImmersive() {
     airconsole.devices[2]  = { "device": "unicorn", location: LOCATION };
     airconsole.setActivePlayers(1);
     airconsole.device_id = 2;
-    var payload = {color: "#fff"};
+    var payload = [{color: "#fff"}];
     var expected_data = {__AC_IMMERSIVE_STATE__: {0: {color: "#fff"}}};
     var expected_params = {action: "set", key: "custom", value: expected_data};
     airconsole.devices[0].location = LOCATION;
