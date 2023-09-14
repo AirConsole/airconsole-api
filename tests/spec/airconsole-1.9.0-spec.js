@@ -381,4 +381,16 @@ describe("AirConsole 1.9.0", function () {
     testImmersive();
   });
 
+  /**
+   ======================================================================================
+   TEST PLAYER SILENCING FUNCTIONALITY
+   */
+
+  describe("Player Silencing", function () {
+    afterEach(function () {
+      tearDown();
+    });
+
+    testPlayerSilencing();
+  })
 });
