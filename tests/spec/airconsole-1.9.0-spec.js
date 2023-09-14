@@ -369,4 +369,16 @@ describe("AirConsole 1.9.0", function () {
 
   });
 
+  describe("Immersive", function(){
+    beforeEach(function () {
+      initAirConsole();
+    });
+
+    afterEach(function () {
+      tearDown();
+    });
+
+    testImmersive();
+  });
+
 });

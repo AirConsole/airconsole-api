@@ -274,6 +274,53 @@ AirConsole.prototype.setCustomDeviceStateProperty = function(key, value) {
 };
 
 /**
+ * Sets the immersive state of the AirConsole game based on the provided options.
+ *
+ * The opts object can have the following properties:
+ *
+ * Sentiments:
+ * - `Ready`: Your turn to do something
+ * - `Negative`: Wrong button pressed
+ * - `Positive`: Right button pressed
+ * - `Sadness`: Loss in the game
+ * - `Happiness`: Victory in the game
+ * - `Anticipation`: Waiting for turn or honking
+ * - `Curious`: All gaming buttons
+ *
+ * System Events:
+ * - `Idle`: No emotions, stops the events
+ * - `SystemLoading`: Game or level is loading
+ * - `EndOfSession`: Disconnecting or leaving the game
+ *
+ * @param {Object} opts - The options object.
+ * @param {string} [opts.sentiment] - The emotional state or event.
+ * @param {string} [opts.color] - The specific color for the event.
+ * @param {number} [opts.zoneId] - The zone for the event.
+ * @param {number} [opts.intensity] - The specific intensity level for the event. */
+AirConsole.prototype.setImmersiveState = function (opts) {
+  if (this.device_id !== undefined) {
+    var state = this.getCustomDeviceState();
+    if (state === undefined) {
+      state = {};
+    } else if (typeof state !== "object") {
+      throw "Custom DeviceState needs to be of type object";
+    }
+    var new_immersive_state = {};
+    if (!opts.zoneId) {
+      var current_player_id = this.convertDeviceIdToPlayerNumber(this.device_id);
+      new_immersive_state[current_player_id] = opts;
+    }
+    else {
+      new_immersive_state[opts.zoneId] = opts;
+      delete opts.zoneId;
+    }
+    state.__AC_IMMERSIVE_STATE__ = new_immersive_state;
+    this.setCustomDeviceState(state);
+  }
+};
+
+
+/**
  * Gets called when a device updates it's custom DeviceState
  * by calling setCustomDeviceState or setCustomDeviceStateProperty.
  * Make sure you understand the power of device states:
