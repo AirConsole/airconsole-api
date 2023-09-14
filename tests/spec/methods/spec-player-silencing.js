@@ -23,21 +23,21 @@ function testPlayerSilencing() {
     initAirConsole();
     airconsole.setActivePlayers(2);
 
-    expect(airconsole.getPlayersAreSilenced()).toBe(false);
+    expect(airconsole.arePlayersSilenced()).toBe(false);
   });
 
   it("should not silence players without AirConsole configured to silence players", function () {
     initAirConsole({ silence_players: false });
     airconsole.setActivePlayers(2);
 
-    expect(airconsole.getPlayersAreSilenced()).toBe(false);
+    expect(airconsole.arePlayersSilenced()).toBe(false);
   });
 
   it("should silence players with AirConsole configured to silence players", function () {
     initAirConsole({ silence_players: true });
     airconsole.setActivePlayers(2);
 
-    expect(airconsole.getPlayersAreSilenced()).toBe(true);
+    expect(airconsole.arePlayersSilenced()).toBe(true);
   });
 
   it("should reset silencing players with 0 active players", () => {
@@ -46,7 +46,7 @@ function testPlayerSilencing() {
 
     airconsole.setActivePlayers(0);
 
-    expect(airconsole.getPlayersAreSilenced()).toBe(false);
+    expect(airconsole.arePlayersSilenced()).toBe(false);
   });
 
   const activePlayersBasedSilencingTestParameters = [
@@ -61,20 +61,13 @@ function testPlayerSilencing() {
 
       airconsole.setActivePlayers(parameter.input);
 
-      expect(airconsole.getPlayersAreSilenced()).toBe(parameter.result);
+      expect(airconsole.arePlayersSilenced()).toBe(parameter.result);
     })
   })
 
   it("Should ignore messages to silenced players on the controller", () => {
-    initAirConsole({ silence_players: true });
-    const expected_id = 1;
     const silenced_id = 2;
-    airconsole.devices = [];
-    airconsole.devices[AirConsole.SCREEN] = { "device": "screen", location: LOCATION };
-    airconsole.devices[expected_id] = { "device": "unicorn", location: LOCATION };
-    airconsole.setActivePlayers(2);
-    airconsole.devices[silenced_id] = { "device": "Na na na batman", location: LOCATION };
-    airconsole.device_id = silenced_id;
+    initAirConsoleWithSilencedDevice(1, silenced_id, silenced_id);
     spyOn(airconsole, 'onMessage');
 
     const data = { action: "message", from: AirConsole.SCREEN, to: silenced_id, data: { message: "Hi" } };
@@ -83,16 +76,47 @@ function testPlayerSilencing() {
     expect(airconsole.onMessage).toHaveBeenCalledTimes(0);
   });
 
-  xit("Should ignore messages to silenced players on the screen", () => {
-    initAirConsole({ silence_players: true });
+  it("Should send messages to not silenced players on the controller", () => {
+    const silenced_id = 2;
+    initAirConsoleWithSilencedDevice(1, silenced_id);
+    spyOn(airconsole, 'onMessage');
+
+    const data = { message: "Hi" };
+    const msg = { action: "message", from: AirConsole.SCREEN, to: 1, data };
+    dispatchCustomMessageEvent(msg);
+
+    expect(airconsole.onMessage).toHaveBeenCalledWith(0, data);
   });
 
-  xit("Should not send messages from the screen to silenced players", () => {
-    initAirConsole({ silence_players: true });
+  it("Should not send messages from the screen to silenced players", () => {
+    const silenced_id = 2;
+    initAirConsoleWithSilencedDevice(1, silenced_id);
+    spyOn(AirConsole, 'postMessage_');
+
+    const data = { action: "message", from: AirConsole.SCREEN, to: silenced_id, data: { message: "Hi" } };
+    airconsole.message(silenced_id, data);
+
+    expect(AirConsole.postMessage_).toHaveBeenCalledTimes(0);
   });
 
-  xit("Should not send messages from the controller to silenced players", () => {
-    initAirConsole({ silence_players: true });
+  it("Should not send messages from the controller to silenced players", () => {
+    const silenced_id = 2;
+    initAirConsoleWithSilencedDevice(1, silenced_id, 1);
+    spyOn(AirConsole, 'postMessage_');
 
+    const data = { action: "message", from: AirConsole.SCREEN, to: silenced_id, data: { message: "Hi" } };
+    airconsole.message(silenced_id, data);
+
+    expect(AirConsole.postMessage_).toHaveBeenCalledTimes(0);
   });
+
+  function initAirConsoleWithSilencedDevice(connected_id = 1, silenced_id = 2, active_device_id = 0) {
+    initAirConsole({ silence_players: true });
+    airconsole.devices = [];
+    airconsole.devices[AirConsole.SCREEN] = { "device": "screen", location: LOCATION };
+    airconsole.devices[connected_id] = { "device": "unicorn", location: LOCATION };
+    airconsole.setActivePlayers(2);
+    airconsole.devices[silenced_id] = { "device": "Na na na batman", location: LOCATION };
+    airconsole.device_id = active_device_id;
+  }
 }

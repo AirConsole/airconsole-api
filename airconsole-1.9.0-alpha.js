@@ -80,6 +80,12 @@ AirConsole.ORIENTATION_PORTRAIT = "portrait";
  */
 AirConsole.ORIENTATION_LANDSCAPE = "landscape";
 
+/**
+ * Key tracking the player silence state in CustomStateProperties
+ * @type {string}
+ */
+AirConsole.PLAYER_SILENCE_KEY = "__AC_PS__";
+
 
 /** ------------------------------------------------------------------------ *
  * @chapter                     CONNECTIVITY                                 *
@@ -183,6 +189,14 @@ AirConsole.prototype.getServerTime = function() {
   return new Date().getTime() + this.server_time_offset;
 };
 
+// TODO: Add documentation
+AirConsole.prototype.arePlayersSilenced = function () {
+  return (this.silence_players ||
+      (this.getCustomDeviceState(AirConsole.SCREEN)?.silence_players || false)) &&
+    (this.devices[AirConsole.SCREEN]["players"]?.length > 0 || false);
+  // return this.silence_players && this.getActivePlayerDeviceIds() > 0;
+}
+
 /** ------------------------------------------------------------------------ *
  * @chapter                     MESSAGING                                    *
  * @see         http://developers.airconsole.com/#!/guides/pong              *
@@ -196,11 +210,12 @@ AirConsole.prototype.getServerTime = function() {
  *                                       this one).
  * @param data
  */
-AirConsole.prototype.message = function(device_id, data) {
-  if (this.device_id !== undefined) {
+AirConsole.prototype.message = function (device_id, data) {
+  if (this.device_id !== undefined && this.receiverNotSilenced_(device_id)) {
+    // if (this.device_id !== undefined) {
     AirConsole.postMessage_({ action: "message", to: device_id, data: data });
   }
-};
+}
 
 /**
  * Sends a message to all connected devices.
@@ -1095,7 +1110,36 @@ AirConsole.prototype.init_ = function(opts) {
     location: me.getLocationUrl_(),
     translation: opts.translation
   });
+  this.setPlayerSilence(opts.silence_players || false); // Default matches behavior before 1.9.0.
 };
+
+AirConsole.prototype.setPlayerSilence = function (silenced) {
+  this.silence_players = !!silenced;
+  if (this.device_id === AirConsole.SCREEN) {
+    this.setCustomDeviceStateProperty(AirConsole.PLAYER_SILENCE_KEY, this.silence_players)
+  }
+}
+
+// TODO: Add documentation
+// TODO: Find better name
+AirConsole.prototype.isDeviceInSameLocation_ = function (location, sender_id) {
+  return this.devices[sender_id] && location === this.getGameUrl_(this.devices[sender_id].location);
+}
+
+// TODO: Add documentation
+// TODO: Find better name
+AirConsole.prototype.receiverNotSilenced_ = function (receiver_id) {
+  return !this.arePlayersSilenced() ||
+    this.convertDeviceIdToPlayerNumber(receiver_id) !== undefined;
+}
+
+// TODO: Add documentation
+// TODO: Find better name
+AirConsole.prototype.deviceNotSilenced_ = function (sender_id) {
+  return !this.arePlayersSilenced() ||
+    (sender_id === AirConsole.SCREEN || this.convertDeviceIdToPlayerNumber(sender_id) !== undefined) &&
+    (this.getDeviceId() === AirConsole.SCREEN || this.convertDeviceIdToPlayerNumber(this.getDeviceId()) !== undefined);
+}
 
 /**
  * Handling onMessage events
@@ -1110,8 +1154,11 @@ AirConsole.prototype.onPostMessage_ = function(event) {
     me.onDeviceMotion(data.data);
   } else if (data.action == "message") {
     if (me.device_id !== undefined) {
-      if (me.devices[data.from] &&
-        game_url == me.getGameUrl_(me.devices[data.from].location)) {
+      // if (me.isDeviceInSameLocation_(game_url, data.from)) {
+      if (me.isDeviceInSameLocation_(game_url, data.from) &&
+        me.deviceNotSilenced_(data.from)) {
+        // if (me.devices[data.from] &&
+        //   game_url === me.getGameUrl_(me.devices[data.from].location)) {
         me.onMessage(data.from, data.data);
       }
     }
