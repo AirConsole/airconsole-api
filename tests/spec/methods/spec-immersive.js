@@ -13,6 +13,19 @@ function testImmersive() {
     expect(AirConsole.postMessage_).toHaveBeenCalledWith(expected_params);
   });
 
+  it('Should call setCustomDeviceState with the correct object when called from screen with many zoneId', function(){
+    var payload = [{color: "#fff", zoneId: 1}, {color: "#f00", zoneId: 0}];
+    var expected_data = {__AC_IMMERSIVE_STATE__: {1: {color: "#fff"},0:{color: "#f00"}}};
+    var expected_params = {action: "set", key: "custom", value: expected_data};
+    airconsole.devices[0].location = LOCATION;
+    spyOn(AirConsole, 'postMessage_');
+    airconsole.setImmersiveState(payload);
+    // Check data
+    var actual_data = airconsole.getCustomDeviceState();
+    expect(actual_data).toEqual(expected_data);
+    expect(AirConsole.postMessage_).toHaveBeenCalledWith(expected_params);
+  });
+
 
   it('Should call setCustomDeviceState with the correct object when called from device', function(){
     airconsole.devices[AirConsole.SCREEN] = { "device": "screen",  location: LOCATION };
