@@ -311,6 +311,9 @@ AirConsole.prototype.setImmersiveState = function (opts) {
       var zoneId = opt.zoneId;
       if (zoneId === undefined) {
         var current_player_id = this.convertDeviceIdToPlayerNumber(this.device_id);
+        if (current_player_id === undefined){
+          continue;
+        }
         new_immersive_state[current_player_id] = opt;
       } else {
         delete opt.zoneId;
