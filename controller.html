@@ -36,19 +36,19 @@
       function init() {
         airconsole = new AirConsole({ orientation: "portrait" });
 
-        airconsole.onDeviceStateChange = function(device_id, data) {
-          console.info(`This: ${airconsole.device_id}, DeviceId: ${device_id}, data: `, data);
-        }
+        // airconsole.onDeviceStateChange = (device_id, data) => console.info(`DeviceStateChange [${ airconsole.device_id }]: ${ airconsole.device_id }, From: ${ device_id }, data: `, data);
 
         /*
          * Checks if this device is part of the active game.
          */
         airconsole.onActivePlayersChange = function (player) {
+          console.info(`ActivePlayersChange [${ airconsole.device_id }]: player number`, player)
           var div = document.getElementById("game_output");
           if (player !== undefined) {
             div.innerHTML = ["Left Player", "Right Player"][player];
           } else {
-            div.innerHTML = "It's a 2 player game!";
+            transitions["LOBBY"].entryAction();
+            // div.innerHTML = "It's a 2 player game!";
           }
         };
 
@@ -93,6 +93,10 @@
         };
 
         airconsole.onCustomDeviceStateChange = (device_id, data) => {
+          console.info(`CustomDeviceStateChange [${ airconsole.device_id }]: From: ${ device_id }, data: `, data);
+          // TODO: Fake version of silence_players to be replaced with actual behavior
+          // if(airconsole.device_id !== AirConsole.SCREEN && data.screen === "GAME" && airconsole.convertDeviceIdToPlayerNumber(airconsole.device_id) === undefined) return;
+
           if(device_id === AirConsole.SCREEN) {
             if(!!this.screen) transitions[this.screen].exitAction();
             if(!!data.screen) transitions[data.screen].entryAction();

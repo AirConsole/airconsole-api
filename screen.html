@@ -21,7 +21,7 @@
             resetBall(50, 0);
             score = [0, 0];
             score_el.innerHTML = score.join(":");
-            checkTwoPlayers()
+            checkTwoPlayers(false)
           },
           exitAction: () => {
           },
@@ -50,10 +50,8 @@
        * Sets up the communication to game pads.
        */
       function setupConsole() {
-        airconsole = new AirConsole({silence_players: true});
+        airconsole = new AirConsole(/*{ silence_players: true }*/);
 
-        airconsole.onDeviceStateChange = function(device_id, data) {
-          console.info(`This: ${airconsole.device_id}, DeviceId: ${device_id}, data: `, data);
         }
         airconsole.onConnect = function (device_id) {
           if (!initialized) {
@@ -65,7 +63,7 @@
 
         airconsole.onDisconnect = function (device_id) {
           var player = airconsole.convertDeviceIdToPlayerNumber(device_id);
-          if (player != undefined) {
+          if (player !== undefined) {
             // Player that was in game left the game.
             // Setting active players to length 0.
             // airconsole.setActivePlayers(0);
@@ -91,22 +89,22 @@
       /**
        * Checks if two players are connected!
        */
-      function checkTwoPlayers() {
+      function checkTwoPlayers(send = true) {
         var active_players = airconsole.getActivePlayerDeviceIds();
         var connected_controllers = airconsole.getControllerDeviceIds();
         // Only update if the game didn't have active players.
         if (active_players.length == 0) {
-          if (connected_controllers.length >= 2) {
+          if (connected_controllers.length > 2) {
+            document.getElementById("wait").innerHTML = "Only 2 players can play, sorry";
+          } else if (connected_controllers.length == 2) {
             document.getElementById("wait").innerHTML = "";
           } else if (connected_controllers.length == 1) {
             document.getElementById("wait").innerHTML = "Need 1 more player!";
-            // resetBall(0, 0);
           } else if (connected_controllers.length == 0) {
             document.getElementById("wait").innerHTML = "Need 2 more players!";
-            // resetBall(0, 0);
           }
         }
-        airconsole.setCustomDeviceStateProperty("enough_players", connected_controllers.length >= 2);
+        if(send) airconsole.setCustomDeviceStateProperty("enough_players", connected_controllers.length == 2);
       }
 
       /**

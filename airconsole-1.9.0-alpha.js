@@ -1202,6 +1202,7 @@ AirConsole.prototype.onPostMessage_ = function(event) {
       var is_connect = (game_url_before != game_url &&
         game_url_after == game_url);
       if (is_connect) {
+        // TODO(Marc): If the player is silenced, onConnect should not yet be called but only after setActivePlayers(0)
         me.onConnect(data.device_id);
       } else if (game_url_before == game_url &&
         game_url_after != game_url) {
