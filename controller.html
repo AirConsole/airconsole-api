@@ -52,8 +52,33 @@
           }
         };
 
+        airconsole.onConnect = function(device_id) {
+          if (airconsole.getMasterControllerDeviceId() === airconsole.device_id) {
+            configureMaster();
+          } else {
+            configureClient();
+          }
+        }
 
-        airconsole.onReady = () => {
+        airconsole.onDisconnect = function (device_id) {
+          if (airconsole.getMasterControllerDeviceId() === airconsole.device_id) {
+            configureMaster();
+          } else {
+            configureClient();
+          }
+        }
+
+        const configureClient = () => {
+          if (
+            airconsole.getDeviceId() !==
+            airconsole.getMasterControllerDeviceId()
+          ) {
+            document.getElementById("lobby_players").style.display = "block";
+            document.getElementById("lobby_master").style.display = "none";
+            document.getElementById("wait_players").style.display = "none";
+          }
+        }
+        const configureMaster = () => {
           if (
             airconsole.getDeviceId() ===
             airconsole.getMasterControllerDeviceId()
@@ -62,6 +87,9 @@
             document.getElementById("lobby_master").style.display = "block";
             document.getElementById("wait_players").style.display = "block";
           }
+        }
+        airconsole.onReady = () => {
+          configureMaster();
         };
 
         airconsole.onCustomDeviceStateChange = (device_id, data) => {
