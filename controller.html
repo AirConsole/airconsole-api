@@ -11,15 +11,19 @@
       var transitions = {
         LOBBY: {
           entryAction: () => {
+            if(screen === "LOBBY") return;
             document.getElementById("lobby").style.display = "block";
             document.getElementById("game_mode").style.display = "none";
+            this.screen = "LOBBY";
           },
           exitAction: () => {},
         },
         GAME: {
           entryAction: () => {
+            if(screen === "GAME") return;
             document.getElementById("lobby").style.display = "none";
             document.getElementById("game_mode").style.display = "block";
+            this.screen = "GAME";
           },
           exitAction: () => {},
         },
@@ -31,6 +35,10 @@
        */
       function init() {
         airconsole = new AirConsole({ orientation: "portrait" });
+
+        airconsole.onDeviceStateChange = function(device_id, data) {
+          console.info(`This: ${airconsole.device_id}, DeviceId: ${device_id}, data: `, data);
+        }
 
         /*
          * Checks if this device is part of the active game.
@@ -58,10 +66,9 @@
 
         airconsole.onCustomDeviceStateChange = (device_id, data) => {
           if(device_id === AirConsole.SCREEN) {
-            if (data.screen && data.screen !== screen) {
-              transitions[data.screen].entryAction();
-            }
-            if (data.screen === "LOBBY") {
+            if(!!this.screen) transitions[this.screen].exitAction();
+            if(!!data.screen) transitions[data.screen].entryAction();
+            if (this.screen === "LOBBY") {
               if(data.enough_players){
                 document.getElementById("start_game").style.display = "block";
                 document.getElementById("wait_players").style.display = "none";

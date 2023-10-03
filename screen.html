@@ -21,6 +21,7 @@
             resetBall(50, 0);
             score = [0, 0];
             score_el.innerHTML = score.join(":");
+            checkTwoPlayers()
           },
           exitAction: () => {
           },
@@ -51,6 +52,9 @@
       function setupConsole() {
         airconsole = new AirConsole({silence_players: true});
 
+        airconsole.onDeviceStateChange = function(device_id, data) {
+          console.info(`This: ${airconsole.device_id}, DeviceId: ${device_id}, data: `, data);
+        }
         airconsole.onConnect = function (device_id) {
           if (!initialized) {
             transitions["LOBBY"].entryAction();
@@ -232,12 +236,20 @@
             displayScore(0);
             resetBall(-ball.move.x, ball.move.y / 2);
             vibrate(1);
+            if(score[0] > 3){
+              transitions["GAME"].exitAction();
+              transitions["LOBBY"].entryAction();
+            }
           }
           if (ball.pos.x <= 0) {
             score[1] += 1;
             displayScore(1);
             resetBall(-ball.move.x, ball.move.y / 2);
             vibrate(0);
+            if(score[1] > 3){
+              transitions["GAME"].exitAction();
+              transitions["LOBBY"].entryAction();
+            }
           }
         }
         draw();
