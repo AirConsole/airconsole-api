@@ -10,13 +10,12 @@ function testPlayerSilencing() {
     airconsole.devices[0] = {};
     airconsole.devices[1] = undefined;
 
-    var device_data = {
+    airconsole.devices[DEVICE_ID] = {
       uid: 1237,
       nickname: "Sergio",
       location: LOCATION,
       custom: {}
     };
-    airconsole.devices[DEVICE_ID] = device_data;
   }
 
   it("should silence players with AirConsole not containing a silencing configuration", function () {

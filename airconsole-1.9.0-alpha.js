@@ -55,6 +55,10 @@ function AirConsole(opts) {
  *           accelerometer and the gyroscope. Only for controllers.
  * @property {boolean} translation - If an AirConsole translation file should
  *           be loaded.
+ * @property {boolean} [silence_players] - If set, newly joining devices will be
+ *           prompted to wait while an active game is going on. An active game
+ *           is started by calling setActivePlayers(X) with X larger than 0.
+ *           A running game is finished by calling setActivePlayers(0).
  */
 
 
@@ -189,12 +193,13 @@ AirConsole.prototype.getServerTime = function() {
   return new Date().getTime() + this.server_time_offset;
 };
 
-// TODO: Add documentation
+/**
+ * Queries, if new devices are currently silenced.
+ * @returns {boolean} True, if new devices that are not players are silenced.
+ */
 AirConsole.prototype.arePlayersSilenced = function () {
-  return (this.silence_players ||
-      (this.getCustomDeviceState(AirConsole.SCREEN)?.silence_players || false)) &&
+  return (!!this.silence_players || this.getCustomDeviceState(AirConsole.SCREEN)?.silence_players || false) &&
     (this.devices[AirConsole.SCREEN]["players"]?.length > 0 || false);
-  // return this.silence_players && this.getActivePlayerDeviceIds() > 0;
 }
 
 /** ------------------------------------------------------------------------ *
@@ -211,7 +216,7 @@ AirConsole.prototype.arePlayersSilenced = function () {
  * @param data
  */
 AirConsole.prototype.message = function (device_id, data) {
-  if (this.device_id !== undefined && this.receiverNotSilenced_(device_id)) {
+  if (this.device_id !== undefined && !this.receiverIsSilenced_(device_id)) {
     // if (this.device_id !== undefined) {
     AirConsole.postMessage_({ action: "message", to: device_id, data: data });
   }
@@ -1095,6 +1100,7 @@ AirConsole.prototype.init_ = function(opts) {
   me.version = "1.9.0";
   me.devices = [];
   me.server_time_offset = opts.synchronize_time ? 0 : false;
+  me.silence_players = opts.silence_players || false; // Default matches behavior before 1.9.0.
   window.addEventListener("message", function(event) {
     me.onPostMessage_(event);
   }, false);
@@ -1107,38 +1113,60 @@ AirConsole.prototype.init_ = function(opts) {
     version: me.version,
     device_motion: opts.device_motion,
     synchronize_time: opts.synchronize_time,
+    silence_players: me.silence_players,
     location: me.getLocationUrl_(),
     translation: opts.translation
   });
-  this.setPlayerSilence(opts.silence_players || false); // Default matches behavior before 1.9.0.
+  this.enablePlayerSilencing_(me.silence_players);
 };
 
-AirConsole.prototype.setPlayerSilence = function (silenced) {
-  this.silence_players = !!silenced;
+/**
+ * Enables the player silencing
+ * @param {boolean} silence_players If true, the player silencing feature is active
+ * @private
+ */
+AirConsole.prototype.enablePlayerSilencing_ = function (silence_players) {
+  if (this.getCustomDeviceState(AirConsole.SCREEN, AirConsole.PLAYER_SILENCE_KEY) !== undefined)
+    return;
+
+  this.silence_players = !!silence_players;
   if (this.device_id === AirConsole.SCREEN) {
     this.setCustomDeviceStateProperty(AirConsole.PLAYER_SILENCE_KEY, this.silence_players)
   }
 }
 
-// TODO: Add documentation
-// TODO: Find better name
+/**
+ * Checks if the location is in the same location of the sender
+ * @param {string} location The location to check.
+ * @param {string} sender_id The id of the sender.
+ * @returns {boolean} True if the location are identical.
+ * @private
+ */
 AirConsole.prototype.isDeviceInSameLocation_ = function (location, sender_id) {
-  return this.devices[sender_id] && location === this.getGameUrl_(this.devices[sender_id].location);
+  return !!this.devices[sender_id] && location === this.getGameUrl_(this.devices[sender_id].location);
 }
 
-// TODO: Add documentation
-// TODO: Find better name
-AirConsole.prototype.receiverNotSilenced_ = function (receiver_id) {
-  return !this.arePlayersSilenced() ||
-    this.convertDeviceIdToPlayerNumber(receiver_id) !== undefined;
+/**
+ * Queries if a given device_id is a player in the current session and not silenced.
+ * @param {string} device_id The device_id to query the information for
+ * @returns {boolean} True, if the receiver with device_id is silenced.
+ * @private
+ */
+AirConsole.prototype.receiverIsSilenced_ = function (device_id) {
+  return this.arePlayersSilenced() && device_id !== undefined &&
+      this.convertDeviceIdToPlayerNumber(device_id) === undefined;
 }
 
-// TODO: Add documentation
-// TODO: Find better name
-AirConsole.prototype.deviceNotSilenced_ = function (sender_id) {
-  return !this.arePlayersSilenced() ||
-    (sender_id === AirConsole.SCREEN || this.convertDeviceIdToPlayerNumber(sender_id) !== undefined) &&
-    (this.getDeviceId() === AirConsole.SCREEN || this.convertDeviceIdToPlayerNumber(this.getDeviceId()) !== undefined);
+/**
+ * Queries if a given device_id is silenced
+ * @param {string} device_id  The device_id to be queried.
+ * @returns {boolean} True, if the sender with device_id is silenced.
+ * @private
+ */
+AirConsole.prototype.senderIsSilenced_ = function (device_id) {
+  return this.arePlayersSilenced() && device_id !== undefined &&
+      !(device_id === AirConsole.SCREEN || this.convertDeviceIdToPlayerNumber(device_id) !== undefined) ||
+      !(this.getDeviceId() === AirConsole.SCREEN || this.convertDeviceIdToPlayerNumber(this.getDeviceId()) !== undefined)
 }
 
 /**
@@ -1154,11 +1182,7 @@ AirConsole.prototype.onPostMessage_ = function(event) {
     me.onDeviceMotion(data.data);
   } else if (data.action == "message") {
     if (me.device_id !== undefined) {
-      // if (me.isDeviceInSameLocation_(game_url, data.from)) {
-      if (me.isDeviceInSameLocation_(game_url, data.from) &&
-        me.deviceNotSilenced_(data.from)) {
-        // if (me.devices[data.from] &&
-        //   game_url === me.getGameUrl_(me.devices[data.from].location)) {
+      if (me.isDeviceInSameLocation_(game_url, data.from) && !me.senderIsSilenced_(data.from)) {
         me.onMessage(data.from, data.data);
       }
     }
