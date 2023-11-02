@@ -202,6 +202,11 @@ AirConsole.prototype.arePlayersSilenced = function () {
     (this.devices[AirConsole.SCREEN]["players"]?.length > 0 || false);
 }
 
+/**
+ * Dictionary of silenced update messages queued during a running game session.
+ */
+AirConsole.prototype.silencedUpdatesQueue_ = {};
+
 /** ------------------------------------------------------------------------ *
  * @chapter                     MESSAGING                                    *
  * @see         http://developers.airconsole.com/#!/guides/pong              *
@@ -530,6 +535,18 @@ AirConsole.prototype.setActivePlayers = function(max_players) {
   }
   this.devices[AirConsole.SCREEN]["players"] = players;
   this.set_("players", players);
+
+  if (max_players === 0) {
+    for (var key in this.silencedUpdatesQueue_) {
+      if (this.silencedUpdatesQueue_.hasOwnProperty(key)) {
+        var events = this.silencedUpdatesQueue_[key];
+        for (var i = 0; i < events.length; i++) {
+          this.onPostMessage_(events[i]);
+        }
+      }
+    }
+    this.silencedUpdatesQueue_ = {};
+  }
 };
 
 /**
@@ -1099,6 +1116,7 @@ AirConsole.prototype.init_ = function(opts) {
   var me = this;
   me.version = "1.9.0";
   me.devices = [];
+  me.silencedUpdatesQueue_ = {};
   me.server_time_offset = opts.synchronize_time ? 0 : false;
   me.silence_players = opts.silence_players || false; // Default matches behavior before 1.9.0.
   window.addEventListener("message", function(event) {
@@ -1197,15 +1215,43 @@ AirConsole.prototype.onPostMessage_ = function(event) {
       if (data.device_data) {
         game_url_after = me.getGameUrl_(data.device_data.location);
       }
+      // We need to do this before me.devices[data.device_id] is altered
+      if (me.senderIsSilenced_(data.device_id)) {
+        const queue = me.silencedUpdatesQueue_[data.device_id] || [];
+        if (isDisconnectEvent({ game_url_before, game_url, game_url_after })) {
+          let connect_removed = false;
+          for (let i = 0; i < queue.length; i++) {
+            if (queue[i].hasOwnProperty("_is_connect_event")) {
+              queue.splice(i);
+              connect_removed = true;
+              break;
+            }
+          }
+
+          // - If the queue is empty, delete the entry for data.device_id from silencedUpdatesQueue_
+          if (queue.length < 1) {
+            delete me.silencedUpdatesQueue_[data.device_id];
+            return;
+          }
+          if (connect_removed) return;
+        }
+
+        if (isConnectEvent({ game_url_before, game_url, game_url_after })) {
+          event._is_connect_event = true;
+        }
+
+        queue.push(event);
+        me.silencedUpdatesQueue_[data.device_id] = queue;
+        return;
+      }
+
       me.devices[data.device_id] = data.device_data;
       me.onDeviceStateChange(data.device_id, data.device_data);
-      var is_connect = (game_url_before != game_url &&
-        game_url_after == game_url);
+      var is_connect = isConnectEvent({ game_url_before, game_url, game_url_after });// (game_url_before != game_url && game_url_after == game_url);
+      var is_disconnect = isDisconnectEvent({ game_url_before, game_url, game_url_after });//(game_url_before == game_url && game_url_after != game_url);
       if (is_connect) {
-        // TODO(Marc): If the player is silenced, onConnect should not yet be called but only after setActivePlayers(0)
         me.onConnect(data.device_id);
-      } else if (game_url_before == game_url &&
-        game_url_after != game_url) {
+      } else if (is_disconnect) {
         me.onDisconnect(data.device_id);
       }
       if (data.device_data) {
@@ -1251,8 +1297,7 @@ AirConsole.prototype.onPostMessage_ = function(event) {
     me.onReady(data.code);
     var game_url = me.getGameUrl_(me.getLocationUrl_());
     for (var i = 0; i < me.devices.length; ++i) {
-      if (me.devices[i] &&
-        me.getGameUrl_(me.devices[i].location) == game_url) {
+      if (me.isDeviceInSameLocation_(game_url, i)) {
         if (i != me.getDeviceId()) {
           me.onConnect(i);
           var custom_state = me.getCustomDeviceState(i);
@@ -1323,6 +1368,14 @@ AirConsole.prototype.onPostMessage_ = function(event) {
     }
   }
 };
+
+const isConnectEvent = ({ game_url_before, game_url, game_url_after }) => {
+  return (game_url_before != game_url && game_url_after == game_url);
+}
+
+const isDisconnectEvent = ({ game_url_before, game_url, game_url_after }) => {
+  return (game_url_before == game_url && game_url_after != game_url)
+}
 
 /**
  * @private

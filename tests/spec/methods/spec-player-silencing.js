@@ -109,10 +109,26 @@ function testPlayerSilencing() {
     expect(AirConsole.postMessage_).toHaveBeenCalledTimes(0);
   });
 
-  // Challenge 1: Without time progression the ability to process the change is limited so no message / connect could happen in response to setActivePlayers(0)
-  //              Can this potentially be overcome by using other messages / events to build an event driven flow?
-  // Challenge 2: Our current test setup is unable to handle 2 or more concurrent participants to make this a reasonably low effort task
-  it("Should send onConnect after the player is no longer silenced", () => {
+  it("Should invoke onConnect after the player is no longer silenced", () => {
+    const silenced_id = 2;
+    initAirConsoleWithSilencedDevice(1, silenced_id, 0);
+    const target_location = airconsole.devices[silenced_id].location;
+    airconsole.devices[silenced_id].location = null;
+    spyOn(airconsole, 'onConnect');
+    // When device_id 2 connects, NO onConnect is executed
+    dispatchCustomMessageEvent({
+      action: "update",
+      device_id: silenced_id,
+      device_data: { location: target_location }
+    });
+    expect(airconsole.onConnect).not.toHaveBeenCalledWith(silenced_id);
+
+    airconsole.setActivePlayers(0);
+
+    expect(airconsole.onConnect).toHaveBeenCalledWith(silenced_id);
+  });
+
+  it("Should invoke onConnect if the player has disconnected while still silenced", () => {
     const silenced_id = 2;
     initAirConsoleWithSilencedDevice(1, silenced_id, 0);
     const target_location = airconsole.devices[silenced_id].location;
@@ -126,45 +142,97 @@ function testPlayerSilencing() {
     });
 
     // While player silencing is active and device_id 2 is still silenced, onConnect should not fire.
-    expect(airconsole.onConnect).toHaveBeenCalledTimes(0);
+    expect(airconsole.onConnect).not.toHaveBeenCalledWith(silenced_id);
+
+    // When device_id 2 disconnects, NO onConnect is executed
+    dispatchCustomMessageEvent({
+      action: "update",
+      device_id: silenced_id,
+      device_data: { location: "disconnect" }
+    });
+    airconsole.devices[silenced_id].location = target_location;
 
     airconsole.setActivePlayers(0);
 
-    expect(airconsole.onConnect).toHaveBeenCalledWith({});
+    expect(airconsole.onConnect).not.toHaveBeenCalledWith(silenced_id);
   });
 
-  // Edge Case 1
-  // Challenge: Handling 2 actual airconsole instances / communication / basically anything
-  xit("Should not send onConnect if the player has disconnected while still silenced", () => {
-    // Screen setActivePlayers(2)
-    // Controller 3 connects
-    // Controller 3 disconnects
-    // Expect onConnect to not have been called on Screen
+  it("Should invoke onDisconnect if the player has disconnected while still silenced", () => {
+    const silenced_id = 2;
+    initAirConsoleWithSilencedDevice(1, silenced_id, 0);
+    const target_location = airconsole.devices[silenced_id].location;
+    airconsole.devices[silenced_id].location = null;
+    spyOn(airconsole, 'onDisconnect');
+    // When device_id 2 connects, NO onConnect is executed
+    dispatchCustomMessageEvent({
+      action: "update",
+      device_id: silenced_id,
+      device_data: { location: target_location }
+    });
+
+
+    airconsole.devices[silenced_id].location = target_location;
+    // When device_id 2 disconnects, NO onConnect is executed
+    dispatchCustomMessageEvent({
+      action: "update",
+      device_id: silenced_id,
+      device_data: { location: "disconnect" }
+    });
+
+    airconsole.setActivePlayers(0);
+
+    expect(airconsole.onDisconnect).not.toHaveBeenCalledWith(silenced_id);
   });
 
-  // Edge Case 2
-  // Challenge: Handling 2 actual airconsole instances / communication / basically anything
-  xit("Should not send onDisconnect if the player has disconnected while still silenced", () => {
-    // Screen setActivePlayers(2)
-    // Controller 3 connects
-    // Controller 3 disconnects
-    // Expect onDisconnect to not have been called on Screen
+  it("Should invoke onConnect if the player has disconnected while still silenced", () => {
+    const silenced_id = 2;
+    initAirConsoleWithSilencedDevice(1, silenced_id, 0);
+    const target_location = airconsole.devices[silenced_id].location;
+    airconsole.devices[silenced_id].location = null;
+    spyOn(airconsole, 'onConnect');
+    // When device_id 2 connects, NO onConnect is executed
+    dispatchCustomMessageEvent({
+      action: "update",
+      device_id: silenced_id,
+      device_data: { location: target_location }
+    });
+
+
+    airconsole.devices[silenced_id].location = target_location;
+    // When device_id 2 disconnects, NO onConnect is executed
+    dispatchCustomMessageEvent({
+      action: "update",
+      device_id: silenced_id,
+      device_data: { location: "disconnect" }
+    });
+
+    airconsole.setActivePlayers(0);
+
+    expect(airconsole.onConnect).not.toHaveBeenCalledWith(silenced_id);
   });
 
-  // Edge Case 3
-  // Challenge: how to test this with a good enough approximate behavior of the platform
-  xit("Should respect order of messages SCREEN -> CONTROLLER in the transition phase from silenced to unsilenced", () => {
-    // Screen sends message to silenced_id
-    // Screen setActivePlayers(0)
-    // Expect onMessage to not have been called on silenced_id
-  });
+  it("Should invoke onDisconnect if the player has disconnected while still silenced", () => {
+    const silenced_id = 2;
+    initAirConsoleWithSilencedDevice(1, silenced_id, 0);
+    const target_location = airconsole.devices[silenced_id].location;
+    airconsole.devices[silenced_id].location = null;
+    spyOn(airconsole, 'onDisconnect');
+    // When device_id 2 connects, NO onConnect is executed
+    dispatchCustomMessageEvent({
+      action: "update",
+      device_id: silenced_id,
+      device_data: { location: target_location }
+    });
 
-  // Edge Case 4
-  // Challenge: how to test this with a good enough approximate behavior of the platform
-  xit("Should respect order of messages SCREEN -> CONTROLLER in the transition phase from silenced to unsilenced", () => {
-    // Screen setActivePlayers(0)
-    // Screen sends message to silenced_id
-    // Expect onMessage to have been called with message on silenced_id
+    airconsole.devices[silenced_id].location = target_location;
+    // When device_id 2 disconnects, NO onConnect is executed
+    dispatchCustomMessageEvent({
+      action: "update",
+      device_id: silenced_id,
+      device_data: { location: "disconnect" }
+    });
+
+    expect(airconsole.onDisconnect).toHaveBeenCalledTimes(0);
   });
 
   function initAirConsoleWithSilencedDevice(connected_id = 1, silenced_id = 2, active_device_id = 0) {
