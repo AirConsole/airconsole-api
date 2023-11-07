@@ -1,6 +1,6 @@
 /**
  * AirConsole.
- * @copyright 2022 by N-Dream AG, Switzerland. All rights reserved.
+ * @copyright 2023 by N-Dream AG, Switzerland. All rights reserved.
  * @version 1.9.0
  *
  * IMPORTANT:
@@ -55,7 +55,7 @@ function AirConsole(opts) {
  *           accelerometer and the gyroscope. Only for controllers.
  * @property {boolean} translation - If an AirConsole translation file should
  *           be loaded.
- * @property {boolean} [silence_players] - If set, newly joining devices will be
+ * @property {boolean} [silence_players=false] - If set, newly joining devices will be
  *           prompted to wait while an active game is going on. An active game
  *           is started by calling setActivePlayers(X) with X larger than 0.
  *           A running game is finished by calling setActivePlayers(0).
@@ -199,7 +199,7 @@ AirConsole.prototype.getServerTime = function() {
  */
 AirConsole.prototype.arePlayersSilenced = function () {
   return (!!this.silence_players || this.getCustomDeviceState(AirConsole.SCREEN)?.silence_players || false) &&
-    (this.devices[AirConsole.SCREEN]["players"]?.length > 0 || false);
+      (this.devices[AirConsole.SCREEN] !== undefined && this.devices[AirConsole.SCREEN]["players"]?.length > 0);
 }
 
 /**
@@ -525,7 +525,7 @@ AirConsole.prototype.editProfile = function() {
  *                               get a player number assigned.
  */
 AirConsole.prototype.setActivePlayers = function(max_players) {
-  if (this.getDeviceId() != AirConsole.SCREEN) {
+    if (this.getDeviceId() !== AirConsole.SCREEN) {
     throw "Only the AirConsole.SCREEN can set the active players!";
   }
   this.device_id_to_player_cache = undefined;
@@ -1182,9 +1182,10 @@ AirConsole.prototype.receiverIsSilenced_ = function (device_id) {
  * @private
  */
 AirConsole.prototype.senderIsSilenced_ = function (device_id) {
-  return this.arePlayersSilenced() && device_id !== undefined &&
-      !(device_id === AirConsole.SCREEN || this.convertDeviceIdToPlayerNumber(device_id) !== undefined) ||
-      !(this.getDeviceId() === AirConsole.SCREEN || this.convertDeviceIdToPlayerNumber(this.getDeviceId()) !== undefined)
+  return this.arePlayersSilenced() &&
+      device_id !== undefined
+      && device_id !== AirConsole.SCREEN
+      && this.convertDeviceIdToPlayerNumber(device_id) === undefined;
 }
 
 /**
@@ -1196,15 +1197,15 @@ AirConsole.prototype.onPostMessage_ = function(event) {
   var me = this;
   var data = event.data;
   var game_url = me.getGameUrl_(me.getLocationUrl_());
-  if (data.action == "device_motion") {
+  if (data.action === "device_motion") {
     me.onDeviceMotion(data.data);
-  } else if (data.action == "message") {
+  } else if (data.action === "message") {
     if (me.device_id !== undefined) {
-      if (me.isDeviceInSameLocation_(game_url, data.from) && !me.senderIsSilenced_(data.from)) {
+      if (me.isDeviceInSameLocation_(game_url, data.from) && !me.senderIsSilenced_(data.from) && !me.receiverIsSilenced_(data.to)) {
         me.onMessage(data.from, data.data);
       }
     }
-  } else if (data.action == "update") {
+  } else if (data.action === "update") {
     if (me.device_id !== undefined) {
       var game_url_before = null;
       var game_url_after = null;
@@ -1228,11 +1229,12 @@ AirConsole.prototype.onPostMessage_ = function(event) {
             }
           }
 
+
           // - If the queue is empty, delete the entry for data.device_id from silencedUpdatesQueue_
-          if (queue.length < 1) {
+            // if (queue.length < 1) {
             delete me.silencedUpdatesQueue_[data.device_id];
-            return;
-          }
+            // return;
+            // }
           if (connect_removed) return;
         }
 
@@ -1245,40 +1247,36 @@ AirConsole.prototype.onPostMessage_ = function(event) {
         return;
       }
 
-      me.devices[data.device_id] = data.device_data;
-      me.onDeviceStateChange(data.device_id, data.device_data);
+      var sender = data.device_id;
+      me.devices[sender] = data.device_data;
+      me.onDeviceStateChange(sender, data.device_data);
       var is_connect = isConnectEvent({ game_url_before, game_url, game_url_after });// (game_url_before != game_url && game_url_after == game_url);
       var is_disconnect = isDisconnectEvent({ game_url_before, game_url, game_url_after });//(game_url_before == game_url && game_url_after != game_url);
       if (is_connect) {
-        me.onConnect(data.device_id);
+        // console.info(`UPDATE onConnect[${ me.device_id }]: [${ sender }]`);
+        me.onConnect(sender);
       } else if (is_disconnect) {
-        me.onDisconnect(data.device_id);
+        me.onDisconnect(sender);
       }
       if (data.device_data) {
-        if ((data.device_data._is_custom_update &&
-            game_url_after == game_url) ||
-          (is_connect && data.device_data.custom)) {
-          me.onCustomDeviceStateChange(data.device_id,
-            data.device_data.custom);
+        if ((data.device_data._is_custom_update && game_url_after === game_url)
+            || (is_connect && data.device_data.custom)) {
+          me.onCustomDeviceStateChange(sender, data.device_data.custom);
         }
-        if ((data.device_data._is_players_update &&
-            game_url_after == game_url) ||
-          (data.device_id == AirConsole.SCREEN &&
-            data.device_data.players && is_connect)) {
+        if ((data.device_data._is_players_update && game_url_after === game_url)
+            || (data.device_id === AirConsole.SCREEN && data.device_data.players && is_connect)) {
           me.device_id_to_player_cache = null;
-          me.onActivePlayersChange(me.convertDeviceIdToPlayerNumber(
-            me.getDeviceId()));
+          me.onActivePlayersChange(me.convertDeviceIdToPlayerNumber(me.getDeviceId()));
         }
-        if (data.device_data.premium &&
-          (data.device_data._is_premium_update || is_connect)) {
-          me.onPremium(data.device_id);
+        if (data.device_data.premium && (data.device_data._is_premium_update || is_connect)) {
+          me.onPremium(sender);
         }
         if (data.device_data._is_profile_update) {
-          me.onDeviceProfileChange(data.device_id);
+          me.onDeviceProfileChange(sender);
         }
       }
     }
-  } else if (data.action == "ready") {
+  } else if (data.action === "ready") {
     me.device_id = data.device_id;
     me.devices = data.devices;
     if (me.server_time_offset !== false) {
@@ -1294,20 +1292,25 @@ AirConsole.prototype.onPostMessage_ = function(event) {
     }
     var client = me.devices[data.device_id].client;
     me.bindTouchFix_(client);
+      // if (me.senderIsSilenced_(data.device_id) || me.receiverIsSilenced_(data.device_id)) {
+      //   const queue = me.silencedUpdatesQueue_[data.device_id] || [];
+      //   queue.push(event);
+      //   me.silencedUpdatesQueue_[data.device_id] = queue;
+      //   return;
+      // }
     me.onReady(data.code);
-    var game_url = me.getGameUrl_(me.getLocationUrl_());
-    for (var i = 0; i < me.devices.length; ++i) {
+    for (let i = 0; i < me.devices.length; ++i) {
       if (me.isDeviceInSameLocation_(game_url, i)) {
-        if (i != me.getDeviceId()) {
+        if (i !== me.getDeviceId()) {
+          // console.info(`READY onConnect[${ me.device_id }]: [${ i }]`);
           me.onConnect(i);
           var custom_state = me.getCustomDeviceState(i);
           if (custom_state !== undefined) {
             me.onCustomDeviceStateChange(i, custom_state);
           }
-          if (i == AirConsole.SCREEN && me.devices[i].players) {
+          if (i === AirConsole.SCREEN && me.devices[i].players) {
             me.device_id_to_player_cache = null;
-            me.onActivePlayersChange(me.convertDeviceIdToPlayerNumber(
-              me.getDeviceId()));
+            me.onActivePlayersChange(me.convertDeviceIdToPlayerNumber(me.getDeviceId()));
           }
         }
         if (me.isPremium(i)) {
