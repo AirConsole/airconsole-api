@@ -222,7 +222,6 @@ AirConsole.prototype.silencedUpdatesQueue_ = {};
  */
 AirConsole.prototype.message = function (device_id, data) {
   if (this.device_id !== undefined && !this.receiverIsSilenced_(device_id)) {
-    // if (this.device_id !== undefined) {
     AirConsole.postMessage_({ action: "message", to: device_id, data: data });
   }
 }
@@ -525,7 +524,7 @@ AirConsole.prototype.editProfile = function() {
  *                               get a player number assigned.
  */
 AirConsole.prototype.setActivePlayers = function(max_players) {
-    if (this.getDeviceId() !== AirConsole.SCREEN) {
+  if (this.getDeviceId() !== AirConsole.SCREEN) {
     throw "Only the AirConsole.SCREEN can set the active players!";
   }
   this.device_id_to_player_cache = undefined;
@@ -1118,7 +1117,7 @@ AirConsole.prototype.init_ = function(opts) {
   me.devices = [];
   me.silencedUpdatesQueue_ = {};
   me.server_time_offset = opts.synchronize_time ? 0 : false;
-  me.silence_players = opts.silence_players || false; // Default matches behavior before 1.9.0.
+  me.silence_players = opts.silence_players || false;
   window.addEventListener("message", function(event) {
     me.onPostMessage_(event);
   }, false);
@@ -1147,8 +1146,8 @@ AirConsole.prototype.enablePlayerSilencing_ = function (silence_players) {
   if (this.getCustomDeviceState(AirConsole.SCREEN, AirConsole.PLAYER_SILENCE_KEY) !== undefined)
     return;
 
-  this.silence_players = !!silence_players;
   if (this.device_id === AirConsole.SCREEN) {
+    this.silence_players = !!silence_players;
     this.setCustomDeviceStateProperty(AirConsole.PLAYER_SILENCE_KEY, this.silence_players)
   }
 }
@@ -1216,7 +1215,6 @@ AirConsole.prototype.onPostMessage_ = function(event) {
       if (data.device_data) {
         game_url_after = me.getGameUrl_(data.device_data.location);
       }
-      // We need to do this before me.devices[data.device_id] is altered
       if (me.senderIsSilenced_(data.device_id)) {
         const queue = me.silencedUpdatesQueue_[data.device_id] || [];
         if (isDisconnectEvent({ game_url_before, game_url, game_url_after })) {
@@ -1229,12 +1227,7 @@ AirConsole.prototype.onPostMessage_ = function(event) {
             }
           }
 
-
-          // - If the queue is empty, delete the entry for data.device_id from silencedUpdatesQueue_
-            // if (queue.length < 1) {
-            delete me.silencedUpdatesQueue_[data.device_id];
-            // return;
-            // }
+          delete me.silencedUpdatesQueue_[data.device_id];
           if (connect_removed) return;
         }
 
@@ -1250,10 +1243,9 @@ AirConsole.prototype.onPostMessage_ = function(event) {
       var sender = data.device_id;
       me.devices[sender] = data.device_data;
       me.onDeviceStateChange(sender, data.device_data);
-      var is_connect = isConnectEvent({ game_url_before, game_url, game_url_after });// (game_url_before != game_url && game_url_after == game_url);
-      var is_disconnect = isDisconnectEvent({ game_url_before, game_url, game_url_after });//(game_url_before == game_url && game_url_after != game_url);
+      var is_connect = isConnectEvent({ game_url_before, game_url, game_url_after });
+      var is_disconnect = isDisconnectEvent({ game_url_before, game_url, game_url_after });
       if (is_connect) {
-        // console.info(`UPDATE onConnect[${ me.device_id }]: [${ sender }]`);
         me.onConnect(sender);
       } else if (is_disconnect) {
         me.onDisconnect(sender);
@@ -1292,17 +1284,10 @@ AirConsole.prototype.onPostMessage_ = function(event) {
     }
     var client = me.devices[data.device_id].client;
     me.bindTouchFix_(client);
-      // if (me.senderIsSilenced_(data.device_id) || me.receiverIsSilenced_(data.device_id)) {
-      //   const queue = me.silencedUpdatesQueue_[data.device_id] || [];
-      //   queue.push(event);
-      //   me.silencedUpdatesQueue_[data.device_id] = queue;
-      //   return;
-      // }
     me.onReady(data.code);
     for (let i = 0; i < me.devices.length; ++i) {
       if (me.isDeviceInSameLocation_(game_url, i)) {
         if (i !== me.getDeviceId()) {
-          // console.info(`READY onConnect[${ me.device_id }]: [${ i }]`);
           me.onConnect(i);
           var custom_state = me.getCustomDeviceState(i);
           if (custom_state !== undefined) {

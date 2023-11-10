@@ -81,7 +81,7 @@ function testPlayerSilencing() {
     initAirConsoleWithSilencedDevice(1, silenced_id);
     spyOn(airconsole, 'onMessage');
 
-    
+
     const data = { message: "Hi" };
     const msg = { action: "message", from: AirConsole.SCREEN, to: 1, data };
     dispatchCustomMessageEvent(msg);
@@ -235,115 +235,6 @@ function testPlayerSilencing() {
     });
 
     expect(airconsole.onDisconnect).toHaveBeenCalledTimes(0);
-  });
-
-  xit("Should invoke onReady when previously silenced device is unsilenced", () => {
-    const silenced_id = 2;
-    initAirConsoleWithSilencedDevice(1, silenced_id, 0);
-    const target_location = airconsole.devices[silenced_id].location;
-    airconsole.devices[silenced_id].location = null;
-    spyOn(airconsole, 'onReady');
-    dispatchCustomMessageEvent({
-      action: "ready",
-      code: 1237,
-      device_id: silenced_id,
-      device_data: {
-        location: LOCATION
-      },
-      devices: airconsole.devices
-    });
-    expect(airconsole.onReady).not.toHaveBeenCalledWith(1237);
-
-    airconsole.device_id = 0; // Only the screen is allowed to use setActivePlayer
-    airconsole.setActivePlayers(0);
-
-    expect(airconsole.onReady).toHaveBeenCalledWith(1237);
-  });
-
-  xit("Should not invoke onReady if the receiving device is silenced", () => {
-    const silenced_id = 2;
-    initAirConsoleWithSilencedDevice(1, silenced_id, 0);
-    const target_location = airconsole.devices[silenced_id].location;
-    airconsole.devices[silenced_id].location = null;
-    spyOn(airconsole, 'onReady');
-
-    dispatchCustomMessageEvent({
-      action: "ready",
-      code: 1237,
-      device_id: silenced_id,
-      device_data: {
-        location: LOCATION
-      },
-      devices: airconsole.devices
-    });
-
-    expect(airconsole.onReady).not.toHaveBeenCalledWith(1237);
-    expect(airconsole.onReady).not.toHaveBeenCalled();
-  });
-
-  xit("Should not invoke onReady if the sending device is silenced", () => {
-    const silenced_id = 2;
-    initAirConsoleWithSilencedDevice(1, silenced_id, 0);
-    const target_location = airconsole.devices[silenced_id].location;
-    airconsole.devices[silenced_id].location = null;
-    spyOn(airconsole, 'onReady');
-
-    dispatchCustomMessageEvent({
-      action: "ready",
-      code: 1237,
-      device_id: silenced_id,
-      device_data: {
-        location: LOCATION
-      },
-      devices: airconsole.devices
-    });
-
-    expect(airconsole.onReady).not.toHaveBeenCalledWith(1237);
-    expect(airconsole.onReady).not.toHaveBeenCalled();
-  });
-
-  xit("Should invoke onReady if the receiving device is unsilenced", () => {
-    const silenced_id = 2;
-    initAirConsoleWithSilencedDevice(1, silenced_id, 0);
-    const target_location = airconsole.devices[silenced_id].location;
-    airconsole.devices[silenced_id].location = null;
-    spyOn(airconsole, 'onReady');
-    dispatchCustomMessageEvent({
-      action: "ready",
-      code: 1237,
-      device_id: silenced_id,
-      device_data: {
-        location: LOCATION
-      },
-      devices: airconsole.devices
-    });
-
-    airconsole.device_id = 0; // Only the screen is allowed to use setActivePlayer
-    airconsole.setActivePlayers(0);
-
-    expect(airconsole.onReady).toHaveBeenCalledWith(1237);
-  });
-
-  xit("Should invoke onReady if the sending device is unsilenced", () => {
-    const silenced_id = 2;
-    initAirConsoleWithSilencedDevice(1, silenced_id, 0);
-    const target_location = airconsole.devices[silenced_id].location;
-    airconsole.devices[silenced_id].location = null;
-    spyOn(airconsole, 'onReady');
-    dispatchCustomMessageEvent({
-      action: "ready",
-      code: 1237,
-      device_id: silenced_id,
-      device_data: {
-        location: LOCATION
-      },
-      devices: airconsole.devices
-    });
-
-    airconsole.device_id = 0; // Only the screen is allowed to use setActivePlayers
-    airconsole.setActivePlayers(0);
-
-    expect(airconsole.onReady).toHaveBeenCalledWith(1237);
   });
 
   function initAirConsoleWithSilencedDevice(connected_id = 1, silenced_id = 2, active_device_id = 0) {

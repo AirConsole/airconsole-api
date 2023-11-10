@@ -14,6 +14,7 @@
             if(screen === "LOBBY") return;
             document.getElementById("lobby").style.display = "block";
             document.getElementById("game_mode").style.display = "none";
+            document.getElementById("device-silenced").style.display = "none";
             this.screen = "LOBBY";
           },
           exitAction: () => {},
@@ -23,84 +24,100 @@
             if(screen === "GAME") return;
             document.getElementById("lobby").style.display = "none";
             document.getElementById("game_mode").style.display = "block";
+            document.getElementById("device-silenced").style.display = "none";
             this.screen = "GAME";
           },
           exitAction: () => {},
         },
+        SILENCED: {
+          entryAction: () => {
+            if (screen === "SILENCED") return;
+            document.getElementById("lobby").style.display = "none";
+            document.getElementById("game_mode").style.display = "none";
+            document.getElementById("device-silenced").style.display = "block";
+            this.screen = "SILENCED";
+          },
+          exitAction: () => {
+          },
+        }
       };
+
       var airconsole;
-      var screen = "LOBBY";
+      var screen = "SILENCED";
       /**
        * Sets up the communication to the screen.
        */
       function init() {
-        airconsole = new AirConsole({ orientation: "portrait" });
-
-        // airconsole.onDeviceStateChange = (device_id, data) => console.info(`DeviceStateChange [${ airconsole.device_id }]: ${ airconsole.device_id }, From: ${ device_id }, data: `, data);
+        airconsole = new AirConsole({ orientation: "portrait", silence_players: true });
 
         /*
          * Checks if this device is part of the active game.
          */
         airconsole.onActivePlayersChange = function (player) {
-          console.info(`ActivePlayersChange [${ airconsole.device_id }]: player number`, player)
+          console.info(`ActivePlayersChange [${ airconsole.device_id }]: player number`, player);
           var div = document.getElementById("game_output");
           if (player !== undefined) {
             div.innerHTML = ["Left Player", "Right Player"][player];
           } else {
-            transitions["LOBBY"].entryAction();
-            // div.innerHTML = "It's a 2 player game!";
+            // TODO(marc): Remove this block when the controller handles silencing itself
+            // We are not in the lobby but were excluded in which case the controller will show an overlay to inform the user - for now we need to 'fake this' here.
+            if (airconsole.getActivePlayerDeviceIds() > 0) {
+              transitions["SILENCED"].entryAction();
+            } else {
+              // We are in the lobby, in this case there are no active players
+              transitions["LOBBY"].entryAction();
+            }
           }
         };
 
+        // We lose master controller status if the current master is not hero but a hero joins the session.
         airconsole.onConnect = function(device_id) {
+          // TODO(marc): Remove this block when the controller handles silencing itself
+          if(this.receiverIsSilenced_(this.getDeviceId())) {transitions["SILENCED"].entryAction();  return; }
           if (airconsole.getMasterControllerDeviceId() === airconsole.device_id) {
-            configureMaster();
+            configurePrimaryController();
           } else {
-            configureClient();
+            configureAdditionalController();
           }
-        }
+        };
 
+        // The master controller status can change when the current master leaves the session.
         airconsole.onDisconnect = function (device_id) {
+          // TODO(marc): Remove this block when the controller handles silencing itself
+          if(this.receiverIsSilenced_(this.getDeviceId())) {transitions["SILENCED"].entryAction();  return; }
           if (airconsole.getMasterControllerDeviceId() === airconsole.device_id) {
-            configureMaster();
+            configurePrimaryController();
           } else {
-            configureClient();
+            configureAdditionalController();
           }
-        }
+        };
 
-        const configureClient = () => {
-          if (
-            airconsole.getDeviceId() !==
-            airconsole.getMasterControllerDeviceId()
-          ) {
+        function configureAdditionalController() {
+          if (airconsole.getDeviceId() !== airconsole.getMasterControllerDeviceId()) {
             document.getElementById("lobby_players").style.display = "block";
             document.getElementById("lobby_master").style.display = "none";
             document.getElementById("wait_players").style.display = "none";
           }
         }
-        const configureMaster = () => {
-          if (
-            airconsole.getDeviceId() ===
-            airconsole.getMasterControllerDeviceId()
-          ) {
+
+        function configurePrimaryController() {
+          if (airconsole.getDeviceId() === airconsole.getMasterControllerDeviceId()) {
             document.getElementById("lobby_players").style.display = "none";
             document.getElementById("lobby_master").style.display = "block";
             document.getElementById("wait_players").style.display = "block";
           }
         }
-        airconsole.onReady = () => {
-          configureMaster();
+
+        airconsole.onReady = function () {
+          if (!airconsole.arePlayersSilenced()) transitions["LOBBY"].entryAction();
+          configurePrimaryController();
         };
 
-        airconsole.onCustomDeviceStateChange = (device_id, data) => {
-          console.info(`CustomDeviceStateChange [${ airconsole.device_id }]: From: ${ device_id }, data: `, data);
-          // TODO: Fake version of silence_players to be replaced with actual behavior
-          // if(airconsole.device_id !== AirConsole.SCREEN && data.screen === "GAME" && airconsole.convertDeviceIdToPlayerNumber(airconsole.device_id) === undefined) return;
-
+        airconsole.onCustomDeviceStateChange = function (device_id, data) {
           if(device_id === AirConsole.SCREEN) {
-            if(!!this.screen) transitions[this.screen].exitAction();
+            if (!!screen) transitions[screen].exitAction();
             if(!!data.screen) transitions[data.screen].entryAction();
-            if (this.screen === "LOBBY") {
+            if (screen === "LOBBY") {
               if(data.enough_players){
                 document.getElementById("start_game").style.display = "block";
                 document.getElementById("wait_players").style.display = "none";
@@ -180,22 +197,24 @@
   </head>
   <body onload="init()">
     <div style="height: 1%"></div>
-    <div id="lobby" style="width: 100%; height: 100%">
-      <div id="lobby_players" style="margin: auto; width: 60%; height: 60%">
+
+    <!-- LOADING VIEW -->
+    <div id="device-silenced" style="width: 100%; height: 100%; background-color: blue">
+      <div style="width:200px; height: 200px;margin:auto; position: relative; top: 100px; background-color: transparent;">
+        <h2>... Waiting for READY ...</h2>
+      </div>
+    </div>
+    <div id="lobby" style="width: 100%; height: 100%; display: none">
+      <div id="lobby_players" style="margin: auto; width: 60%; height: 60%; display: none">
         <h1>Lobby</h1>
         <p>... Waiting for Game Master ...</p>
       </div>
 
-      <div
-        id="lobby_master"
-        style="margin: auto; width: 60%; height: 60%; display: none"
-      >
+      <div id="lobby_master" style="margin: auto; width: 60%; height: 60%; display: none">
         <h1>Lobby</h1>
-        <p
-          id="start_game"
-          style="width: 200px; height: 100px; display: none; border-color: green; border-width: 2px; border-style: solid;"
-          onclick="startGame()"
-        >
+        <p id="start_game"
+           style="width: 200px; height: 100px; display: none; border-color: green; border-width: 2px; border-style: solid;"
+           onclick="startGame()">
           Click to start
         </p>
         <p id="wait_players" style="width: 200px; height: 100px; display: none; border-color: red; border-width: 2px; border-style: solid">

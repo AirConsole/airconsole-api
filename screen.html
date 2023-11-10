@@ -9,6 +9,7 @@
       var canvas;
       var last = null;
       var score_el;
+      var paused = false;
       var initialized = false;
       let screen = "LOBBY";
       let transitions = {
@@ -21,7 +22,7 @@
             resetBall(50, 0);
             score = [0, 0];
             score_el.innerHTML = score.join(":");
-            checkTwoPlayers(false)
+              checkTwoPlayers();
           },
           exitAction: () => {
           },
@@ -46,13 +47,22 @@
         airconsole.setCustomDeviceStateProperty("screen", screen);
       }
 
+
       /**
        * Sets up the communication to game pads.
        */
       function setupConsole() {
-        airconsole = new AirConsole(/*{ silence_players: true }*/);
+          airconsole = new AirConsole({ silence_players: true });
 
-        }
+          airconsole.onPause = function () {
+              console.warn("Pausing game");
+              paused = true;
+          };
+          airconsole.onResume = function () {
+              console.warn("Resuming game");
+              paused = false;
+          };
+
         airconsole.onConnect = function (device_id) {
           if (!initialized) {
             transitions["LOBBY"].entryAction();
@@ -66,9 +76,7 @@
           if (player !== undefined) {
             // Player that was in game left the game.
             // Setting active players to length 0.
-            // airconsole.setActivePlayers(0);
             airconsole.setActivePlayers(0);
-            // airconsole.setAllPlayersInactive();
           }
           checkTwoPlayers();
         };
@@ -80,7 +88,7 @@
             return;
           }
           var player = airconsole.convertDeviceIdToPlayerNumber(device_id);
-          if (player != undefined && data.move !== undefined) {
+          if (player !== undefined && data.move !== undefined) {
             paddles[player].move.y = data.move;
           }
         };
@@ -93,18 +101,18 @@
         var active_players = airconsole.getActivePlayerDeviceIds();
         var connected_controllers = airconsole.getControllerDeviceIds();
         // Only update if the game didn't have active players.
-        if (active_players.length == 0) {
+        if (active_players.length === 0) {
           if (connected_controllers.length > 2) {
             document.getElementById("wait").innerHTML = "Only 2 players can play, sorry";
-          } else if (connected_controllers.length == 2) {
+          } else if (connected_controllers.length === 2) {
             document.getElementById("wait").innerHTML = "";
-          } else if (connected_controllers.length == 1) {
+          } else if (connected_controllers.length === 1) {
             document.getElementById("wait").innerHTML = "Need 1 more player!";
-          } else if (connected_controllers.length == 0) {
+          } else if (connected_controllers.length === 0) {
             document.getElementById("wait").innerHTML = "Need 2 more players!";
           }
         }
-        if(send) airconsole.setCustomDeviceStateProperty("enough_players", connected_controllers.length == 2);
+        if(send) airconsole.setCustomDeviceStateProperty("enough_players", connected_controllers.length === 2);
       }
 
       /**
@@ -123,10 +131,7 @@
         var name = airconsole.getNickname(
           airconsole.convertPlayerNumberToDeviceId(player)
         );
-        score_el.innerHTML =
-          "<div style='font-size: 20px;margin-top:16px'>" +
-          name +
-          " scored!</div>";
+        score_el.innerHTML = `<div style='font-size: 20px;margin-top:16px'> ${name} scored!</div>`;
         window.setTimeout(function () {
           score_el.innerHTML = score.join(":");
         }, 1000);
@@ -179,7 +184,7 @@
        * Moving the ball and drawing the canvas. Nothing AirConsole specific.
        */
       function loop() {
-        if (screen === "GAME") {
+        if (!paused && screen === "GAME") {
           var now = new Date().getTime();
           var delta = now - last;
           delta = Math.min(20, delta);
