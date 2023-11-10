@@ -1134,7 +1134,7 @@ AirConsole.prototype.init_ = function(opts) {
     location: me.getLocationUrl_(),
     translation: opts.translation
   });
-  this.enablePlayerSilencing_(me.silence_players);
+  this.enablePlayerSilencing(me.silence_players);
 };
 
 /**
@@ -1142,7 +1142,7 @@ AirConsole.prototype.init_ = function(opts) {
  * @param {boolean} silence_players If true, the player silencing feature is active
  * @private
  */
-AirConsole.prototype.enablePlayerSilencing_ = function (silence_players) {
+AirConsole.prototype.enablePlayerSilencing = function (silence_players) {
   if (this.getCustomDeviceState(AirConsole.SCREEN, AirConsole.PLAYER_SILENCE_KEY) !== undefined)
     return;
 
