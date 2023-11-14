@@ -198,8 +198,9 @@ AirConsole.prototype.getServerTime = function() {
  * @returns {boolean} True, if new devices that are not players are silenced.
  */
 AirConsole.prototype.arePlayersSilenced = function () {
-  return (!!this.silence_players || this.getCustomDeviceState(AirConsole.SCREEN)?.silence_players || false) &&
-      (this.devices[AirConsole.SCREEN] !== undefined && this.devices[AirConsole.SCREEN]["players"]?.length > 0);
+  var customScreenState = this.getCustomDeviceState(AirConsole.SCREEN);
+  return (!!this.silence_players || !!customScreenState && customScreenState.silence_players) &&
+      (this.devices[AirConsole.SCREEN] !== undefined && this.devices[AirConsole.SCREEN]["players"] !== undefined && this.devices[AirConsole.SCREEN]["players"].length > 0);
 }
 
 /**
@@ -1216,7 +1217,7 @@ AirConsole.prototype.onPostMessage_ = function(event) {
         game_url_after = me.getGameUrl_(data.device_data.location);
       }
       if (me.senderIsSilenced_(data.device_id)) {
-        const queue = me.silencedUpdatesQueue_[data.device_id] || [];
+        var queue = me.silencedUpdatesQueue_[data.device_id] || [];
         if (isDisconnectEvent({ game_url_before, game_url, game_url_after })) {
           let connect_removed = false;
           for (let i = 0; i < queue.length; i++) {
@@ -1357,11 +1358,11 @@ AirConsole.prototype.onPostMessage_ = function(event) {
   }
 };
 
-const isConnectEvent = ({ game_url_before, game_url, game_url_after }) => {
+function isConnectEvent ({ game_url_before, game_url, game_url_after }) {
   return (game_url_before != game_url && game_url_after == game_url);
 }
 
-const isDisconnectEvent = ({ game_url_before, game_url, game_url_after }) => {
+function isDisconnectEvent ({ game_url_before, game_url, game_url_after }) {
   return (game_url_before == game_url && game_url_after != game_url)
 }
 
