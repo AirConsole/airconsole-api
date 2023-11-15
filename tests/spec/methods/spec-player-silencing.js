@@ -237,6 +237,33 @@ function testPlayerSilencing() {
     expect(airconsole.onDisconnect).toHaveBeenCalledTimes(0);
   });
 
+  it("Should update silence_players flag on update silence_players message", () => {
+    initAirConsole();
+    expect(airconsole.silence_players).toBe(false);
+
+    dispatchCustomMessageEvent({
+      action: "update",
+      device_id: 0,
+      device_data: { _is_silence_players_update: true, silence_players: true }
+    });
+
+    expect(airconsole.silence_players).toBe(true);
+  });
+
+  it("Should update silence_players flag on update message with location change and silence_players update", () => {
+    initAirConsole();
+    airconsole.devices[1] = { location: LOCATION };
+    expect(airconsole.silence_players).toBe(false);
+
+    dispatchCustomMessageEvent({
+      action: "update",
+      device_id: 0,
+      device_data: { _is_silence_players_update: true, silence_players: true, location: LOCATION }
+    });
+
+    expect(airconsole.silence_players).toBe(true);
+  });
+
   function initAirConsoleWithSilencedDevice(connected_id = 1, silenced_id = 2, active_device_id = 0) {
     initAirConsole({ silence_players: true });
     airconsole.devices = [];

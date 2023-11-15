@@ -59,6 +59,7 @@ function AirConsole(opts) {
  *           prompted to wait while an active game is going on. An active game
  *           is started by calling setActivePlayers(X) with X larger than 0.
  *           A running game is finished by calling setActivePlayers(0).
+ *           Added in 1.9.0
  */
 
 
@@ -83,12 +84,6 @@ AirConsole.ORIENTATION_PORTRAIT = "portrait";
  * @constant {string}
  */
 AirConsole.ORIENTATION_LANDSCAPE = "landscape";
-
-/**
- * Key tracking the player silence state in CustomStateProperties
- * @type {string}
- */
-AirConsole.PLAYER_SILENCE_KEY = "__AC_PS__";
 
 
 /** ------------------------------------------------------------------------ *
@@ -198,9 +193,13 @@ AirConsole.prototype.getServerTime = function() {
  * @returns {boolean} True, if new devices that are not players are silenced.
  */
 AirConsole.prototype.arePlayersSilenced = function () {
-  var customScreenState = this.getCustomDeviceState(AirConsole.SCREEN);
-  return (!!this.silence_players || !!customScreenState && customScreenState.silence_players) &&
-      (this.devices[AirConsole.SCREEN] !== undefined && this.devices[AirConsole.SCREEN]["players"] !== undefined && this.devices[AirConsole.SCREEN]["players"].length > 0);
+  if(this.devices[AirConsole.SCREEN] === undefined) {
+    return false;
+  }
+
+  var playersSilenced = this.devices[AirConsole.SCREEN].hasOwnProperty("silence_players") ? this.devices[AirConsole.SCREEN]["silence_players"] : false;
+  return (!!this.silence_players || playersSilenced)
+    && (this.devices[AirConsole.SCREEN]["players"] !== undefined && this.devices[AirConsole.SCREEN]["players"].length > 0);
 }
 
 /**
@@ -1135,22 +1134,23 @@ AirConsole.prototype.init_ = function(opts) {
     location: me.getLocationUrl_(),
     translation: opts.translation
   });
-  this.enablePlayerSilencing(me.silence_players);
+  if(me.silence_players) {
+     this.enablePlayerSilencing(me.silence_players);
+  }
 };
 
 /**
  * Enables the player silencing
  * @param {boolean} silence_players If true, the player silencing feature is active
  * @private
+ * @since 1.9.0
  */
 AirConsole.prototype.enablePlayerSilencing = function (silence_players) {
-  if (this.getCustomDeviceState(AirConsole.SCREEN, AirConsole.PLAYER_SILENCE_KEY) !== undefined)
+  if(silence_players === undefined || this.silence_players === silence_players) {
     return;
-
-  if (this.device_id === AirConsole.SCREEN) {
-    this.silence_players = !!silence_players;
-    this.setCustomDeviceStateProperty(AirConsole.PLAYER_SILENCE_KEY, this.silence_players)
   }
+
+  this.set_("silence_players", silence_players);
 }
 
 /**
@@ -1171,8 +1171,9 @@ AirConsole.prototype.isDeviceInSameLocation_ = function (location, sender_id) {
  * @private
  */
 AirConsole.prototype.receiverIsSilenced_ = function (device_id) {
-  return this.arePlayersSilenced() && device_id !== undefined &&
-      this.convertDeviceIdToPlayerNumber(device_id) === undefined;
+  return this.arePlayersSilenced() && device_id !== undefined
+    && device_id !== AirConsole.SCREEN
+    && this.convertDeviceIdToPlayerNumber(device_id) === undefined;
 }
 
 /**
@@ -1218,7 +1219,7 @@ AirConsole.prototype.onPostMessage_ = function(event) {
       }
       if (me.senderIsSilenced_(data.device_id)) {
         var queue = me.silencedUpdatesQueue_[data.device_id] || [];
-        if (isDisconnectEvent({ game_url_before, game_url, game_url_after })) {
+        if (me.isDisconnectMessage_(game_url_before, game_url, game_url_after)) {
           let connect_removed = false;
           for (let i = 0; i < queue.length; i++) {
             if (queue[i].hasOwnProperty("_is_connect_event")) {
@@ -1232,7 +1233,7 @@ AirConsole.prototype.onPostMessage_ = function(event) {
           if (connect_removed) return;
         }
 
-        if (isConnectEvent({ game_url_before, game_url, game_url_after })) {
+        if (me.isConnectMessage_(game_url_before, game_url, game_url_after)) {
           event._is_connect_event = true;
         }
 
@@ -1244,8 +1245,8 @@ AirConsole.prototype.onPostMessage_ = function(event) {
       var sender = data.device_id;
       me.devices[sender] = data.device_data;
       me.onDeviceStateChange(sender, data.device_data);
-      var is_connect = isConnectEvent({ game_url_before, game_url, game_url_after });
-      var is_disconnect = isDisconnectEvent({ game_url_before, game_url, game_url_after });
+      var is_connect = me.isConnectMessage_(game_url_before, game_url, game_url_after);
+      var is_disconnect = me.isDisconnectMessage_(game_url_before, game_url, game_url_after);
       if (is_connect) {
         me.onConnect(sender);
       } else if (is_disconnect) {
@@ -1260,6 +1261,10 @@ AirConsole.prototype.onPostMessage_ = function(event) {
             || (data.device_id === AirConsole.SCREEN && data.device_data.players && is_connect)) {
           me.device_id_to_player_cache = null;
           me.onActivePlayersChange(me.convertDeviceIdToPlayerNumber(me.getDeviceId()));
+        }
+        if ((data.device_data._is_silence_players_update && game_url_after === game_url) ||
+            (data.device_id === AirConsole.SCREEN && data.device_data.silence_players !== undefined)) {
+          me.silence_players = data.device_data.silence_players;
         }
         if (data.device_data.premium && (data.device_data._is_premium_update || is_connect)) {
           me.onPremium(sender);
@@ -1358,12 +1363,28 @@ AirConsole.prototype.onPostMessage_ = function(event) {
   }
 };
 
-function isConnectEvent ({ game_url_before, game_url, game_url_after }) {
-  return (game_url_before != game_url && game_url_after == game_url);
+/**
+ Checks if the urls imply that this is a connect update message
+ * @param game_url_before The url before the change of location
+ * @param game_url The url of the current location
+ * @param game_url_after The url after the change of location
+ * @returns {boolean} True, if it is a connect message
+ * @private
+ */
+AirConsole.prototype.isConnectMessage_ = function (game_url_before, game_url, game_url_after) {
+  return (game_url_before !== game_url && game_url_after === game_url);
 }
 
-function isDisconnectEvent ({ game_url_before, game_url, game_url_after }) {
-  return (game_url_before == game_url && game_url_after != game_url)
+/**
+ * Checks if the urls imply that this is a disconnect update message
+ * @param game_url_before The url before the change of location
+ * @param game_url The url of the current location
+ * @param game_url_after The url after the change of location
+ * @returns {boolean} True, if it is a disconnect message
+ * @private
+ */
+AirConsole.prototype.isDisconnectMessage_ = function (game_url_before, game_url, game_url_after) {
+  return (game_url_before === game_url && game_url_after !== game_url)
 }
 
 /**
