@@ -56,9 +56,8 @@ function AirConsole(opts) {
  * @property {boolean} translation - If an AirConsole translation file should
  *           be loaded.
  * @property {boolean} [silence_players=false] - If set, newly joining devices will be
- *           prompted to wait while an active game is going on. An active game
- *           is started by calling setActivePlayers(X) with X larger than 0.
- *           A running game is finished by calling setActivePlayers(0).
+ *           prompted to wait while an active game is going on.<br />
+ *           See {@link https://developers.airconsole.com/#!/guides/player_silencing Player Silencing Guide} for details.<br />
  *           Added in 1.9.0
  */
 
@@ -1135,7 +1134,7 @@ AirConsole.prototype.init_ = function(opts) {
     translation: opts.translation
   });
   if(me.silence_players) {
-     this.enablePlayerSilencing(me.silence_players);
+     this.enablePlayerSilencing_(me.silence_players);
   }
 };
 
@@ -1145,7 +1144,7 @@ AirConsole.prototype.init_ = function(opts) {
  * @private
  * @since 1.9.0
  */
-AirConsole.prototype.enablePlayerSilencing = function (silence_players) {
+AirConsole.prototype.enablePlayerSilencing_ = function (silence_players) {
   if(silence_players === undefined || this.silence_players === silence_players) {
     return;
   }
