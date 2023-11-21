@@ -206,6 +206,8 @@ AirConsole.prototype.arePlayersSilenced = function () {
 
 /**
  * Dictionary of silenced update messages queued during a running game session.
+ * @private
+ * @since 1.9.0
  */
 AirConsole.prototype.silencedUpdatesQueue_ = {};
 
@@ -523,6 +525,7 @@ AirConsole.prototype.editProfile = function() {
  * are active players by calling getActivePlayerDeviceIds().<br />
  * The screen can call this function every time a game round starts.<br />
  * When using {@link https://developers.airconsole.com/#!/guides/player_silencing Player Silencing}, the screen needs to call this every time a game round starts or finishes.<br />
+ *  Calling it with max_players of 1 or more signals the start of the game round while calling it with max_players 0 signals the end of the game round.
  * @param {number} max_players - The maximum number of controllers that should
  *                               get a player number assigned.
  */
