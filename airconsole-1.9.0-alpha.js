@@ -192,6 +192,7 @@ AirConsole.prototype.getServerTime = function() {
 /**
  * Queries, if new devices are currently silenced.
  * @returns {boolean} True, if new devices that are not players are silenced.
+ * @since 1.9.0
  */
 AirConsole.prototype.arePlayersSilenced = function () {
   if(this.devices[AirConsole.SCREEN] === undefined) {
@@ -222,7 +223,7 @@ AirConsole.prototype.silencedUpdatesQueue_ = {};
  * @param data
  */
 AirConsole.prototype.message = function (device_id, data) {
-  if (this.device_id !== undefined && !this.receiverIsSilenced_(device_id)) {
+  if (this.device_id !== undefined && !this.deviceIsSilenced_(device_id)) {
     AirConsole.postMessage_({ action: "message", to: device_id, data: data });
   }
 }
@@ -1167,24 +1168,13 @@ AirConsole.prototype.isDeviceInSameLocation_ = function (location, sender_id) {
 }
 
 /**
- * Queries if a given device_id is a player in the current session and not silenced.
- * @param {string} device_id The device_id to query the information for
- * @returns {boolean} True, if the receiver with device_id is silenced.
- * @private
- */
-AirConsole.prototype.receiverIsSilenced_ = function (device_id) {
-  return this.arePlayersSilenced() && device_id !== undefined
-    && device_id !== AirConsole.SCREEN
-    && this.convertDeviceIdToPlayerNumber(device_id) === undefined;
-}
-
-/**
  * Queries if a given device_id is silenced
  * @param {string} device_id  The device_id to be queried.
- * @returns {boolean} True, if the sender with device_id is silenced.
+ * @returns {boolean} True, if the device_id is silenced.
  * @private
+ * @since 1.9.0
  */
-AirConsole.prototype.senderIsSilenced_ = function (device_id) {
+AirConsole.prototype.deviceIsSilenced_ = function (device_id) {
   return this.arePlayersSilenced() &&
       device_id !== undefined
       && device_id !== AirConsole.SCREEN
@@ -1204,7 +1194,7 @@ AirConsole.prototype.onPostMessage_ = function(event) {
     me.onDeviceMotion(data.data);
   } else if (data.action === "message") {
     if (me.device_id !== undefined) {
-      if (me.isDeviceInSameLocation_(game_url, data.from) && !me.senderIsSilenced_(data.from) && !me.receiverIsSilenced_(data.to)) {
+      if (me.isDeviceInSameLocation_(game_url, data.from) && !me.deviceIsSilenced_(data.from) && !me.deviceIsSilenced_(data.to)) {
         me.onMessage(data.from, data.data);
       }
     }
@@ -1219,7 +1209,7 @@ AirConsole.prototype.onPostMessage_ = function(event) {
       if (data.device_data) {
         game_url_after = me.getGameUrl_(data.device_data.location);
       }
-      if (me.senderIsSilenced_(data.device_id)) {
+      if (me.deviceIsSilenced_(data.device_id)) {
         var queue = me.silencedUpdatesQueue_[data.device_id] || [];
         if (me.isDisconnectMessage_(game_url_before, game_url, game_url_after)) {
           let connect_removed = false;

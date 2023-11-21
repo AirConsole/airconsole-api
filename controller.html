@@ -73,7 +73,7 @@
         // We lose master controller status if the current master is not hero but a hero joins the session.
         airconsole.onConnect = function(device_id) {
           // TODO(marc): Remove this block when the controller handles silencing itself
-          if(this.receiverIsSilenced_(this.getDeviceId())) {
+          if(this.deviceIsSilenced_(this.getDeviceId())) {
             transitions["SILENCED"].entryAction();
             return;
           }
@@ -87,7 +87,7 @@
         // The master controller status can change when the current master leaves the session.
         airconsole.onDisconnect = function (device_id) {
           // TODO(marc): Remove this block when the controller handles silencing itself
-          if(this.receiverIsSilenced_(this.getDeviceId())) {transitions["SILENCED"].entryAction();  return; }
+          if(this.deviceIsSilenced_(this.getDeviceId())) {transitions["SILENCED"].entryAction();  return; }
           if (airconsole.getMasterControllerDeviceId() === airconsole.device_id) {
             configurePrimaryController();
           } else {
