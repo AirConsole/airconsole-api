@@ -57,6 +57,8 @@ function AirConsole(opts) {
  *           be loaded.
  * @property {boolean} [silence_players=false] - If set, newly joining devices will be
  *           prompted to wait while an active game is going on.<br />
+ *           To start a game round, call setActivePlayers(X) with X larger than 0 eg 1,2,3,...<br />
+ *           To finish a game round, call setActivePlayers(0).<br />
  *           See {@link https://developers.airconsole.com/#!/guides/player_silencing Player Silencing Guide} for details.<br />
  *           Added in 1.9.0
  */
@@ -506,19 +508,20 @@ AirConsole.prototype.editProfile = function() {
  * ------------------------------------------------------------------------- */
 
 /**
- * Takes all currently connected controllers and assigns them a player number.
+ * Takes all currently connected controllers and assigns them a player number.<br />
  * Can only be called by the screen. You don't have to use this helper
  * function, but this mechanism is very convenient if you want to know which
- * device is the first player, the second player, the third player ...
+ * device is the first player, the second player, the third player ...<br />
  * The assigned player numbers always start with 0 and are consecutive.
- * You can hardcode player numbers, but not device_ids.
+ * You can hardcode player numbers, but not device_ids.<br />
  * Once the screen has called setActivePlayers you can get the device_id of
  * the first player by calling convertPlayerNumberToDeviceId(0), the device_id
- * of the second player by calling convertPlayerNumberToDeviceId(1), ...
+ * of the second player by calling convertPlayerNumberToDeviceId(1), ...<br />
  * You can also convert device_ids to player numbers by calling
  * convertDeviceIdToPlayerNumber(device_id). You can get all device_ids that
- * are active players by calling getActivePlayerDeviceIds().
- * The screen can call this function every time a game round starts.
+ * are active players by calling getActivePlayerDeviceIds().<br />
+ * The screen can call this function every time a game round starts.<br />
+ * When using {@link https://developers.airconsole.com/#!/guides/player_silencing Player Silencing}, the screen needs to call this every time a game round starts or finishes.<br />
  * @param {number} max_players - The maximum number of controllers that should
  *                               get a player number assigned.
  */
