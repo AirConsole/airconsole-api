@@ -22,3 +22,7 @@ Gameplay rounds are controlled through AirConsole's setActivePlayers API.
 - Added :gift_heart:: `silence_inactive_players` to AirConsole Opts, which when set will silence new players while
   setActivePlayers is in a state with 1 or more players.
 - Added :gift_heart:: New function `setImmersiveState` to control immersive emotions in environments that support this technical capability 
+
+### Changed
+- storePersistentData's uid parameter is no longer optional.
+- requestPersistentData's uids parameter is no longer optional.
