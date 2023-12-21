@@ -26,21 +26,21 @@ function testPlayerSilencing() {
   });
 
   it("Should not silence players with AirConsole configured to not silence players", function () {
-    initAirConsole({ silence_players: false });
+    initAirConsole({ silence_inactive_players: false });
     airconsole.setActivePlayers(2);
 
     expect(airconsole.arePlayersSilenced()).toBe(false);
   });
 
   it("Should silence players with AirConsole configured to silence players", function () {
-    initAirConsole({ silence_players: true });
+    initAirConsole({ silence_inactive_players: true });
     airconsole.setActivePlayers(2);
 
     expect(airconsole.arePlayersSilenced()).toBe(true);
   });
 
   it("Should not silence players with 0 active players", () => {
-    initAirConsole({ silence_players: true });
+    initAirConsole({ silence_inactive_players: true });
     airconsole.setActivePlayers(2);
 
     airconsole.setActivePlayers(0);
@@ -56,7 +56,7 @@ function testPlayerSilencing() {
   ];
   activePlayersBasedSilencingTestParameters.forEach(parameter => {
     it(parameter.description, () => {
-      initAirConsole({ silence_players: true });
+      initAirConsole({ silence_inactive_players: true });
 
       airconsole.setActivePlayers(parameter.input);
 
@@ -237,35 +237,35 @@ function testPlayerSilencing() {
     expect(airconsole.onDisconnect).toHaveBeenCalledTimes(0);
   });
 
-  it("Should update silence_players flag on update silence_players message", () => {
+  it("Should update silence_inactive_players flag on update silence_inactive_players message", () => {
     initAirConsole();
-    expect(airconsole.silence_players).toBe(false);
+    expect(airconsole.silence_inactive_players).toBe(false);
 
     dispatchCustomMessageEvent({
       action: "update",
       device_id: 0,
-      device_data: { _is_silence_players_update: true, silence_players: true }
+      device_data: { _is_silence_inactive_players_update: true, silence_inactive_players: true }
     });
 
-    expect(airconsole.silence_players).toBe(true);
+    expect(airconsole.silence_inactive_players).toBe(true);
   });
 
-  it("Should update silence_players flag on update message with location change and silence_players update", () => {
+  it("Should update silence_inactive_players flag on update message with location change and silence_inactive_players update", () => {
     initAirConsole();
     airconsole.devices[1] = { location: LOCATION };
-    expect(airconsole.silence_players).toBe(false);
+    expect(airconsole.silence_inactive_players).toBe(false);
 
     dispatchCustomMessageEvent({
       action: "update",
       device_id: 0,
-      device_data: { _is_silence_players_update: true, silence_players: true, location: LOCATION }
+      device_data: { _is_silence_inactive_players_update: true, silence_inactive_players: true, location: LOCATION }
     });
 
-    expect(airconsole.silence_players).toBe(true);
+    expect(airconsole.silence_inactive_players).toBe(true);
   });
 
   function initAirConsoleWithSilencedDevice(connected_id = 1, silenced_id = 2, active_device_id = 0) {
-    initAirConsole({ silence_players: true });
+    initAirConsole({ silence_inactive_players: true });
     airconsole.devices = [];
     airconsole.devices[AirConsole.SCREEN] = { "device": "Screen", location: LOCATION };
     airconsole.devices[connected_id] = { "device": "unicorn", location: LOCATION };

@@ -16,8 +16,8 @@ This is supported by the controller, informing new joining players that they can
 after the current gameplay round has finished.
 Gameplay rounds are controlled through AirConsole's setActivePlayers API.
 
-### New Features 
+### New Features
 
 - Added :gift_heart:: `AirConsole.prototype.arePlayersSilenced` to check if players are silenced.
-- Added :gift_heart:: `silence_players` to AirConsole Opts, which when set will silence new players while
+- Added :gift_heart:: `silence_inactive_players` to AirConsole Opts, which when set will silence new players while
   setActivePlayers is in a state with 1 or more players.

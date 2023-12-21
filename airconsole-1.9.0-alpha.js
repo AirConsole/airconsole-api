@@ -55,7 +55,7 @@ function AirConsole(opts) {
  *           accelerometer and the gyroscope. Only for controllers.
  * @property {boolean} translation - If an AirConsole translation file should
  *           be loaded.
- * @property {boolean} [silence_players=false] - If set, newly joining devices will be
+ * @property {boolean} [silence_inactive_players=false] - If set, newly joining devices will be
  *           prompted to wait while an active game is going on.<br />
  *           To start a game round, call setActivePlayers(X) with X larger than 0 eg 1,2,3,...<br />
  *           To finish a game round, call setActivePlayers(0).<br />
@@ -200,7 +200,7 @@ AirConsole.prototype.arePlayersSilenced = function () {
   }
 
   var playersSilenced = this.devices[AirConsole.SCREEN].hasOwnProperty("silence_players") ? this.devices[AirConsole.SCREEN]["silence_players"] : false;
-  return (!!this.silence_players || playersSilenced)
+  return (!!this.silence_inactive_players || playersSilenced)
     && (this.devices[AirConsole.SCREEN]["players"] !== undefined && this.devices[AirConsole.SCREEN]["players"].length > 0);
 }
 
@@ -1123,7 +1123,7 @@ AirConsole.prototype.init_ = function(opts) {
   me.devices = [];
   me.silencedUpdatesQueue_ = {};
   me.server_time_offset = opts.synchronize_time ? 0 : false;
-  me.silence_players = opts.silence_players || false;
+  me.silence_inactive_players = opts.silence_inactive_players || false;
   window.addEventListener("message", function(event) {
     me.onPostMessage_(event);
   }, false);
@@ -1136,12 +1136,12 @@ AirConsole.prototype.init_ = function(opts) {
     version: me.version,
     device_motion: opts.device_motion,
     synchronize_time: opts.synchronize_time,
-    silence_players: me.silence_players,
+    silence_players: me.silence_inactive_players,
     location: me.getLocationUrl_(),
     translation: opts.translation
   });
-  if(me.silence_players) {
-     this.enablePlayerSilencing_(me.silence_players);
+  if(me.silence_inactive_players) {
+     this.enablePlayerSilencing_(me.silence_inactive_players);
   }
 };
 
@@ -1152,7 +1152,7 @@ AirConsole.prototype.init_ = function(opts) {
  * @since 1.9.0
  */
 AirConsole.prototype.enablePlayerSilencing_ = function (silence_players) {
-  if(silence_players === undefined || this.silence_players === silence_players) {
+  if(silence_players === undefined || this.silence_inactive_players === silence_players) {
     return;
   }
 
@@ -1214,7 +1214,7 @@ AirConsole.prototype.onPostMessage_ = function(event) {
       }
       if (me.deviceIsSilenced_(data.device_id)) {
         var queue = me.silencedUpdatesQueue_[data.device_id] || [];
-        if (me.isDisconnectMessage_(game_url_before, game_url, game_url_after)) {
+        if (me.isLocationUnloadedMessage_(game_url_before, game_url, game_url_after)) {
           let connect_removed = false;
           for (let i = 0; i < queue.length; i++) {
             if (queue[i].hasOwnProperty("_is_connect_event")) {
@@ -1228,7 +1228,7 @@ AirConsole.prototype.onPostMessage_ = function(event) {
           if (connect_removed) return;
         }
 
-        if (me.isConnectMessage_(game_url_before, game_url, game_url_after)) {
+        if (me.isLocationLoadedMessage_(game_url_before, game_url, game_url_after)) {
           event._is_connect_event = true;
         }
 
@@ -1240,8 +1240,8 @@ AirConsole.prototype.onPostMessage_ = function(event) {
       var sender = data.device_id;
       me.devices[sender] = data.device_data;
       me.onDeviceStateChange(sender, data.device_data);
-      var is_connect = me.isConnectMessage_(game_url_before, game_url, game_url_after);
-      var is_disconnect = me.isDisconnectMessage_(game_url_before, game_url, game_url_after);
+      var is_connect = me.isLocationLoadedMessage_(game_url_before, game_url, game_url_after);
+      var is_disconnect = me.isLocationUnloadedMessage_(game_url_before, game_url, game_url_after);
       if (is_connect) {
         me.onConnect(sender);
       } else if (is_disconnect) {
@@ -1258,8 +1258,8 @@ AirConsole.prototype.onPostMessage_ = function(event) {
           me.onActivePlayersChange(me.convertDeviceIdToPlayerNumber(me.getDeviceId()));
         }
         if ((data.device_data._is_silence_players_update && game_url_after === game_url) ||
-            (data.device_id === AirConsole.SCREEN && data.device_data.silence_players !== undefined)) {
-          me.silence_players = data.device_data.silence_players;
+            (data.device_id === AirConsole.SCREEN && data.device_data.silence_inactive_players !== undefined)) {
+          me.silence_inactive_players = data.device_data.silence_inactive_players;
         }
         if (data.device_data.premium && (data.device_data._is_premium_update || is_connect)) {
           me.onPremium(sender);
@@ -1366,7 +1366,7 @@ AirConsole.prototype.onPostMessage_ = function(event) {
  * @returns {boolean} True, if it is a connect message
  * @private
  */
-AirConsole.prototype.isConnectMessage_ = function (game_url_before, game_url, game_url_after) {
+AirConsole.prototype.isLocationLoadedMessage_ = function (game_url_before, game_url, game_url_after) {
   return (game_url_before !== game_url && game_url_after === game_url);
 }
 
@@ -1378,7 +1378,7 @@ AirConsole.prototype.isConnectMessage_ = function (game_url_before, game_url, ga
  * @returns {boolean} True, if it is a disconnect message
  * @private
  */
-AirConsole.prototype.isDisconnectMessage_ = function (game_url_before, game_url, game_url_after) {
+AirConsole.prototype.isLocationUnloadedMessage_ = function (game_url_before, game_url, game_url_after) {
   return (game_url_before === game_url && game_url_after !== game_url)
 }
 
