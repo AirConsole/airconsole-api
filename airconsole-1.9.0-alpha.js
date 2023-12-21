@@ -327,12 +327,11 @@ AirConsole.prototype.setCustomDeviceStateProperty = function(key, value) {
  */
 AirConsole.prototype.setImmersiveState = function (opts) {
   if (this.device_id !== undefined) {
-    var state = this.getCustomDeviceState();
-    if (state === undefined) {
-      state = {};
-    } else if (typeof state !== "object") {
-      throw "Custom DeviceState needs to be of type object";
+    var state = this.devices[this.device_id].immersive || {};
+    if (typeof state !== "object") {
+      throw "Immersive state needs to be of type object";
     }
+    
     var new_immersive_state = {};
     for (var i = 0; i < opts.length; i++) {
       var opt = opts[i];
@@ -349,8 +348,15 @@ AirConsole.prototype.setImmersiveState = function (opts) {
       }
     }
 
-    state.__AC_IMMERSIVE_STATE__ = new_immersive_state;
-    this.setCustomDeviceState(state);
+    // TODO(Marc): If the locally accessible state is not necessary, only the server forwarded one, then this can be removed.
+    this.set_("immersive", new_immersive_state)
+    if(this.device_id === AirConsole.SCREEN) {
+      this.devices[AirConsole.SCREEN].immersive = this.devices[AirConsole.SCREEN].immersive || [];
+      this.devices[AirConsole.SCREEN].immersive = new_immersive_state;
+    } else if(opt.zoneId === undefined && this.convertDeviceIdToPlayerNumber(this.device_id) !== undefined){
+      this.devices[this.device_id].immersive = this.devices[this.device_id].immersive || [];
+      this.devices[this.device_id].immersive[this.convertDeviceIdToPlayerNumber(this.device_id)] = new_immersive_state;
+    } 
   }
 };
 
