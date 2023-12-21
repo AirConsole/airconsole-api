@@ -1,6 +1,6 @@
 /**
  * AirConsole.
- * @copyright 2022 by N-Dream AG, Switzerland. All rights reserved.
+ * @copyright 2023 by N-Dream AG, Switzerland. All rights reserved.
  * @version 1.9.0
  *
  * IMPORTANT:
@@ -55,6 +55,12 @@ function AirConsole(opts) {
  *           accelerometer and the gyroscope. Only for controllers.
  * @property {boolean} translation - If an AirConsole translation file should
  *           be loaded.
+ * @property {boolean} [silence_inactive_players=false] - If set, newly joining devices will be
+ *           prompted to wait while an active game is going on.<br />
+ *           To start a game round, call setActivePlayers(X) with X larger than 0 eg 1,2,3,...<br />
+ *           To finish a game round, call setActivePlayers(0).<br />
+ *           See {@link https://developers.airconsole.com/#!/guides/player_silencing Player Silencing Guide} for details.<br />
+ *           Added in 1.9.0
  */
 
 
@@ -183,6 +189,28 @@ AirConsole.prototype.getServerTime = function() {
   return new Date().getTime() + this.server_time_offset;
 };
 
+/**
+ * Queries, if new devices are currently silenced.
+ * @returns {boolean} True, if new devices that are not players are silenced.
+ * @since 1.9.0
+ */
+AirConsole.prototype.arePlayersSilenced = function () {
+  if(this.devices[AirConsole.SCREEN] === undefined) {
+    return false;
+  }
+
+  var playersSilenced = this.devices[AirConsole.SCREEN].hasOwnProperty("silence_players") ? this.devices[AirConsole.SCREEN]["silence_players"] : false;
+  return (!!this.silence_inactive_players || playersSilenced)
+    && (this.devices[AirConsole.SCREEN]["players"] !== undefined && this.devices[AirConsole.SCREEN]["players"].length > 0);
+}
+
+/**
+ * Dictionary of silenced update messages queued during a running game session.
+ * @private
+ * @since 1.9.0
+ */
+AirConsole.prototype.silencedUpdatesQueue_ = {};
+
 /** ------------------------------------------------------------------------ *
  * @chapter                     MESSAGING                                    *
  * @see         http://developers.airconsole.com/#!/guides/pong              *
@@ -196,11 +224,11 @@ AirConsole.prototype.getServerTime = function() {
  *                                       this one).
  * @param data
  */
-AirConsole.prototype.message = function(device_id, data) {
-  if (this.device_id !== undefined) {
+AirConsole.prototype.message = function (device_id, data) {
+  if (this.device_id !== undefined && !this.deviceIsSilenced_(device_id)) {
     AirConsole.postMessage_({ action: "message", to: device_id, data: data });
   }
-};
+}
 
 /**
  * Sends a message to all connected devices.
@@ -483,24 +511,26 @@ AirConsole.prototype.editProfile = function() {
  * ------------------------------------------------------------------------- */
 
 /**
- * Takes all currently connected controllers and assigns them a player number.
+ * Takes all currently connected controllers and assigns them a player number.<br />
  * Can only be called by the screen. You don't have to use this helper
  * function, but this mechanism is very convenient if you want to know which
- * device is the first player, the second player, the third player ...
+ * device is the first player, the second player, the third player ...<br />
  * The assigned player numbers always start with 0 and are consecutive.
- * You can hardcode player numbers, but not device_ids.
+ * You can hardcode player numbers, but not device_ids.<br />
  * Once the screen has called setActivePlayers you can get the device_id of
  * the first player by calling convertPlayerNumberToDeviceId(0), the device_id
- * of the second player by calling convertPlayerNumberToDeviceId(1), ...
+ * of the second player by calling convertPlayerNumberToDeviceId(1), ...<br />
  * You can also convert device_ids to player numbers by calling
  * convertDeviceIdToPlayerNumber(device_id). You can get all device_ids that
- * are active players by calling getActivePlayerDeviceIds().
- * The screen can call this function every time a game round starts.
+ * are active players by calling getActivePlayerDeviceIds().<br />
+ * The screen can call this function every time a game round starts.<br />
+ * When using {@link https://developers.airconsole.com/#!/guides/player_silencing Player Silencing}, the screen needs to call this every time a game round starts or finishes.<br />
+ *  Calling it with max_players of 1 or more signals the start of the game round while calling it with max_players 0 signals the end of the game round.
  * @param {number} max_players - The maximum number of controllers that should
  *                               get a player number assigned.
  */
 AirConsole.prototype.setActivePlayers = function(max_players) {
-  if (this.getDeviceId() != AirConsole.SCREEN) {
+  if (this.getDeviceId() !== AirConsole.SCREEN) {
     throw "Only the AirConsole.SCREEN can set the active players!";
   }
   this.device_id_to_player_cache = undefined;
@@ -510,6 +540,18 @@ AirConsole.prototype.setActivePlayers = function(max_players) {
   }
   this.devices[AirConsole.SCREEN]["players"] = players;
   this.set_("players", players);
+
+  if (max_players === 0) {
+    for (var key in this.silencedUpdatesQueue_) {
+      if (this.silencedUpdatesQueue_.hasOwnProperty(key)) {
+        var events = this.silencedUpdatesQueue_[key];
+        for (var i = 0; i < events.length; i++) {
+          this.onPostMessage_(events[i]);
+        }
+      }
+    }
+    this.silencedUpdatesQueue_ = {};
+  }
 };
 
 /**
@@ -1079,7 +1121,9 @@ AirConsole.prototype.init_ = function(opts) {
   var me = this;
   me.version = "1.9.0";
   me.devices = [];
+  me.silencedUpdatesQueue_ = {};
   me.server_time_offset = opts.synchronize_time ? 0 : false;
+  me.silence_inactive_players = opts.silence_inactive_players || false;
   window.addEventListener("message", function(event) {
     me.onPostMessage_(event);
   }, false);
@@ -1092,10 +1136,53 @@ AirConsole.prototype.init_ = function(opts) {
     version: me.version,
     device_motion: opts.device_motion,
     synchronize_time: opts.synchronize_time,
+    silence_players: me.silence_inactive_players,
     location: me.getLocationUrl_(),
     translation: opts.translation
   });
+  if(me.silence_inactive_players) {
+     this.enablePlayerSilencing_(me.silence_inactive_players);
+  }
 };
+
+/**
+ * Enables the player silencing
+ * @param {boolean} silence_players If true, the player silencing feature is active
+ * @private
+ * @since 1.9.0
+ */
+AirConsole.prototype.enablePlayerSilencing_ = function (silence_players) {
+  if(silence_players === undefined || this.silence_inactive_players === silence_players) {
+    return;
+  }
+
+  this.set_("silence_players", silence_players);
+}
+
+/**
+ * Checks if the location is in the same location of the sender
+ * @param {string} location The location to check.
+ * @param {string} sender_id The id of the sender.
+ * @returns {boolean} True if the location are identical.
+ * @private
+ */
+AirConsole.prototype.isDeviceInSameLocation_ = function (location, sender_id) {
+  return !!this.devices[sender_id] && location === this.getGameUrl_(this.devices[sender_id].location);
+}
+
+/**
+ * Queries if a given device_id is silenced
+ * @param {string} device_id  The device_id to be queried.
+ * @returns {boolean} True, if the device_id is silenced.
+ * @private
+ * @since 1.9.0
+ */
+AirConsole.prototype.deviceIsSilenced_ = function (device_id) {
+  return this.arePlayersSilenced() &&
+      device_id !== undefined
+      && device_id !== AirConsole.SCREEN
+      && this.convertDeviceIdToPlayerNumber(device_id) === undefined;
+}
 
 /**
  * Handling onMessage events
@@ -1106,16 +1193,15 @@ AirConsole.prototype.onPostMessage_ = function(event) {
   var me = this;
   var data = event.data;
   var game_url = me.getGameUrl_(me.getLocationUrl_());
-  if (data.action == "device_motion") {
+  if (data.action === "device_motion") {
     me.onDeviceMotion(data.data);
-  } else if (data.action == "message") {
+  } else if (data.action === "message") {
     if (me.device_id !== undefined) {
-      if (me.devices[data.from] &&
-        game_url == me.getGameUrl_(me.devices[data.from].location)) {
+      if (me.isDeviceInSameLocation_(game_url, data.from) && !me.deviceIsSilenced_(data.from) && !me.deviceIsSilenced_(data.to)) {
         me.onMessage(data.from, data.data);
       }
     }
-  } else if (data.action == "update") {
+  } else if (data.action === "update") {
     if (me.device_id !== undefined) {
       var game_url_before = null;
       var game_url_after = null;
@@ -1126,41 +1212,64 @@ AirConsole.prototype.onPostMessage_ = function(event) {
       if (data.device_data) {
         game_url_after = me.getGameUrl_(data.device_data.location);
       }
-      me.devices[data.device_id] = data.device_data;
-      me.onDeviceStateChange(data.device_id, data.device_data);
-      var is_connect = (game_url_before != game_url &&
-        game_url_after == game_url);
+      if (me.deviceIsSilenced_(data.device_id)) {
+        var queue = me.silencedUpdatesQueue_[data.device_id] || [];
+        if (me.isLocationUnloadedMessage_(game_url_before, game_url, game_url_after)) {
+          let connect_removed = false;
+          for (let i = 0; i < queue.length; i++) {
+            if (queue[i].hasOwnProperty("_is_connect_event")) {
+              queue.splice(i);
+              connect_removed = true;
+              break;
+            }
+          }
+
+          delete me.silencedUpdatesQueue_[data.device_id];
+          if (connect_removed) return;
+        }
+
+        if (me.isLocationLoadedMessage_(game_url_before, game_url, game_url_after)) {
+          event._is_connect_event = true;
+        }
+
+        queue.push(event);
+        me.silencedUpdatesQueue_[data.device_id] = queue;
+        return;
+      }
+
+      var sender = data.device_id;
+      me.devices[sender] = data.device_data;
+      me.onDeviceStateChange(sender, data.device_data);
+      var is_connect = me.isLocationLoadedMessage_(game_url_before, game_url, game_url_after);
+      var is_disconnect = me.isLocationUnloadedMessage_(game_url_before, game_url, game_url_after);
       if (is_connect) {
-        me.onConnect(data.device_id);
-      } else if (game_url_before == game_url &&
-        game_url_after != game_url) {
-        me.onDisconnect(data.device_id);
+        me.onConnect(sender);
+      } else if (is_disconnect) {
+        me.onDisconnect(sender);
       }
       if (data.device_data) {
-        if ((data.device_data._is_custom_update &&
-            game_url_after == game_url) ||
-          (is_connect && data.device_data.custom)) {
-          me.onCustomDeviceStateChange(data.device_id,
-            data.device_data.custom);
+        if ((data.device_data._is_custom_update && game_url_after === game_url)
+            || (is_connect && data.device_data.custom)) {
+          me.onCustomDeviceStateChange(sender, data.device_data.custom);
         }
-        if ((data.device_data._is_players_update &&
-            game_url_after == game_url) ||
-          (data.device_id == AirConsole.SCREEN &&
-            data.device_data.players && is_connect)) {
+        if ((data.device_data._is_players_update && game_url_after === game_url)
+            || (data.device_id === AirConsole.SCREEN && data.device_data.players && is_connect)) {
           me.device_id_to_player_cache = null;
-          me.onActivePlayersChange(me.convertDeviceIdToPlayerNumber(
-            me.getDeviceId()));
+          me.onActivePlayersChange(me.convertDeviceIdToPlayerNumber(me.getDeviceId()));
         }
-        if (data.device_data.premium &&
-          (data.device_data._is_premium_update || is_connect)) {
-          me.onPremium(data.device_id);
+        if ((data.device_data._is_silence_players_update && game_url_after === game_url) ||
+            (data.device_id === AirConsole.SCREEN && data.device_data.silence_inactive_players !== undefined)) {
+          me.silence_inactive_players = data.device_data.silence_inactive_players;
+        }
+        if (data.device_data.premium && (data.device_data._is_premium_update || is_connect)) {
+          me.onPremium(sender);
         }
         if (data.device_data._is_profile_update) {
-          me.onDeviceProfileChange(data.device_id);
+          me.onDeviceProfileChange(sender);
         }
       }
     }
-  } else if (data.action == "ready") {
+  } else if (data.action === "ready") {
     me.device_id = data.device_id;
     me.devices = data.devices;
     if (me.server_time_offset !== false) {
@@ -1177,20 +1286,17 @@ AirConsole.prototype.onPostMessage_ = function(event) {
     var client = me.devices[data.device_id].client;
     me.bindTouchFix_(client);
     me.onReady(data.code);
-    var game_url = me.getGameUrl_(me.getLocationUrl_());
-    for (var i = 0; i < me.devices.length; ++i) {
-      if (me.devices[i] &&
-        me.getGameUrl_(me.devices[i].location) == game_url) {
-        if (i != me.getDeviceId()) {
+    for (let i = 0; i < me.devices.length; ++i) {
+      if (me.isDeviceInSameLocation_(game_url, i)) {
+        if (i !== me.getDeviceId()) {
           me.onConnect(i);
           var custom_state = me.getCustomDeviceState(i);
           if (custom_state !== undefined) {
             me.onCustomDeviceStateChange(i, custom_state);
           }
-          if (i == AirConsole.SCREEN && me.devices[i].players) {
+          if (i === AirConsole.SCREEN && me.devices[i].players) {
             me.device_id_to_player_cache = null;
-            me.onActivePlayersChange(me.convertDeviceIdToPlayerNumber(
-              me.getDeviceId()));
+            me.onActivePlayersChange(me.convertDeviceIdToPlayerNumber(me.getDeviceId()));
           }
         }
         if (me.isPremium(i)) {
@@ -1251,6 +1357,30 @@ AirConsole.prototype.onPostMessage_ = function(event) {
     }
   }
 };
+
+/**
+ Checks if the urls imply that this is a connect update message
+ * @param game_url_before The url before the change of location
+ * @param game_url The url of the current location
+ * @param game_url_after The url after the change of location
+ * @returns {boolean} True, if it is a connect message
+ * @private
+ */
+AirConsole.prototype.isLocationLoadedMessage_ = function (game_url_before, game_url, game_url_after) {
+  return (game_url_before !== game_url && game_url_after === game_url);
+}
+
+/**
+ * Checks if the urls imply that this is a disconnect update message
+ * @param game_url_before The url before the change of location
+ * @param game_url The url of the current location
+ * @param game_url_after The url after the change of location
+ * @returns {boolean} True, if it is a disconnect message
+ * @private
+ */
+AirConsole.prototype.isLocationUnloadedMessage_ = function (game_url_before, game_url, game_url_after) {
+  return (game_url_before === game_url && game_url_after !== game_url)
+}
 
 /**
  * @private
