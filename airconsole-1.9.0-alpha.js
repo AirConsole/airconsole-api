@@ -326,38 +326,34 @@ AirConsole.prototype.setCustomDeviceStateProperty = function(key, value) {
  * @param {ImmersiveOption[]} opts - An array of options objects.
  */
 AirConsole.prototype.setImmersiveState = function (opts) {
-  if (this.device_id !== undefined) {
-    var state = this.devices[this.device_id].immersive || {};
-    if (typeof state !== "object") {
-      throw "Immersive state needs to be of type object";
-    }
-    
-    var new_immersive_state = {};
-    for (var i = 0; i < opts.length; i++) {
-      var opt = opts[i];
-      var zoneId = opt.zoneId;
-      if (zoneId === undefined) {
-        var current_player_id = this.convertDeviceIdToPlayerNumber(this.device_id);
-        if (current_player_id === undefined){
-          continue;
-        }
-        new_immersive_state[current_player_id] = opt;
-      } else {
-        delete opt.zoneId;
-        new_immersive_state[zoneId] = opt;
-      }
-    }
-
-    // TODO(Marc): If the locally accessible state is not necessary, only the server forwarded one, then this can be removed.
-    this.set_("immersive", new_immersive_state)
-    if(this.device_id === AirConsole.SCREEN) {
-      this.devices[AirConsole.SCREEN].immersive = this.devices[AirConsole.SCREEN].immersive || [];
-      this.devices[AirConsole.SCREEN].immersive = new_immersive_state;
-    } else if(opt.zoneId === undefined && this.convertDeviceIdToPlayerNumber(this.device_id) !== undefined){
-      this.devices[this.device_id].immersive = this.devices[this.device_id].immersive || [];
-      this.devices[this.device_id].immersive[this.convertDeviceIdToPlayerNumber(this.device_id)] = new_immersive_state;
-    } 
+  if (this.device_id !== AirConsole.SCREEN) {
+    throw "The the screen can set the immersive state."
   }
+
+  var state = this.devices[this.device_id].immersive || {};
+  if (typeof state !== "object") {
+    throw "Immersive state needs to be of type object";
+  }
+
+  var new_immersive_state = this.devices[AirConsole.SCREEN].immersive || {};
+  for (var i = 0; i < opts.length; i++) {
+    var opt = opts[i];
+    var zoneId = opt.zoneId;
+    if (zoneId === undefined) {
+      var current_player_id = this.convertDeviceIdToPlayerNumber(this.device_id);
+      if (current_player_id === undefined) {
+        continue;
+      }
+      new_immersive_state[current_player_id] = opt;
+    } else {
+      delete opt.zoneId;
+      new_immersive_state[zoneId] = opt;
+    }
+  }
+
+  this.set_("immersive", new_immersive_state)
+  // TODO(immersive): If the locally accessible state is not necessary, only the server forwarded one, then this can be removed.
+  this.devices[AirConsole.SCREEN].immersive = new_immersive_state;
 };
 
 
