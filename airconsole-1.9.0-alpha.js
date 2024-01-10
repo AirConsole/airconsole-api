@@ -303,20 +303,20 @@ AirConsole.prototype.setCustomDeviceStateProperty = function(key, value) {
 
 /**
  * @typedef {Object} ImmersiveOption
- * @property {string} [sentiment] - The emotional state or event. Possible values:
+ * @property {string} [emotion] - The emotional state or event. Possible values:
  *   - `Ready`: Your turn to do something
  *   - `Negative`: Wrong button pressed
  *   - `Positive`: Right button pressed
  *   - `Sadness`: Loss in the game
  *   - `Happiness`: Victory in the game
  *   - `Anticipation`: Waiting for turn or honking
- *   - `Curious`: All gaming buttons
+ *   - `Pressure`: Time is almost up or game moment is stressful
  *   - `Idle`: No emotions, stops the events (System Event)
  *   - `SystemLoading`: Game or level is loading (System Event)
  *   - `EndOfSession`: Disconnecting or leaving the game (System Event)
- * @property {string} [color] - The specific color for the event.
+ * @property {string} [color] - The specific color for the event. Format: #ffffff
  * @property {number} [zoneId] - The zone for the event.
- * @property {number} [intensity] - The specific intensity level for the event.
+ * @property {number} [intensity] - The specific intensity level for the event. Format: float between 0 and 1.
  */
 
 
@@ -352,7 +352,6 @@ AirConsole.prototype.setImmersiveState = function (opts) {
   }
 
   this.set_("immersive", new_immersive_state)
-  // TODO(immersive): If the locally accessible state is not necessary, only the server forwarded one, then this can be removed.
   this.devices[AirConsole.SCREEN].immersive = new_immersive_state;
 };
 
