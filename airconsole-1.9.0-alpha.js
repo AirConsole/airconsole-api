@@ -327,7 +327,7 @@ AirConsole.prototype.setCustomDeviceStateProperty = function(key, value) {
  */
 AirConsole.prototype.setImmersiveState = function (opts) {
   if (this.device_id !== AirConsole.SCREEN) {
-    throw "The the screen can set the immersive state."
+    throw "Only the screen can set the immersive state."
   }
 
   var state = this.devices[this.device_id].immersive || {};

@@ -54,7 +54,7 @@ function testImmersive() {
         try {
             airconsole.setImmersiveState(payload);
         } catch (err) {
-            expect(err).toEqual("The the screen can set the immersive state.")
+            expect(err).toEqual("Only the screen can set the immersive state.")
         }
     });
 }
