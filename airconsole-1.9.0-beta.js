@@ -833,10 +833,10 @@ AirConsole.prototype.setOrientation = function(orientation) {
 AirConsole.prototype.requestPersistentData = function(uids) {
   if (!uids) {
     throw new Error("A valid array of uids must be provided");
-  } else if(uids.length < 1){
+  } else if (uids.length < 1) {
     throw new Error("At least one valid uid must be provided");
   }
-  this.set_("persistentrequest", {"uids": uids})
+  this.set_("persistentrequest", { uids: uids });
 };
 
 /**
