@@ -1,0 +1,11 @@
+*.pyc
+.idea
+.DS_Store
+lib/
+bin/
+include/
+pyvenv.cfg
+.python-version
+playwright/node_modules/
+/.run/Run AppEngine (AutoRestart).run.xml
+/node_modules
