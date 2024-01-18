@@ -828,13 +828,18 @@ AirConsole.prototype.setOrientation = function(orientation) {
 /**
  * Requests persistent data from the servers.
  * @param {Array<String>} uids - The uids for which you would like to request the persistent data.
- * @version 1.9.0 - uids is no longer optional
+ * @version 1.9.0 - uids is no longer optional for requests from the screen
  */
-AirConsole.prototype.requestPersistentData = function(uids) {
-  if (!uids) {
-    throw new Error("A valid array of uids must be provided");
-  } else if (uids.length < 1) {
-    throw new Error("At least one valid uid must be provided");
+AirConsole.prototype.requestPersistentData = function (uids) {
+  if (this.device_id === AirConsole.SCREEN) {
+    if (!uids) {
+      throw new Error("A valid array of uids must be provided on the screen");
+    } else if (uids.length < 1) {
+      throw new Error("At least one valid uid must be provided on the screen");
+    }
+  } else {
+    uids = uids || [];
+    uids.push(this.getUID());
   }
   this.set_("persistentrequest", { uids: uids });
 };
@@ -854,13 +859,17 @@ AirConsole.prototype.onPersistentDataLoaded = function(data) {};
  * @param {String} key - The key of the data entry.
  * @param {mixed} value - The value of the data entry.
  * @param {String} uid - The uid for which the data should be stored.
- * @version 1.9.0 - uid is no longer optional
+ * @version 1.9.0 - uid is no longer optional for requests from the screen
  */
-AirConsole.prototype.storePersistentData = function(key, value, uid) {
-  if (!uid) {
-    throw new Error("A valid uid must be provided");
+AirConsole.prototype.storePersistentData = function (key, value, uid) {
+  if (this.device_id === AirConsole.SCREEN) {
+    if (!uid) {
+      throw new Error("A valid uid must be provided on the screen");
+    }
+  } else {
+    uid = this.getUID();
   }
-  this.set_("persistentstore", {"key": key, "value": value, "uid": uid});
+  this.set_("persistentstore", { key: key, value: value, uid: uid });
 };
 
 /**
