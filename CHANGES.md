@@ -24,5 +24,6 @@ Gameplay rounds are controlled through AirConsole's setActivePlayers API.
 - Added :gift_heart:: New function `setImmersiveState` to control immersive emotions in environments that support this technical capability 
 
 ### Changed
-- storePersistentData's uid parameter is no longer optional.
-- requestPersistentData's uids parameter is no longer optional.
+
+- storePersistentData's uid parameter is no longer optional for screens.
+- requestPersistentData's uids parameter is no longer optional for screens.
