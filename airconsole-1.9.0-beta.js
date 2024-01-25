@@ -827,15 +827,23 @@ AirConsole.prototype.setOrientation = function(orientation) {
 
 /**
  * Requests persistent data from the servers.
- * @param {Array<String>|undefined} uids - The uids for which you would like
- *                                         to request the persistent data.
- *                                         Default is the uid of this device.
+ * @param {Array<String>} uids - The uids for which you would like to request the persistent data.
+ *                                         For controllers, the default is the uid of this device.
+ *                                         Screens must provide a valid array of uids.
+ * @version 1.9.0 - uids is no longer optional for requests from the screen
  */
-AirConsole.prototype.requestPersistentData = function(uids) {
-  if (!uids) {
-    uids = [this.getUID()];
+AirConsole.prototype.requestPersistentData = function (uids) {
+  if (this.device_id === AirConsole.SCREEN) {
+    if (!uids) {
+      throw new Error("A valid array of uids must be provided on the screen");
+    } else if (uids.length < 1) {
+      throw new Error("At least one valid uid must be provided on the screen");
+    }
+  } else {
+    uids = uids || [];
+    uids.push(this.getUID());
   }
-  this.set_("persistentrequest", {"uids": uids})
+  this.set_("persistentrequest", { uids: uids });
 };
 
 /**
@@ -852,14 +860,20 @@ AirConsole.prototype.onPersistentDataLoaded = function(data) {};
  * Do not store sensitive data.
  * @param {String} key - The key of the data entry.
  * @param {mixed} value - The value of the data entry.
- * @param {String|undefiend} uid - The uid for which the data should be stored.
- *                                 Default is the uid of this device.
+ * @param {String} uid - The uid for which the data should be stored.
+ *                       For controllers, the default is the uid of this device.
+ *                       Screens must provide a valid uid.
+ * @version 1.9.0 - uid is no longer optional for requests from the screen
  */
-AirConsole.prototype.storePersistentData = function(key, value, uid) {
-  if (!uid) {
+AirConsole.prototype.storePersistentData = function (key, value, uid) {
+  if (this.device_id === AirConsole.SCREEN) {
+    if (!uid) {
+      throw new Error("A valid uid must be provided on the screen");
+    }
+  } else {
     uid = this.getUID();
   }
-  this.set_("persistentstore", {"key": key, "value": value, "uid": uid});
+  this.set_("persistentstore", { key: key, value: value, uid: uid });
 };
 
 /**
