@@ -828,6 +828,8 @@ AirConsole.prototype.setOrientation = function(orientation) {
 /**
  * Requests persistent data from the servers.
  * @param {Array<String>} uids - The uids for which you would like to request the persistent data.
+ *                                         For controllers, the default is the uid of this device.
+ *                                         Screens must provide a valid array of uids.
  * @version 1.9.0 - uids is no longer optional for requests from the screen
  */
 AirConsole.prototype.requestPersistentData = function (uids) {
@@ -859,6 +861,8 @@ AirConsole.prototype.onPersistentDataLoaded = function(data) {};
  * @param {String} key - The key of the data entry.
  * @param {mixed} value - The value of the data entry.
  * @param {String} uid - The uid for which the data should be stored.
+ *                       For controllers, the default is the uid of this device.
+ *                       Screens must provide a valid uid.
  * @version 1.9.0 - uid is no longer optional for requests from the screen
  */
 AirConsole.prototype.storePersistentData = function (key, value, uid) {
