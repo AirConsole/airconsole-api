@@ -1155,24 +1155,7 @@ AirConsole.prototype.init_ = function(opts) {
     location: me.getLocationUrl_(),
     translation: opts.translation
   });
-  if(me.silence_inactive_players) {
-     this.enablePlayerSilencing_(me.silence_inactive_players);
-  }
 };
-
-/**
- * Enables the player silencing
- * @param {boolean} silence_players If true, the player silencing feature is active
- * @private
- * @since 1.9.0
- */
-AirConsole.prototype.enablePlayerSilencing_ = function (silence_players) {
-  if(silence_players === undefined || this.silence_inactive_players === silence_players) {
-    return;
-  }
-
-  this.set_("silence_players", silence_players);
-}
 
 /**
  * Checks if the location is in the same location of the sender
