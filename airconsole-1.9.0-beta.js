@@ -199,7 +199,7 @@ AirConsole.prototype.arePlayersSilenced = function () {
     return false;
   }
 
-  var playersSilenced = this.devices[AirConsole.SCREEN].hasOwnProperty("silence_players") ? this.devices[AirConsole.SCREEN]["silence_players"] : false;
+  var playersSilenced = this.devices[AirConsole.SCREEN].hasOwnProperty("silencePlayers") ? this.devices[AirConsole.SCREEN]["silencePlayers"] : false;
   return (!!this.silence_inactive_players || playersSilenced)
     && (this.devices[AirConsole.SCREEN]["players"] !== undefined && this.devices[AirConsole.SCREEN]["players"].length > 0);
 }
@@ -1151,7 +1151,7 @@ AirConsole.prototype.init_ = function(opts) {
     version: me.version,
     device_motion: opts.device_motion,
     synchronize_time: opts.synchronize_time,
-    silence_players: me.silence_inactive_players,
+    silencePlayers: me.silence_inactive_players,
     location: me.getLocationUrl_(),
     translation: opts.translation
   });
