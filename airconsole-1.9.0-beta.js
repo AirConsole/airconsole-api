@@ -199,7 +199,7 @@ AirConsole.prototype.arePlayersSilenced = function () {
     return false;
   }
 
-  var playersSilenced = this.devices[AirConsole.SCREEN].hasOwnProperty("silence_players") ? this.devices[AirConsole.SCREEN]["silence_players"] : false;
+  var playersSilenced = this.devices[AirConsole.SCREEN].hasOwnProperty("silencePlayers") ? this.devices[AirConsole.SCREEN]["silencePlayers"] : false;
   return (!!this.silence_inactive_players || playersSilenced)
     && (this.devices[AirConsole.SCREEN]["players"] !== undefined && this.devices[AirConsole.SCREEN]["players"].length > 0);
 }
@@ -1151,7 +1151,7 @@ AirConsole.prototype.init_ = function(opts) {
     version: me.version,
     device_motion: opts.device_motion,
     synchronize_time: opts.synchronize_time,
-    silence_players: me.silence_inactive_players,
+    silencePlayers: me.silence_inactive_players,
     location: me.getLocationUrl_(),
     translation: opts.translation
   });
@@ -1254,10 +1254,6 @@ AirConsole.prototype.onPostMessage_ = function(event) {
             || (data.device_id === AirConsole.SCREEN && data.device_data.players && is_connect)) {
           me.device_id_to_player_cache = null;
           me.onActivePlayersChange(me.convertDeviceIdToPlayerNumber(me.getDeviceId()));
-        }
-        if ((data.device_data._is_silence_players_update && game_url_after === game_url) ||
-            (data.device_id === AirConsole.SCREEN && data.device_data.silence_inactive_players !== undefined)) {
-          me.silence_inactive_players = data.device_data.silence_inactive_players;
         }
         if (data.device_data.premium && (data.device_data._is_premium_update || is_connect)) {
           me.onPremium(sender);
