@@ -34,6 +34,7 @@
  * Do not access properties of this object directly.
  * @constructor
  * @param {AirConsole~Config} opts - Constructor config, see bellow.
+ * @return {AirConsoleObject} The AirConsole object.
  */
 function AirConsole(opts) {
   this.init_(opts);
@@ -1015,11 +1016,11 @@ AirConsole.prototype.onHighScores = function(high_scores) {};
  * getCustomDeviceState to access this data.
  * @typedef {object} AirConsole~DeviceState
  * @property {string} uid - The globally unique ID of the user.
- * @property {string|undefined} custom - Custom device data that this API can
- *                                       set.
+ * @property {string|undefined} custom - Custom device data that this API can set.
  * @property {string|undefined} nickname - The nickname of the user.
- * @property {boolean|undefined} slow_connection - If the user has a high
- *                                                 server latency.
+ * @property {boolean|undefined} slow_connection - If the user has a high server latency.
+ * @property {AirConsoleScreenEnvironment} environment - The games multiplayer environment to let multiple games in the
+ *                                                       same location play together. Only present for the screen device.
  */
 
 /**
@@ -1566,3 +1567,23 @@ window.addEventListener('unhandledrejection', function(e) {
     }
   });
 });
+
+
+/**
+ * The devices environment. Only available on the screen device.
+ * Please visit the {@link https://developers.airconsole.com/#!/guides/multiplayer Multiplayer} guide to see how to use this from onDeviceStateChange or through airconsole.devices[AirConsole.SCREEN].environment.id
+ * @typedef {object} AirConsoleScreenEnvironment
+ * @property {string} id - Id of the environment this screen is in. Where possible this is a specific physical location, like a specific car.
+ */
+
+/**
+ * The AirConsole Screen device data of relevance to game developers.
+ * @typedef {object} AirConsoleDevice
+ * @property {AirConsoleScreenEnvironment} [environment] - The environment object this device is in. Only present on the screen.
+ */
+
+/**
+ * The AirConsole Screen device data of relevance to game developers.
+ * @typedef {object} AirConsoleObject
+ * @property {Array<AirConsoleDevice>} devices - List of devices in this session. Screen is always devices[AirConsole.SCREEN].
+ */
