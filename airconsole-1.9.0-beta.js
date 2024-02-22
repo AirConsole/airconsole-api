@@ -1573,7 +1573,9 @@ window.addEventListener('unhandledrejection', function(e) {
  * The devices environment. Only available on the screen device.
  * Please visit the {@link https://developers.airconsole.com/#!/guides/multiplayer Multiplayer} guide to see how to use this from onDeviceStateChange or through airconsole.devices[AirConsole.SCREEN].environment.id
  * @typedef {object} AirConsoleScreenEnvironment
- * @property {string} id - Id of the environment this screen is in. Where possible this is a specific physical location, like a specific car.
+ * @property {string} id - Identifier of the environment this screen is in. Where possible this is a specific physical
+ *                         location, like a specific car.
+ * @property {string} partner - Identifier of the partner in the environment.
  */
 
 /**
