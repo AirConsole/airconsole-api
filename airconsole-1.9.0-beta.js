@@ -973,9 +973,10 @@ AirConsole.prototype.onHighScoreStored = function(high_score) {};
  *                                   type. Default is 8.
  * @param {number|undefined} top - Amount of top high scores to return per rank
  *                                 type. top is part of total. Default is 5.
+ * @param {boolean} [partner_specific] - If the high score should be limited to the current partner of the screeen.
  */
-AirConsole.prototype.requestHighScores = function(level_name, level_version,
-                                                  uids, ranks, total, top) {
+AirConsole.prototype.requestHighScores = function(level_name, level_version, uids, ranks, total, top, partner_specific) {
+  isPartnerSpecific = !!partner_specific || false;
   if (!ranks) {
     ranks = ["world"];
   }
@@ -999,7 +1000,8 @@ AirConsole.prototype.requestHighScores = function(level_name, level_version,
       "uids": uids,
       "ranks": ranks,
       "total": total,
-      "top": top
+      "top": top,
+      ...(isPartnerSpecific && {"partner_specific": true})
     });
 };
 
