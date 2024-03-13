@@ -967,16 +967,14 @@ AirConsole.prototype.onHighScoreStored = function(high_score) {};
  *                                          specific area or a users friends.
  *                                          Valid array entries are "world",
  *                                          "country",  "region", "city",
- *                                          "friends".
+ *                                          "friends", "partner".
  *                                          Default is ["world"].
  * @param {number|undefined} total - Amount of high scores to return per rank
  *                                   type. Default is 8.
  * @param {number|undefined} top - Amount of top high scores to return per rank
  *                                 type. top is part of total. Default is 5.
- * @param {boolean} [partner_specific] - If the high score should be limited to the current partner of the screeen.
  */
-AirConsole.prototype.requestHighScores = function(level_name, level_version, uids, ranks, total, top, partner_specific) {
-  isPartnerSpecific = !!partner_specific || false;
+AirConsole.prototype.requestHighScores = function(level_name, level_version, uids, ranks, total, top) {
   if (!ranks) {
     ranks = ["world"];
   }
@@ -1000,8 +998,7 @@ AirConsole.prototype.requestHighScores = function(level_name, level_version, uid
       "uids": uids,
       "ranks": ranks,
       "total": total,
-      "top": top,
-      ...(isPartnerSpecific && {"partner_specific": true})
+      "top": top
     });
 };
 
