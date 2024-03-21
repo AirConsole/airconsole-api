@@ -968,7 +968,6 @@ AirConsole.prototype.onHighScoreStored = function(high_score) {};
  *                                          Valid array entries are "world",
  *                                          "country",  "region", "city",
  *                                          "friends", "partner". <br />
- *                                          If "partner" is included, "country", "region" and "city" are not allowed. <br />
  *                                          Default is ["world"].
  * @param {number|undefined} total - Amount of high scores to return per rank
  *                                   type. Default is 8.
@@ -978,9 +977,6 @@ AirConsole.prototype.onHighScoreStored = function(high_score) {};
 AirConsole.prototype.requestHighScores = function(level_name, level_version, uids, ranks, total, top) {
   if (!ranks) {
     ranks = ["world"];
-  }
-  if (ranks.indexOf("partner") !== -1 && (ranks.indexOf("country") !== -1 || ranks.indexOf("region")  !== -1 || ranks.indexOf("city") !== -1)) {
-      throw Error("You can't request partner high scores together with country, region or city high scores.");
   }
   if (!uids) {
     uids = [];
