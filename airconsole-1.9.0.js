@@ -1142,10 +1142,10 @@ AirConsole.prototype.getDefaultPlayerSilencing_ = function() {
   let airconsoleApiVersion = { version: this.version };
   if(referencedAirconsoleAPIScripts.length > 0) {
     airconsoleApiVersion = referencedAirconsoleAPIScripts[0]
-      .match(new RegExp('https?://.*/api/airconsole-(?<version>.*).js'))
-      .groups;
+      .match(new RegExp('https?://.*/api/airconsole-(.*).js'));
   }
-  return airconsoleApiVersion.version !== 'latest' || false;
+  
+  return airconsoleApiVersion.length > 1 && airconsoleApiVersion[1] !== 'latest' || false;
 }
 
 /**
