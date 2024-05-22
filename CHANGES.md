@@ -18,10 +18,16 @@ Gameplay rounds are controlled through AirConsole's setActivePlayers API.
 
 ### Added
 
-- Added :gift_heart:: New function `arePlayersSilenced` to check if players are silenced.
-- Added :gift_heart:: `silence_inactive_players` to AirConsole Opts, which when set will silence new players while
-  setActivePlayers is in a state with 1 or more players.
-- Added :gift_heart:: New function `setImmersiveState` to control immersive emotions in environments that support this technical capability 
+- Added :gift_heart:: New capability: Player Silencing [see Handling Players connecting guide]](<https://developers.airconsole.com/#!/guides/player_silencing>)
+  - function `arePlayersSilenced` to check if players are silenced.
+  - `silence_inactive_players` to AirConsole Opts, which when set will silence new players while
+    setActivePlayers is in a state with 1 or more players.
+- Added :gift_heart:: Immersive State API to create immersive experiences in cars.
+  - New function `setImmersiveState` to control immersive emotions in environments that support this.
+- Added :gift_heart:: Partner specific highscore
+  - New rank `partner` for `requestHighScores` that will limit the response to highscores the player has achieve on the same partner. See the [partner specific high score section of the high score guide](https://developers.airconsole.com/#!/guides/highscore#partner)
+- Added :gift_heart:: Multi-screen multiplayer API [see Multi-screen multiplayer guide](https://developers.airconsole.com/#!/guides/multiplayer)
+  - provides information to enable online multiplayer matchmaking against screens in the same car as well screens in the same type of partner environment (e.g. car brand).
 
 ### Changed
 
