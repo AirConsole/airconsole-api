@@ -1,9 +1,12 @@
 function testPlayerSilencing() {
-  function initAirConsole(optional_arguments) {
+  function initAirConsole(constructorArguments, version) {
+    const srcUrl = `http://localhost/api/airconsole-${version || 'latest'}.js`;
+    spyOn(document, 'getElementsByTagName').and.callFake(() => [{ src: srcUrl }]);
+    
     //
     airconsole = new AirConsole({
       setup_document: false,
-      ...(!!optional_arguments ? optional_arguments : {})
+      ...(!!constructorArguments ? constructorArguments : {})
     });
     airconsole.device_id = AirConsole.SCREEN;
 
@@ -18,8 +21,8 @@ function testPlayerSilencing() {
     };
   }
 
-  it("Should not silence players with default AirConsole initialization", function () {
-    initAirConsole();
+  it("Should not silence players with default AirConsole initialization on latest", function () {
+    initAirConsole( undefined, 'latest');
     airconsole.setActivePlayers(2);
 
     expect(airconsole.arePlayersSilenced()).toBe(false);
@@ -235,6 +238,18 @@ function testPlayerSilencing() {
     });
 
     expect(airconsole.onDisconnect).toHaveBeenCalledTimes(0);
+  });
+  
+  const defaultSilencingParameterDeductionnParams = [
+    { description: "Should by default have player silencing enabled for API 1.9.0", input: '1.9.0', result: true },
+    { description: "Should by default have player silencing disabled for latest API", input: 'latest', result: false }
+  ];
+  defaultSilencingParameterDeductionnParams.forEach(parameter => {
+    it(parameter.description, () => {
+      initAirConsole(undefined, parameter.input);
+      
+      expect(airconsole.silence_inactive_players).toBe(parameter.result); 
+    });
   });
 
   function initAirConsoleWithSilencedDevice(connected_id = 1, silenced_id = 2, active_device_id = 0) {
