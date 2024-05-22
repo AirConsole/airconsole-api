@@ -63,6 +63,18 @@ function testPersistentData() {
     expect(AirConsole.postMessage_).toHaveBeenCalledWith({ action: 'set', key: 'persistentrequest', value: { uids: [expected_uid]}});
   });
 
+  it ("Should throw an error when requesting persistent data with an empty uids array from screen", function() {
+    airconsole.device_id = 0;
+
+    try {
+      airconsole.requestPersistentData([]);
+    } catch (e){
+      expect(e).toEqual(new Error("At least one valid uid must be provided on the screen"));
+    }
+  });
+}
+
+function testPersistentData_190_up() {
   it ("Should complete the uid when requesting persistent data with empty uids from controller", function() {
     airconsole.device_id = 1;
     expected_uid = 123;
@@ -72,15 +84,5 @@ function testPersistentData() {
     airconsole.requestPersistentData([]);
 
     expect(AirConsole.postMessage_).toHaveBeenCalledWith({ action: 'set', key: 'persistentrequest', value: { uids: [expected_uid]}});
-  });
-
-  it ("Should throw an error when requesting persistent data with an empty uids array from screen", function() {
-    airconsole.device_id = 0;
-
-    try {
-      airconsole.requestPersistentData([]);
-    } catch (e){
-      expect(e).toEqual(new Error("At least one valid uid must be provided on the screen"));
-    }
   });
 }
