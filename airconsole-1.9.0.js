@@ -1139,7 +1139,7 @@ AirConsole.prototype.getDefaultPlayerSilencing_ = function() {
     alert('only a single instance of api/airconsole-*.js must be used per screen/controller.')
     return;
   }
-  let airconsoleApiVersion = { version: this.version };
+  let airconsoleApiVersion = ['', this.version];
   if(referencedAirconsoleAPIScripts.length > 0) {
     airconsoleApiVersion = referencedAirconsoleAPIScripts[0]
       .match(new RegExp('https?://.*/api/airconsole-(.*).js'));
