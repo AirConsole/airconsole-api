@@ -14,7 +14,7 @@ Checkout our Pong-Game if you want to see how a simple AirConsole project looks 
 
 ## Changes
 
-Check [CHANGES.md](./CHANGES.md) for a list of changes.
+Check [CHANGELOG.md](./CHANGELOG.md) for a list of changes.
 
 ## Tests
 
