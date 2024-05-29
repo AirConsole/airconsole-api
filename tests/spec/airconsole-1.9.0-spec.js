@@ -349,6 +349,7 @@ describe("AirConsole 1.9.0", function () {
     });
 
     testPersistentData();
+    testPersistentData_190_up();
 
   });
 

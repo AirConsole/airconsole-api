@@ -56,10 +56,11 @@ function AirConsole(opts) {
  *           accelerometer and the gyroscope. Only for controllers.
  * @property {boolean} translation - If an AirConsole translation file should
  *           be loaded.
- * @property {boolean} [silence_inactive_players=false] - If set, newly joining devices will be
+ * @property {boolean} [silence_inactive_players] - If set, newly joining devices will be
  *           prompted to wait while an active game is going on.<br />
  *           To start a game round, call setActivePlayers(X) with X larger than 0 eg 1,2,3,...<br />
  *           To finish a game round, call setActivePlayers(0).<br />
+ *           Default: true, unless the game uses the automatically upgrading API version.<br />
  *           See {@link https://developers.airconsole.com/#!/guides/player_silencing Player Silencing Guide} for details.<br />
  *           Added in 1.9.0
  */
@@ -1127,6 +1128,27 @@ AirConsole.prototype.onResume = function() {};
  * ------------------------------------------------------------------------- */
 
 /**
+ * Determines if AirConsole by default should have player silencing enabled or not.
+ * @returns If the player should be silenced based on environment factors.
+ * @private
+ */
+AirConsole.prototype.getDefaultPlayerSilencing_ = function() {
+  const referencedAirconsoleAPIScripts = Array.prototype.slice.call(document.getElementsByTagName('script'),0)
+  .map(it => it.src).filter(it => it.includes('api/airconsole-'));
+  if(referencedAirconsoleAPIScripts.length > 1) {
+    alert('only a single instance of api/airconsole-*.js must be used per screen/controller.')
+    return;
+  }
+  let airconsoleApiVersion = ['', this.version];
+  if(referencedAirconsoleAPIScripts.length > 0) {
+    airconsoleApiVersion = referencedAirconsoleAPIScripts[0]
+      .match(new RegExp('https?://.*/api/airconsole-(.*).js'));
+  }
+  
+  return airconsoleApiVersion.length > 1 && airconsoleApiVersion[1] !== 'latest' || false;
+}
+
+/**
  * Initializes the AirConsole.
  * @param {AirConsole~Config} opts - The Config.
  * @private
@@ -1138,7 +1160,10 @@ AirConsole.prototype.init_ = function(opts) {
   me.devices = [];
   me.silencedUpdatesQueue_ = {};
   me.server_time_offset = opts.synchronize_time ? 0 : false;
-  me.silence_inactive_players = opts.silence_inactive_players || false;
+  
+  const defaultPlayerSilencing = me.getDefaultPlayerSilencing_();
+  me.silence_inactive_players = opts.silence_inactive_players || defaultPlayerSilencing;
+  
   window.addEventListener("message", function(event) {
     me.onPostMessage_(event);
   }, false);
