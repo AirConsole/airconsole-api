@@ -1309,10 +1309,8 @@ AirConsole.prototype.onPostMessage_ = function(event) {
     if (me.server_time_offset !== false) {
       me.server_time_offset = data.server_time_offset || 0;
     }
-    if (data.gameSafeArea) {
-      me.gameSafeArea = data.gameSafeArea;
-      me.onSetSafeArea(data.gameSafeArea);
-    }
+
+    me.gameSafeArea = data.gameSafeArea;
     if (data.translations) {
       me.translations = data.translations;
       var elements = document.querySelectorAll("[data-translation]");
@@ -1341,6 +1339,12 @@ AirConsole.prototype.onPostMessage_ = function(event) {
           me.onPremium(i);
         }
       }
+    }
+
+    if (data.gameSafeArea) {
+      me.onSetSafeArea(data.gameSafeArea);
+    } else {
+      console.error("No gameSafeArea provided by AirConsole.");
     }
   } else if (data.action == "profile") {
     if (me.device_id) {
