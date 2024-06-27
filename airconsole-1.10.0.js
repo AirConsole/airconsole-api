@@ -1398,7 +1398,7 @@ AirConsole.prototype.onPostMessage_ = function(event) {
       }
     }
   } else if (data.action === 'setGameSafeArea') {
-    me.onSetSafeArea(data.safeArea);
+    me.onSetSafeArea(data.gameSafeArea);
   }
 };
 
