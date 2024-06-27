@@ -20,16 +20,30 @@ function testPlayerSilencing() {
       custom: {}
     };
   }
-
+  
   it("Should not silence players with default AirConsole initialization on latest", function () {
     initAirConsole( undefined, 'latest');
     airconsole.setActivePlayers(2);
 
     expect(airconsole.arePlayersSilenced()).toBe(false);
   });
+  
+  it("Should silence players with default AirConsole initialization on 1.9.0", function () {
+    initAirConsole( undefined, '1.9.0');
+    airconsole.setActivePlayers(2);
 
-  it("Should not silence players with AirConsole configured to not silence players", function () {
-    initAirConsole({ silence_inactive_players: false });
+    expect(airconsole.arePlayersSilenced()).toBe(true);
+  });
+
+  it("Should not silence players with AirConsole configured to not silence players on 1.9.0", function () {
+    initAirConsole({ silence_inactive_players: false }, '1.9.0');
+    airconsole.setActivePlayers(2);
+
+    expect(airconsole.arePlayersSilenced()).toBe(false);
+  });
+  
+  it("Should not silence players with AirConsole configured to not silence players on latest", function () {
+    initAirConsole({ silence_inactive_players: false }, 'latest');
     airconsole.setActivePlayers(2);
 
     expect(airconsole.arePlayersSilenced()).toBe(false);

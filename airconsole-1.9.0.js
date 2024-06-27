@@ -1162,7 +1162,7 @@ AirConsole.prototype.init_ = function(opts) {
   me.server_time_offset = opts.synchronize_time ? 0 : false;
   
   const defaultPlayerSilencing = me.getDefaultPlayerSilencing_();
-  me.silence_inactive_players = opts.silence_inactive_players || defaultPlayerSilencing;
+  me.silence_inactive_players = opts.silence_inactive_players !== undefined ? opts.silence_inactive_players : defaultPlayerSilencing;
   
   window.addEventListener("message", function(event) {
     me.onPostMessage_(event);
