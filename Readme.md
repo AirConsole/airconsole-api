@@ -18,7 +18,7 @@ Check [CHANGELOG.md](./CHANGELOG.md) for a list of changes.
 
 ## Tests
 
-To run the tests, open [tests/spec/airconsole-1.9.0-spec.html](tests/spec/airconsole-1.9.0-spec.html) with a preview
+To run the tests, open [tests/airconsole-1.9.0-spec.html](tests/airconsole-1.9.0-spec.html) with a preview
 webserver like `Open in browser` in IntelliJ or `Live Server` in Visual Studio Code.
 
 To view the test of the current version,
