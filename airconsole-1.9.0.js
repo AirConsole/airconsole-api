@@ -304,57 +304,36 @@ AirConsole.prototype.setCustomDeviceStateProperty = function(key, value) {
 };
 
 /**
- * @typedef {Object} ImmersiveOption
- * @property {string} [emotion] - The emotional state or event. Possible values:
- *   - `Ready`: Your turn to do something
- *   - `Negative`: Wrong button pressed
- *   - `Positive`: Right button pressed
- *   - `Sadness`: Loss in the game
- *   - `Happiness`: Victory in the game
- *   - `Anticipation`: Waiting for turn or honking
- *   - `Pressure`: Time is almost up or game moment is stressful
- *   - `Idle`: No emotions, stops the events (System Event)
- *   - `SystemLoading`: Game or level is loading (System Event)
- *   - `EndOfSession`: Disconnecting or leaving the game (System Event)
- * @property {string} [color] - The specific color for the event. Format: #ffffff
- * @property {number} [zoneId] - The zone for the event.
- * @property {number} [intensity] - The specific intensity level for the event. Format: float between 0 and 1.
+ * @typedef {Object} ImmersiveLightOption
+ * @property {number} [r] - The red value of the light. Format: integer between 0 and 255.
+ * @property {number} [g] - The green value of the light. Format: integer between 0 and 255.
+ * @property {number} [b] - The blue value of the light. Format: integer between 0 and 255.
  */
 
+/**
+ * @typedef {Object} ImmersiveOption
+ * @property {ImmersiveLightOption} [light] - Light state inside the car.
+ */
 
 /**
  * Sets the immersive state of the AirConsole game based on the provided options.
  *
- * @param {ImmersiveOption[]} opts - An array of options objects.
+ * @param {ImmersiveOption} opts - An array of options objects.
  */
 AirConsole.prototype.setImmersiveState = function (opts) {
   if (this.device_id !== AirConsole.SCREEN) {
-    throw "Only the screen can set the immersive state."
+    throw 'Only the screen can set the immersive state.';
   }
 
-  var state = this.devices[this.device_id].immersive || {};
-  if (typeof state !== "object") {
-    throw "Immersive state needs to be of type object";
+  if (opts === undefined || typeof opts !== 'object' || Object.keys(opts).length === 0) {
+    return;
   }
 
-  var new_immersive_state = this.devices[AirConsole.SCREEN].immersive || {};
-  for (var i = 0; i < opts.length; i++) {
-    var opt = opts[i];
-    var zoneId = opt.zoneId;
-    if (zoneId === undefined) {
-      var current_player_id = this.convertDeviceIdToPlayerNumber(this.device_id);
-      if (current_player_id === undefined) {
-        continue;
-      }
-      new_immersive_state[current_player_id] = opt;
-    } else {
-      delete opt.zoneId;
-      new_immersive_state[zoneId] = opt;
-    }
+  if (opts.light === undefined) {
+    return;
   }
 
-  this.set_("immersive", new_immersive_state)
-  this.devices[AirConsole.SCREEN].immersive = new_immersive_state;
+  this.set_('immersive', opts);
 };
 
 
