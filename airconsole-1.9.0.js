@@ -305,9 +305,9 @@ AirConsole.prototype.setCustomDeviceStateProperty = function(key, value) {
 
 /**
  * @typedef {Object} ImmersiveLightOption
- * @property {number} [r] - The red value of the light. Format: integer between 0 and 255.
- * @property {number} [g] - The green value of the light. Format: integer between 0 and 255.
- * @property {number} [b] - The blue value of the light. Format: integer between 0 and 255.
+ * @property {number} r - The red value of the light. Format: integer between 0 and 255.
+ * @property {number} g - The green value of the light. Format: integer between 0 and 255.
+ * @property {number} b - The blue value of the light. Format: integer between 0 and 255.
  */
 
 /**
@@ -316,24 +316,25 @@ AirConsole.prototype.setCustomDeviceStateProperty = function(key, value) {
  */
 
 /**
- * Sets the immersive state of the AirConsole game based on the provided options.
- *
- * @param {ImmersiveOption} opts - An array of options objects.
+ * Sets the immersive state of the AirConsole game based on the provided options.<br />
+ * At least one property is required for the immersive state to be set.
+ * 
+ * @param {ImmersiveOption} immersiveState - The immersive state to send. 
  */
-AirConsole.prototype.setImmersiveState = function (opts) {
+AirConsole.prototype.setImmersiveState = function (immersiveState) {
   if (this.device_id !== AirConsole.SCREEN) {
     throw 'Only the screen can set the immersive state.';
   }
 
-  if (opts === undefined || typeof opts !== 'object' || Object.keys(opts).length === 0) {
+  if (immersiveState === undefined || typeof immersiveState !== 'object' || Object.keys(immersiveState).length === 0) {
     return;
   }
 
-  if (opts.light === undefined) {
+  if (immersiveState.light === undefined) {
     return;
   }
 
-  this.set_('immersive', opts);
+  this.set_('immersive', immersiveState);
 };
 
 
