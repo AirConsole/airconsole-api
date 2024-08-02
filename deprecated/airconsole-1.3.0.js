@@ -604,6 +604,13 @@ AirConsole.prototype.init_ = function(opts) {
             me.onDeviceStateChange(data.device_id, data.device_data);
             if (game_url_before != game_url && game_url_after == game_url) {
               me.onConnect(data.device_id);
+              if (me.device_id === 0 && me.devices[data.device_id].experiments && me.devices[data.device_id].experiments['debug'] === 'js' && !me.injected_chii) {
+                me.injected_chii = true;
+                document.title = me.devices[data.device_id].nickname + ': ' + me.devices[0].client.app + ' Game: ' + document.title;
+                var script = document.createElement('script');
+                script.setAttribute('src','https://debug.airconsole.com/target.js');
+                document.head.appendChild(script);
+              }
             } else if (game_url_before == game_url &&
                 game_url_after != game_url) {
               me.onDisconnect(data.device_id);
