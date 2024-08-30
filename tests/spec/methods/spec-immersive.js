@@ -11,6 +11,18 @@ function testImmersive() {
     expect(AirConsole.postMessage_).toHaveBeenCalledWith(expected_params);
   });
 
+  it('Should call postMessage_ with the correct object for experimental features', function () {
+    var payload = { experiment: {"experimental-feature": "doSomething"}};
+    var expected_data = { experiment: {"experimental-feature": "doSomething"}};
+    var expected_params = { action: 'set', key: 'immersive', value: expected_data };
+    airconsole.devices[0].location = LOCATION;
+    spyOn(AirConsole, 'postMessage_');
+
+    airconsole.setImmersiveState(payload);
+
+    expect(AirConsole.postMessage_).toHaveBeenCalledWith(expected_params);
+  });
+
   it('Should not call postMessage_ without object', function () {
     spyOn(AirConsole, 'postMessage_');
 
