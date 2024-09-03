@@ -313,13 +313,14 @@ AirConsole.prototype.setCustomDeviceStateProperty = function(key, value) {
 /**
  * @typedef {Object} ImmersiveOption
  * @property {ImmersiveLightOption} [light] - Light state inside the car.
- */
+ * @property {any} [experiment] - Experimental payload for experimental APIs
+ * */
 
 /**
  * Sets the immersive state of the AirConsole game based on the provided options.<br />
  * At least one property is required for the immersive state to be set.
- * 
- * @param {ImmersiveOption} immersiveState - The immersive state to send. 
+ *
+ * @param {ImmersiveOption} immersiveState - The immersive state to send.
  */
 AirConsole.prototype.setImmersiveState = function (immersiveState) {
   if (this.device_id !== AirConsole.SCREEN) {
@@ -330,7 +331,7 @@ AirConsole.prototype.setImmersiveState = function (immersiveState) {
     return;
   }
 
-  if (immersiveState.light === undefined) {
+  if (immersiveState.light === undefined && immersiveState.experiment === undefined) {
     return;
   }
 
@@ -1124,7 +1125,7 @@ AirConsole.prototype.getDefaultPlayerSilencing_ = function() {
     airconsoleApiVersion = referencedAirconsoleAPIScripts[0]
       .match(new RegExp('https?://.*/api/airconsole-(.*).js'));
   }
-  
+
   return airconsoleApiVersion.length > 1 && airconsoleApiVersion[1] !== 'latest' || false;
 }
 
@@ -1140,10 +1141,10 @@ AirConsole.prototype.init_ = function(opts) {
   me.devices = [];
   me.silencedUpdatesQueue_ = {};
   me.server_time_offset = opts.synchronize_time ? 0 : false;
-  
+
   const defaultPlayerSilencing = me.getDefaultPlayerSilencing_();
   me.silence_inactive_players = opts.silence_inactive_players !== undefined ? opts.silence_inactive_players : defaultPlayerSilencing;
-  
+
   window.addEventListener("message", function(event) {
     me.onPostMessage_(event);
   }, false);
