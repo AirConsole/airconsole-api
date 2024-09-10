@@ -1,0 +1,45 @@
+{
+  "name": "minami",
+  "version": "1.1.0",
+  "description": "Clean and minimal JSDoc 3 Template / Theme",
+  "main": "publish.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Nijikokun/minami.git"
+  },
+  "author": {
+    "name": "Nijiko Yonskai",
+    "email": "nijikokun@gmail.com"
+  },
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/Nijikokun/minami/issues"
+  },
+  "homepage": "https://github.com/Nijikokun/minami",
+  "gitHead": "7c65def954de4197aec7cde3e021e2f3d8069499",
+  "_id": "minami@1.1.0",
+  "_shasum": "c887dd08184edb2c21ea20ceb64153ab543b6099",
+  "_from": "minami@*",
+  "_npmVersion": "2.1.8",
+  "_nodeVersion": "0.10.28",
+  "_npmUser": {
+    "name": "nijikokun",
+    "email": "nijikokun@gmail.com"
+  },
+  "maintainers": [
+    {
+      "name": "nijikokun",
+      "email": "nijikokun@gmail.com"
+    }
+  ],
+  "dist": {
+    "shasum": "c887dd08184edb2c21ea20ceb64153ab543b6099",
+    "tarball": "http://registry.npmjs.org/minami/-/minami-1.1.0.tgz"
+  },
+  "directories": {},
+  "_resolved": "https://registry.npmjs.org/minami/-/minami-1.1.0.tgz",
+  "readme": "ERROR: No README data found!"
+}

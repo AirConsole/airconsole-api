@@ -1,0 +1,45 @@
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches:
+      - master  # Trigger the workflow on a push to the 'master' branch
+    paths:
+      - 'airconsole-*.js'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout the repository
+      uses: actions/checkout@v2
+
+    # Install npm dependencies (global or local)
+    - name: Install npm dependencies
+      run: |
+        npm install -g jsdoc@3.6.11  # Install global package
+
+    # Install Python dependencies if required
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.x'
+
+    - name: Install Python dependencies
+      run: |
+        pip install -r requirements.txt  # If your script needs any Python packages
+
+    # Run the Python script to generate HTML content
+    - name: Run Python script
+      run: |
+        mkdir api-1-9-0
+        python .github/generate-docs.py ./airconsole-1.9.0.js # Assumes your Python script generates the HTML content
+        mv api-1-9-0 docs
+
+    # Deploy to GitHub Pages
+    - name: Deploy to GitHub Pages
+      uses: peaceiris/actions-gh-pages@v3
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}  # Automatically provided by GitHub
+        publish_dir: ./docs  # The directory containing the generated HTML files
