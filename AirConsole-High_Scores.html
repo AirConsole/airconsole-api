@@ -1,0 +1,1069 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>AirConsole - Documentation</title>
+
+    <script src="scripts/prettify/prettify.js"></script>
+    <script src="scripts/prettify/lang-css.js"></script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="https://code.ionicframework.com/ionicons/2.0.1/css/ionicons.min.css">
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+    <link type="text/css" rel="stylesheet" href="styles/airconsole.css">
+</head>
+<body>
+
+<input type="checkbox" id="nav-trigger" class="nav-trigger" />
+<label for="nav-trigger" class="navicon-button x">
+  <div class="navicon"></div>
+</label>
+
+<label for="nav-trigger" class="overlay"></label>
+
+<div class="wrapper">
+    <div class="nav_doc">
+        <h3>Classes</h3><ul><li><a href="AirConsole.html"><b>AirConsole</b></a><ul class='methods' style='display:none'><li data-type='method'><a href="AirConsole.html#arePlayersSilenced">arePlayersSilenced</a></li><li data-type='method'><a href="AirConsole.html#broadcast">broadcast</a></li><li data-type='method'><a href="AirConsole.html#convertDeviceIdToPlayerNumber">convertDeviceIdToPlayerNumber</a></li><li data-type='method'><a href="AirConsole.html#convertPlayerNumberToDeviceId">convertPlayerNumberToDeviceId</a></li><li data-type='method'><a href="AirConsole.html#editProfile">editProfile</a></li><li data-type='method'><a href="AirConsole.html#getActivePlayerDeviceIds">getActivePlayerDeviceIds</a></li><li data-type='method'><a href="AirConsole.html#getControllerDeviceIds">getControllerDeviceIds</a></li><li data-type='method'><a href="AirConsole.html#getCustomDeviceState">getCustomDeviceState</a></li><li data-type='method'><a href="AirConsole.html#getDeviceId">getDeviceId</a></li><li data-type='method'><a href="AirConsole.html#getLanguage">getLanguage</a></li><li data-type='method'><a href="AirConsole.html#getMasterControllerDeviceId">getMasterControllerDeviceId</a></li><li data-type='method'><a href="AirConsole.html#getNavigateParameters">getNavigateParameters</a></li><li data-type='method'><a href="AirConsole.html#getNickname">getNickname</a></li><li data-type='method'><a href="AirConsole.html#getPremium">getPremium</a></li><li data-type='method'><a href="AirConsole.html#getPremiumDeviceIds">getPremiumDeviceIds</a></li><li data-type='method'><a href="AirConsole.html#getProfilePicture">getProfilePicture</a></li><li data-type='method'><a href="AirConsole.html#getServerTime">getServerTime</a></li><li data-type='method'><a href="AirConsole.html#getTranslation">getTranslation</a></li><li data-type='method'><a href="AirConsole.html#getUID">getUID</a></li><li data-type='method'><a href="AirConsole.html#isPremium">isPremium</a></li><li data-type='method'><a href="AirConsole.html#isUserLoggedIn">isUserLoggedIn</a></li><li data-type='method'><a href="AirConsole.html#message">message</a></li><li data-type='method'><a href="AirConsole.html#navigateHome">navigateHome</a></li><li data-type='method'><a href="AirConsole.html#navigateTo">navigateTo</a></li><li data-type='method'><a href="AirConsole.html#onActivePlayersChange">onActivePlayersChange</a></li><li data-type='method'><a href="AirConsole.html#onAdComplete">onAdComplete</a></li><li data-type='method'><a href="AirConsole.html#onAdShow">onAdShow</a></li><li data-type='method'><a href="AirConsole.html#onConnect">onConnect</a></li><li data-type='method'><a href="AirConsole.html#onCustomDeviceStateChange">onCustomDeviceStateChange</a></li><li data-type='method'><a href="AirConsole.html#onDeviceMotion">onDeviceMotion</a></li><li data-type='method'><a href="AirConsole.html#onDeviceProfileChange">onDeviceProfileChange</a></li><li data-type='method'><a href="AirConsole.html#onDeviceStateChange">onDeviceStateChange</a></li><li data-type='method'><a href="AirConsole.html#onDisconnect">onDisconnect</a></li><li data-type='method'><a href="AirConsole.html#onEmailAddress">onEmailAddress</a></li><li data-type='method'><a href="AirConsole.html#onHighScores">onHighScores</a></li><li data-type='method'><a href="AirConsole.html#onHighScoreStored">onHighScoreStored</a></li><li data-type='method'><a href="AirConsole.html#onMessage">onMessage</a></li><li data-type='method'><a href="AirConsole.html#onPause">onPause</a></li><li data-type='method'><a href="AirConsole.html#onPersistentDataLoaded">onPersistentDataLoaded</a></li><li data-type='method'><a href="AirConsole.html#onPersistentDataStored">onPersistentDataStored</a></li><li data-type='method'><a href="AirConsole.html#onPremium">onPremium</a></li><li data-type='method'><a href="AirConsole.html#onReady">onReady</a></li><li data-type='method'><a href="AirConsole.html#onResume">onResume</a></li><li data-type='method'><a href="AirConsole.html#openExternalUrl">openExternalUrl</a></li><li data-type='method'><a href="AirConsole.html#requestEmailAddress">requestEmailAddress</a></li><li data-type='method'><a href="AirConsole.html#requestHighScores">requestHighScores</a></li><li data-type='method'><a href="AirConsole.html#requestPersistentData">requestPersistentData</a></li><li data-type='method'><a href="AirConsole.html#setActivePlayers">setActivePlayers</a></li><li data-type='method'><a href="AirConsole.html#setCustomDeviceState">setCustomDeviceState</a></li><li data-type='method'><a href="AirConsole.html#setCustomDeviceStateProperty">setCustomDeviceStateProperty</a></li><li data-type='method'><a href="AirConsole.html#setImmersiveState">setImmersiveState</a></li><li data-type='method'><a href="AirConsole.html#setOrientation">setOrientation</a></li><li data-type='method'><a href="AirConsole.html#showAd">showAd</a></li><li data-type='method'><a href="AirConsole.html#storeHighScore">storeHighScore</a></li><li data-type='method'><a href="AirConsole.html#storePersistentData">storePersistentData</a></li><li data-type='method'><a href="AirConsole.html#vibrate">vibrate</a></li></ul></li><li><a href="AirConsole-Constants.html"><b>&#8627; Constants</b></a></li><li><a href="AirConsole-Connectivity.html"><b>&#8627; Connectivity</b></a><ul class='methods'><li data-type='method'><a href="AirConsole-Connectivity.html#arePlayersSilenced">arePlayersSilenced</a></li><li data-type='method'><a href="AirConsole-Connectivity.html#getControllerDeviceIds">getControllerDeviceIds</a></li><li data-type='method'><a href="AirConsole-Connectivity.html#getDeviceId">getDeviceId</a></li><li data-type='method'><a href="AirConsole-Connectivity.html#getMasterControllerDeviceId">getMasterControllerDeviceId</a></li><li data-type='method'><a href="AirConsole-Connectivity.html#getServerTime">getServerTime</a></li><li data-type='method'><a href="AirConsole-Connectivity.html#onConnect">onConnect</a></li><li data-type='method'><a href="AirConsole-Connectivity.html#onDisconnect">onDisconnect</a></li><li data-type='method'><a href="AirConsole-Connectivity.html#onReady">onReady</a></li></ul></li><li><a href="AirConsole-Messaging.html"><b>&#8627; Messaging</b></a><ul class='methods'><li data-type='method'><a href="AirConsole-Messaging.html#broadcast">broadcast</a></li><li data-type='method'><a href="AirConsole-Messaging.html#message">message</a></li><li data-type='method'><a href="AirConsole-Messaging.html#onMessage">onMessage</a></li></ul></li><li><a href="AirConsole-Device_States.html"><b>&#8627; Device States</b></a><ul class='methods'><li data-type='method'><a href="AirConsole-Device_States.html#getCustomDeviceState">getCustomDeviceState</a></li><li data-type='method'><a href="AirConsole-Device_States.html#onCustomDeviceStateChange">onCustomDeviceStateChange</a></li><li data-type='method'><a href="AirConsole-Device_States.html#onDeviceStateChange">onDeviceStateChange</a></li><li data-type='method'><a href="AirConsole-Device_States.html#setCustomDeviceState">setCustomDeviceState</a></li><li data-type='method'><a href="AirConsole-Device_States.html#setCustomDeviceStateProperty">setCustomDeviceStateProperty</a></li><li data-type='method'><a href="AirConsole-Device_States.html#setImmersiveState">setImmersiveState</a></li></ul></li><li><a href="AirConsole-Profile.html"><b>&#8627; Profile</b></a><ul class='methods'><li data-type='method'><a href="AirConsole-Profile.html#editProfile">editProfile</a></li><li data-type='method'><a href="AirConsole-Profile.html#getNickname">getNickname</a></li><li data-type='method'><a href="AirConsole-Profile.html#getProfilePicture">getProfilePicture</a></li><li data-type='method'><a href="AirConsole-Profile.html#getUID">getUID</a></li><li data-type='method'><a href="AirConsole-Profile.html#isUserLoggedIn">isUserLoggedIn</a></li><li data-type='method'><a href="AirConsole-Profile.html#onDeviceProfileChange">onDeviceProfileChange</a></li><li data-type='method'><a href="AirConsole-Profile.html#onEmailAddress">onEmailAddress</a></li><li data-type='method'><a href="AirConsole-Profile.html#requestEmailAddress">requestEmailAddress</a></li></ul></li><li><a href="AirConsole-Active_Players.html"><b>&#8627; Active Players</b></a><ul class='methods'><li data-type='method'><a href="AirConsole-Active_Players.html#convertDeviceIdToPlayerNumber">convertDeviceIdToPlayerNumber</a></li><li data-type='method'><a href="AirConsole-Active_Players.html#convertPlayerNumberToDeviceId">convertPlayerNumberToDeviceId</a></li><li data-type='method'><a href="AirConsole-Active_Players.html#getActivePlayerDeviceIds">getActivePlayerDeviceIds</a></li><li data-type='method'><a href="AirConsole-Active_Players.html#onActivePlayersChange">onActivePlayersChange</a></li><li data-type='method'><a href="AirConsole-Active_Players.html#setActivePlayers">setActivePlayers</a></li></ul></li><li><a href="AirConsole-Controller_Inputs.html"><b>&#8627; Controller Inputs</b></a><ul class='methods'><li data-type='method'><a href="AirConsole-Controller_Inputs.html#onDeviceMotion">onDeviceMotion</a></li><li data-type='method'><a href="AirConsole-Controller_Inputs.html#vibrate">vibrate</a></li></ul></li><li><a href="AirConsole-Ads.html"><b>&#8627; Ads</b></a><ul class='methods'><li data-type='method'><a href="AirConsole-Ads.html#onAdComplete">onAdComplete</a></li><li data-type='method'><a href="AirConsole-Ads.html#onAdShow">onAdShow</a></li><li data-type='method'><a href="AirConsole-Ads.html#showAd">showAd</a></li></ul></li><li><a href="AirConsole-Premium.html"><b>&#8627; Premium</b></a><ul class='methods'><li data-type='method'><a href="AirConsole-Premium.html#getPremium">getPremium</a></li><li data-type='method'><a href="AirConsole-Premium.html#getPremiumDeviceIds">getPremiumDeviceIds</a></li><li data-type='method'><a href="AirConsole-Premium.html#isPremium">isPremium</a></li><li data-type='method'><a href="AirConsole-Premium.html#onPremium">onPremium</a></li></ul></li><li><a href="AirConsole-Navigation.html"><b>&#8627; Navigation</b></a><ul class='methods'><li data-type='method'><a href="AirConsole-Navigation.html#getNavigateParameters">getNavigateParameters</a></li><li data-type='method'><a href="AirConsole-Navigation.html#navigateHome">navigateHome</a></li><li data-type='method'><a href="AirConsole-Navigation.html#navigateTo">navigateTo</a></li><li data-type='method'><a href="AirConsole-Navigation.html#openExternalUrl">openExternalUrl</a></li></ul></li><li><a href="AirConsole-User_Interface.html"><b>&#8627; User Interface</b></a><ul class='methods'><li data-type='method'><a href="AirConsole-User_Interface.html#setOrientation">setOrientation</a></li></ul></li><li><a href="AirConsole-Persistent_Data.html"><b>&#8627; Persistent Data</b></a><ul class='methods'><li data-type='method'><a href="AirConsole-Persistent_Data.html#onPersistentDataLoaded">onPersistentDataLoaded</a></li><li data-type='method'><a href="AirConsole-Persistent_Data.html#onPersistentDataStored">onPersistentDataStored</a></li><li data-type='method'><a href="AirConsole-Persistent_Data.html#requestPersistentData">requestPersistentData</a></li><li data-type='method'><a href="AirConsole-Persistent_Data.html#storePersistentData">storePersistentData</a></li></ul></li><li><a href="AirConsole-High_Scores.html"><b>&#8627; High Scores</b></a><ul class='methods'><li data-type='method'><a href="AirConsole-High_Scores.html#onHighScores">onHighScores</a></li><li data-type='method'><a href="AirConsole-High_Scores.html#onHighScoreStored">onHighScoreStored</a></li><li data-type='method'><a href="AirConsole-High_Scores.html#requestHighScores">requestHighScores</a></li><li data-type='method'><a href="AirConsole-High_Scores.html#storeHighScore">storeHighScore</a></li></ul></li><li><a href="AirConsole-Translations.html"><b>&#8627; Translations</b></a><ul class='methods'><li data-type='method'><a href="AirConsole-Translations.html#getLanguage">getLanguage</a></li><li data-type='method'><a href="AirConsole-Translations.html#getTranslation">getTranslation</a></li></ul></li><li><a href="AirConsole-Environment_Events.html"><b>&#8627; Environment Events</b></a><ul class='methods'><li data-type='method'><a href="AirConsole-Environment_Events.html#onPause">onPause</a></li><li data-type='method'><a href="AirConsole-Environment_Events.html#onResume">onResume</a></li></ul></li></ul><h3><a href="global.html">Global</a></h3>
+    </div>
+
+    <div id="main">
+        
+        <h1 class="page-title"><b>&#8627; High Scores</b></h1>
+        
+        
+
+
+
+
+<section>
+
+<header>
+    
+        <h2>
+        AirConsole
+        </h2>
+        
+    
+</header>
+
+<article>
+    <div style='display:none;'>
+    
+        
+
+    
+
+    <h4 class="name" id="AirConsole"><span class="type-signature"></span>new AirConsole<span class="signature">(opts)</span><span class="type-signature"> &rarr; {<a href="global.html#AirConsoleObject">AirConsoleObject</a>}</span></h4>
+
+    
+
+
+
+<div class="description">
+    Your gateway object to AirConsole.
+There are getter and setter functions for all properties.
+Do not access properties of this object directly.
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>opts</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="AirConsole.html#~Config">AirConsole~Config</a></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">Constructor config, see bellow.</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="._airconsole-1.9.0.js.html">./airconsole-1.9.0.js</a>, <a href="._airconsole-1.9.0.js.html#line39">line 39</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    The AirConsole object.
+</div>
+
+
+
+<dl class="param-type">
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type"><a href="global.html#AirConsoleObject">AirConsoleObject</a></span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+    
+    </div>
+
+    
+
+    
+
+    
+
+     
+
+    
+
+    
+
+    
+        <h3 class="subsection-title">Methods</h3>
+
+        
+            
+
+    
+
+    <h4 class="name" id="onHighScores"><span class="type-signature"></span>onHighScores<span class="signature">(high_scores)</span><span class="type-signature"></span></h4>
+
+    
+
+
+
+<div class="description">
+    Gets called when high scores are returned after calling requestHighScores.
+We highly recommend to read the High Score guide (developers.airconsole.com)
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>high_scores</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Array.&lt;<a href="AirConsole.html#~HighScore">AirConsole~HighScore</a>></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The high scores.</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="._airconsole-1.9.0.js.html">./airconsole-1.9.0.js</a>, <a href="._airconsole-1.9.0.js.html#line992">line 992</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id="onHighScoreStored"><span class="type-signature"></span>onHighScoreStored<span class="signature">(high_score)</span><span class="type-signature"></span></h4>
+
+    
+
+
+
+<div class="description">
+    Gets called when a high score was successfully stored.
+We highly recommend to read the High Score guide (developers.airconsole.com)
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>high_score</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="AirConsole.html#~HighScore">AirConsole~HighScore</a></span>
+|
+
+<span class="param-type">null</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The stored high score if
+                                                it is a new best for the
+                                                user or else null.
+                                                Ranks include "world",
+                                                "country", "region", "city"
+                                                if a high score is passed.</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="._airconsole-1.9.0.js.html">./airconsole-1.9.0.js</a>, <a href="._airconsole-1.9.0.js.html#line935">line 935</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id="requestHighScores"><span class="type-signature"></span>requestHighScores<span class="signature">(level_name, level_version, uids, ranks, total, top)</span><span class="type-signature"></span></h4>
+
+    
+
+
+
+<div class="description">
+    Requests high score data of players (including global high scores and
+friends). Will call onHighScores when data was received.
+We highly recommend to read the High Score guide (developers.airconsole.com)
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>level_name</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">String</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The name of the level</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>level_version</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">String</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The version of the level</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>uids</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Array.&lt;String></span>
+|
+
+<span class="param-type">undefined</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">An array of UIDs of the users that
+                                        should be included in the result.
+                                        Default is all connected controllers</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>ranks</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Array.&lt;String></span>
+|
+
+<span class="param-type">undefined</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">An array of high score rank types.
+                                         High score rank types can include
+                                         data from across the world, only a
+                                         specific area or a users friends.
+                                         Valid array entries are "world",
+                                         "country",  "region", "city",
+                                         "friends", "partner". <br />
+                                         Default is ["world"].</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>total</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+|
+
+<span class="param-type">undefined</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">Amount of high scores to return per rank
+                                  type. Default is 8.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>top</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+|
+
+<span class="param-type">undefined</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">Amount of top high scores to return per rank
+                                type. top is part of total. Default is 5.</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="._airconsole-1.9.0.js.html">./airconsole-1.9.0.js</a>, <a href="._airconsole-1.9.0.js.html#line959">line 959</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id="storeHighScore"><span class="type-signature"></span>storeHighScore<span class="signature">(level_name, level_version, score, uid, data, score_string)</span><span class="type-signature"></span></h4>
+
+    
+
+
+
+<div class="description">
+    Stores a high score of the current user on the AirConsole servers.
+High Scores are public, not secure and anyone can request and tamper with
+them. Do not store sensitive data. Only updates the high score if it was a
+higher or same score. Calls onHighScoreStored when the request is done.
+We highly recommend to read the High Score guide (developers.airconsole.com)
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>level_name</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">String</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The name of the level the user was playing.
+                             This should be a human readable string because
+                             it appears in the high score sharing image.
+                             You can also just pass an empty string.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>level_version</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">String</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The version of the level the user was
+                                playing. This is for your internal use.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>score</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The score the user has achieved</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>uid</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">String</span>
+|
+
+<span class="param-type">Array.&lt;String></span>
+|
+
+<span class="param-type">undefined</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The UIDs of the users that
+                                              achieved the high score.
+                                              Can be a single uid or an
+                                              array of uids. Default is the
+                                              uid of this device.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>data</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">mixed</span>
+|
+
+<span class="param-type">undefined</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">Custom high score data (e.g. can be used to
+                                implement Ghost modes or include data to
+                                verify that it is not a fake high score).</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>score_string</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">String</span>
+|
+
+<span class="param-type">undefined</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">A short human readable
+                                         representation of the score.
+                                         (e.g. "4 points in 3s").
+                                         Defaults to "X points" where x is
+                                         the score converted to an integer.</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="._airconsole-1.9.0.js.html">./airconsole-1.9.0.js</a>, <a href="._airconsole-1.9.0.js.html#line902">line 902</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+    
+
+    
+
+    
+</article>
+
+</section>
+
+
+
+
+    </div>
+</div>
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.6.11</a> on Tue Sep 10 2024 15:34:31 GMT+0000 (Coordinated Universal Time) using the Minami theme.
+</footer>
+
+<script>prettyPrint();</script>
+<script src="scripts/linenumber.js"></script>
+</body>
+</html>
