@@ -5,7 +5,7 @@ pipeline {
         stage('Install dependencies') {
             steps {
                 nodejs(nodeJSInstallationName: 'Base') {
-                    sh 'cd ci && pnpm install'
+                    sh 'cd ci && pnpm install && npx playwright install'
                 }
             }
         }

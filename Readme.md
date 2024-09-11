@@ -2,9 +2,11 @@
 
 ## Documentation
 
-API documentation and guides are available on the AirConsole developers documentation page:
+The up to date API documentation is available on **<https://airconsole.github.io/airconsole-api/>**.
 
-**<http://developers.airconsole.com>**
+Documentation and guides are available on the AirConsole developers documentation page at **<http://developers.airconsole.com>**.
+
+
 
 ### Example project
 
