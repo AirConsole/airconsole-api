@@ -75,7 +75,7 @@ try:
         line = line.replace(">AirConsole" + id + "<", "><b>&#8627; " + chapter + "</b><")
         if "<h3>Classes</h3><ul><li>" not in line:
           line = line.replace(id, "")
-          line = line.replace("jsdoc_chapters/.js", filename).replace("jsdoc_chapters_.js", filename.replace("/", "_"))
+          line = line.replace("jsdoc_chapters/.js", filename).replace("jsdoc_chapters_.js", filename)
         line = line.replace("<h3>Classes</h3><ul><li><a href=\"AirConsole.html\">AirConsole</a><ul class='methods'>",
                             "<h3>Classes</h3><ul><li><a href=\"AirConsole.html\"><b>AirConsole</b></a><ul class='methods' style='display:none'>")
         if not file.endswith("AirConsole.html"):
