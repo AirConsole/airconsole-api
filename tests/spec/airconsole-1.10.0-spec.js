@@ -1,4 +1,4 @@
-describe("AirConsole 1.9.0", function () {
+describe("AirConsole 1.10.0", function () {
   var overwrites = {};
 
   // Overwrite functions
@@ -49,7 +49,7 @@ describe("AirConsole 1.9.0", function () {
       tearDown();
     });
 
-    testSetup("1.9.0");
+    testSetup("1.10.0");
 
   });
 
@@ -353,23 +353,6 @@ describe("AirConsole 1.9.0", function () {
 
   });
 
-  /**
-   ======================================================================================
-   TEST DEVICE STATES
-   */
-
-  describe("High Scores", function () {
-
-    beforeEach(function () {
-      initAirConsole();
-    });
-
-    afterEach(function () {
-      tearDown();
-    });
-
-  });
-
   describe("Immersive", function(){
     beforeEach(function () {
       initAirConsole();
@@ -393,5 +376,13 @@ describe("AirConsole 1.9.0", function () {
     });
 
     testPlayerSilencing();
+  })
+  
+  describe("AirConsole 1.10.0+ ", () => {
+    afterEach(function () {
+      tearDown();
+    });
+    
+    testAirConsole110Plus();
   })
 });

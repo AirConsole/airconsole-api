@@ -1177,7 +1177,8 @@ AirConsole.prototype.init_ = function(opts) {
   me.server_time_offset = opts.synchronize_time ? 0 : false;
 
   const defaultPlayerSilencing = me.getDefaultPlayerSilencing_();
-  me.silence_inactive_players = opts.silence_inactive_players || defaultPlayerSilencing;
+  me.silence_inactive_players = opts.silence_inactive_players !== undefined ? opts.silence_inactive_players : defaultPlayerSilencing;
+  me.supportsNativeGameSizing = !!opts.supportsNativeGameSizing;
 
   window.addEventListener("message", function(event) {
     me.onPostMessage_(event);
@@ -1192,6 +1193,7 @@ AirConsole.prototype.init_ = function(opts) {
     device_motion: opts.device_motion,
     synchronize_time: opts.synchronize_time,
     silencePlayers: me.silence_inactive_players,
+    supportsNativeGameSizing: me.supportsNativeGameSizing,
     location: me.getLocationUrl_(),
     translation: opts.translation
   });
