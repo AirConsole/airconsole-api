@@ -1186,6 +1186,9 @@ AirConsole.prototype.init_ = function(opts) {
   if (opts.setup_document !== false) {
     me.setupDocument_();
   }
+  console.info('AC_DEBUG: Send ready event ', new Date());
+  console.warn('AC_DEBUG: Send ready event ', new Date());
+  console.error('AC_DEBUG: Send ready event ', new Date());
   AirConsole.postMessage_({
     action: "ready",
     version: me.version,
