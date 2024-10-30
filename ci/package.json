@@ -1,0 +1,18 @@
+{
+  "name": "airconsole-api-playwright-test",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "npx playwright test",
+    "server": " ./node_modules/serve/build/main.js .. -p 9000"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@playwright/test": "^1.46.1",
+    "playwright": "^1.46.1",
+    "serve": "^14.2.3"
+  }
+}

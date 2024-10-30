@@ -1,0 +1,5 @@
+/ci/node_modules/
+/.idea
+/ci/test-results
+/docs/
+# docs must be ignored and never commited because we use this to autopublish API updates to https://airconsole.github.io/airconsole-api
