@@ -1,6 +1,6 @@
 /**
  * AirConsole.
- * @copyright 2024 by N-Dream AG, Switzerland. All rights reserved.
+ * @copyright 2025 by N-Dream AG, Switzerland. All rights reserved.
  * @version 1.10.0
  *
  * IMPORTANT:
