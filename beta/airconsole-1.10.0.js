@@ -88,6 +88,29 @@ AirConsole.ORIENTATION_PORTRAIT = "portrait";
  */
 AirConsole.ORIENTATION_LANDSCAPE = "landscape";
 
+/**
+ * Collection of vibration pattern constants
+ * @constant {Object}
+ * @property CLICK {string} Primitive identifier for a click vibration pattern
+ * @property THUD {string} Primitive identifier for a thud vibration pattern
+ * @property SPIN {string} Primitive identifier for a spin vibration pattern
+ * @property QUICK_RISE {string} Primitive identifier for a quick rise vibration pattern
+ * @property SLOW_RISE {string} Primitive identifier for a slow rise vibration pattern
+ * @property QUICK_FALL {string} Primitive identifier for a quick fall vibration pattern
+ * @property TICK {string} Primitive identifier for a tick vibration pattern
+ * @property LOW_TICK {string} Primitive identifier for low tick vibration pattern
+ */
+AirConsole.VIBRATE = {
+  CLICK: "primitiveClick",
+  THUD: "primitiveThud",
+  SPIN: "primitiveSpin",
+  QUICK_RISE: "primitiveQuickRise",
+  SLOW_RISE: "primitiveSlowRise",
+  QUICK_FALL: "primitiveQuickFall",
+  TICK: "primitiveTick",
+  LOW_TICK: "primitiveLowTick",
+};
+
 
 /** ------------------------------------------------------------------------ *
  * @chapter                     CONNECTIVITY                                 *
