@@ -634,13 +634,32 @@ AirConsole.prototype.convertDeviceIdToPlayerNumber = function(device_id) {
  */
 AirConsole.prototype.onDeviceMotion = function(data) {};
 
+
+
 /**
- * Vibrates the device for a specific amount of time. Only works for controllers.
- * Note: iOS ignores the specified time and vibrates for a pre-set amount of time.
- * @param {Number} time - Milliseconds to vibrate the device
+ * @typedef {Object} CompositionVibrationData
+ * @property {string} primitive - Identifier used to play a specific vibration primitive
+ * @property {Number} scale - Vibration scale value between 0.0 and 1.0
+ * @property {Number} [delay] - Delay in milliseconds before this primitive is played
  */
-AirConsole.prototype.vibrate = function(time) {
-  this.set_("vibrate", time);
+
+/**
+ * @typedef {Object} VibrationOptions
+ * @property {string} type - Type of abstraction interface to use for executing
+ * vibrations. This should currently always be set to 'composition'.
+ * @property {CompositionVibrationData[]} value - Array of vibration parameters depending
+ * on the interface type
+ */
+
+/**
+ * Vibrates the device for a specific amount of time or playing back a specific pattern when
+ * used with the controller app. Only works for controllers.
+ * Note: iOS without controller app ignores the specified time and vibrates for a pre-set amount of time.
+ * @param {Number} options - Milliseconds to vibrate the device
+ * @param {VibrationOptions} options - Vibration options for fine-tuned vibration patterns.
+ */
+AirConsole.prototype.vibrate = function(options) {
+  this.set_("vibrate", options);
 };
 
 /** ------------------------------------------------------------------------ *
