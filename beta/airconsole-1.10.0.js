@@ -91,26 +91,41 @@ AirConsole.ORIENTATION_LANDSCAPE = "landscape";
 /**
  * Collection of vibration pattern constants
  * @constant {Object}
- * @property CLICK {string} Primitive identifier for a click vibration pattern
- * @property THUD {string} Primitive identifier for a thud vibration pattern
- * @property SPIN {string} Primitive identifier for a spin vibration pattern
- * @property QUICK_RISE {string} Primitive identifier for a quick rise vibration pattern
- * @property SLOW_RISE {string} Primitive identifier for a slow rise vibration pattern
- * @property QUICK_FALL {string} Primitive identifier for a quick fall vibration pattern
- * @property TICK {string} Primitive identifier for a tick vibration pattern
- * @property LOW_TICK {string} Primitive identifier for low tick vibration pattern
+ * @property TYPE.COMPOSITION {string} Composition vibration interface identifier. Using the composition interface
+ * the value of the {@link VibrationOptions} expects an array of {@link CompositionVibrationData} with at least one
+ * entry.
+ * @property PRIMITIVE.CLICK {string} Primitive identifier for a click vibration pattern used in
+ * {@link CompositionVibrationData}
+ * @property PRIMITIVE.THUD {string} Primitive identifier for a thud vibration pattern used in
+ * {@link CompositionVibrationData}
+ * @property PRIMITIVE.SPIN {string} Primitive identifier for a spin vibration pattern used in
+ * {@link CompositionVibrationData}
+ * @property PRIMITIVE.QUICK_RISE {string} Primitive identifier for a quick rise vibration pattern used in
+ * {@link CompositionVibrationData}
+ * @property PRIMITIVE.SLOW_RISE {string} Primitive identifier for a slow rise vibration pattern used in
+ * {@link CompositionVibrationData}
+ * @property PRIMITIVE.QUICK_FALL {string} Primitive identifier for a quick fall vibration pattern used in
+ * {@link CompositionVibrationData}
+ * @property PRIMITIVE.TICK {string} Primitive identifier for a tick vibration pattern used in
+ * {@link CompositionVibrationData}
+ * @property PRIMITIVE.LOW_TICK {string} Primitive identifier for low tick vibration pattern used in
+ * {@link CompositionVibrationData}
  */
 AirConsole.VIBRATE = {
-  CLICK: "primitiveClick",
-  THUD: "primitiveThud",
-  SPIN: "primitiveSpin",
-  QUICK_RISE: "primitiveQuickRise",
-  SLOW_RISE: "primitiveSlowRise",
-  QUICK_FALL: "primitiveQuickFall",
-  TICK: "primitiveTick",
-  LOW_TICK: "primitiveLowTick",
+  TYPE: {
+    COMPOSITION: "composition",
+  },
+  PRIMITIVE: {
+    CLICK: "primitiveClick",
+    THUD: "primitiveThud",
+    SPIN: "primitiveSpin",
+    QUICK_RISE: "primitiveQuickRise",
+    SLOW_RISE: "primitiveSlowRise",
+    QUICK_FALL: "primitiveQuickFall",
+    TICK: "primitiveTick",
+    LOW_TICK: "primitiveLowTick",
+  }
 };
-
 
 /** ------------------------------------------------------------------------ *
  * @chapter                     CONNECTIVITY                                 *
@@ -638,8 +653,8 @@ AirConsole.prototype.onDeviceMotion = function(data) {};
 
 /**
  * @typedef {Object} CompositionVibrationData
- * @property {string} primitive - Identifier used to play a specific vibration primitive
- * @property {Number} scale - Vibration scale value between 0.0 and 1.0
+ * @property {string} primitive - Identifier used to play a specific vibration primitive.
+ * @property {Number} scale - Vibration scale value between 0.0 and 1.0.
  * @property {Number} [delay=0] - Delay in milliseconds before this primitive is played.
  */
 
@@ -650,7 +665,7 @@ AirConsole.prototype.onDeviceMotion = function(data) {};
  * @property {string} type - Type of abstraction interface to use for executing
  * vibrations. This should currently always be set to 'composition'.
  * @property {CompositionVibrationData[]} value - Array of vibration parameters depending
- * on the interface type
+ * on the interface type.
  */
 
 /**
