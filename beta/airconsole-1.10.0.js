@@ -37,6 +37,10 @@
  * @return {AirConsoleObject} The AirConsole object.
  */
 function AirConsole(opts) {
+  if (window.parent === window) {
+    console.error(`The AirConsole API is used outside of the AirConsole platform. Future calls to the AirConsole API will fail.`)
+  }
+
   this.init_(opts);
 }
 /**
