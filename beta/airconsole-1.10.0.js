@@ -37,6 +37,10 @@
  * @return {AirConsoleObject} The AirConsole object.
  */
 function AirConsole(opts) {
+  if (window.parent === window) {
+    console.error(`The AirConsole API is used outside of the AirConsole platform. Future calls to the AirConsole API will fail.`)
+  }
+
   this.init_(opts);
 }
 /**
@@ -88,6 +92,44 @@ AirConsole.ORIENTATION_PORTRAIT = "portrait";
  */
 AirConsole.ORIENTATION_LANDSCAPE = "landscape";
 
+/**
+ * Collection of vibration pattern constants
+ * @constant {Object}
+ * @property TYPE.COMPOSITION {string} Composition vibration interface identifier. Using the composition interface
+ * the value of the {@link VibrationOptions} expects an array of {@link CompositionVibrationData} with at least one
+ * entry.
+ * @property PRIMITIVE.CLICK {string} Primitive identifier for a click vibration pattern used in
+ * {@link CompositionVibrationData}
+ * @property PRIMITIVE.THUD {string} Primitive identifier for a thud vibration pattern used in
+ * {@link CompositionVibrationData}
+ * @property PRIMITIVE.SPIN {string} Primitive identifier for a spin vibration pattern used in
+ * {@link CompositionVibrationData}
+ * @property PRIMITIVE.QUICK_RISE {string} Primitive identifier for a quick rise vibration pattern used in
+ * {@link CompositionVibrationData}
+ * @property PRIMITIVE.SLOW_RISE {string} Primitive identifier for a slow rise vibration pattern used in
+ * {@link CompositionVibrationData}
+ * @property PRIMITIVE.QUICK_FALL {string} Primitive identifier for a quick fall vibration pattern used in
+ * {@link CompositionVibrationData}
+ * @property PRIMITIVE.TICK {string} Primitive identifier for a tick vibration pattern used in
+ * {@link CompositionVibrationData}
+ * @property PRIMITIVE.LOW_TICK {string} Primitive identifier for low tick vibration pattern used in
+ * {@link CompositionVibrationData}
+ */
+AirConsole.VIBRATE = {
+  TYPE: {
+    COMPOSITION: "composition",
+  },
+  PRIMITIVE: {
+    CLICK: "primitiveClick",
+    THUD: "primitiveThud",
+    SPIN: "primitiveSpin",
+    QUICK_RISE: "primitiveQuickRise",
+    SLOW_RISE: "primitiveSlowRise",
+    QUICK_FALL: "primitiveQuickFall",
+    TICK: "primitiveTick",
+    LOW_TICK: "primitiveLowTick",
+  }
+};
 
 /** ------------------------------------------------------------------------ *
  * @chapter                     CONNECTIVITY                                 *
@@ -611,13 +653,35 @@ AirConsole.prototype.convertDeviceIdToPlayerNumber = function(device_id) {
  */
 AirConsole.prototype.onDeviceMotion = function(data) {};
 
+
+
 /**
- * Vibrates the device for a specific amount of time. Only works for controllers.
- * Note: iOS ignores the specified time and vibrates for a pre-set amount of time.
- * @param {Number} time - Milliseconds to vibrate the device
+ * @typedef {Object} CompositionVibrationData
+ * @property {string} primitive - Identifier used to play a specific vibration primitive.
+ * @property {Number} scale - Vibration scale value between 0.0 and 1.0.
+ * @property {Number} [delay=0] - Delay in milliseconds before this primitive is played.
  */
-AirConsole.prototype.vibrate = function(time) {
-  this.set_("vibrate", time);
+
+/**
+ * @typedef {Object} VibrationOptions
+ * Options of how vibrations should be executed. Depending on the interface used multiple vibration events
+ * can be chained together.
+ * @property {string} type - Type of abstraction interface to use for executing
+ * vibrations. This should currently always be set to 'composition'.
+ * @property {CompositionVibrationData[]} value - Array of vibration parameters depending
+ * on the interface type.
+ */
+
+/**
+ * Vibrates the device for a specific amount of time or playing back a specific pattern when
+ * used with the controller app. Only works for controllers.
+ * Note: iOS without controller app ignores the specified time and vibrates for a pre-set amount of time.
+ * @param {Number|VibrationOptions} options - This represents either<br />
+ * - Milliseconds to vibrate the device<br />
+ * - Vibration options for fine-tuned vibration patterns
+ */
+AirConsole.prototype.vibrate = function(options) {
+  this.set_("vibrate", options);
 };
 
 /** ------------------------------------------------------------------------ *
