@@ -691,6 +691,77 @@ AirConsole.prototype.vibrate = function(options) {
   this.set_("vibrate", options);
 };
 
+
+/** ------------------------------------------------------------------------ *
+ * @chapter               MICROPHONE PERMISSION                              *
+ * ------------------------------------------------------------------------- */
+
+/**
+ * Gets called on the game screen when a controller is granted microphone
+ * access as a result of calling requestMicrophoneAccess on that controller.
+ * @abstract
+ * @param {number} device_id - The device_id of the controller that was granted access.
+ */
+AirConsole.prototype.onMicrophoneAccessGranted = function(device_id) {};
+
+/**
+ * Gets called on the game screen when microphone access is denied or
+ * subsequently lost for a controller that called requestMicrophoneAccess.
+ * @abstract
+ * @param {number} device_id - The device_id of the controller.
+ * @param {AirConsole~MicDenialReason} reason - The reason for denial or loss.
+ */
+AirConsole.prototype.onMicrophoneAccessDenied = function(device_id, reason) {};
+
+
+/**
+ * Requests media permissions (e.g. microphone) for the controller.
+ * Can only be called by a controller (not the screen).
+ * @param {Array.<string>} mediaTypes - Array of media types to request.
+ *   Currently only ["microphone"] is supported.
+ * @return {Promise.<{success: boolean, stream: MediaStream=, error: Error=}>}
+ */
+AirConsole.prototype.requestMediaPermissions = function requestMediaPermissions(mediaTypes) {
+  var me = this;
+  return new Promise(function(resolve) {
+    if (me.device_id === AirConsole.SCREEN) {
+      resolve({ success: false, error: new Error('requestMediaPermissions is not supported on screen') });
+      return;
+    }
+    if (me.device_id === undefined || me.device_id === null) {
+      resolve({ success: false, error: new Error('AirConsole not ready') });
+      return;
+    }
+    if (me.media_permission_pending_) {
+      resolve({ success: false, error: new Error('Request already in progress') });
+      return;
+    }
+    if (!mediaTypes || mediaTypes.indexOf('microphone') === -1) {
+      resolve({ success: false, error: new Error('unsupported media type') });
+      return;
+    }
+    me.media_permission_pending_ = true;
+    me.media_permission_resolve_ = resolve;
+    me.media_permission_timeout_ = setTimeout(function() {
+      me._resolveMediaPermission_({ success: false, error: new Error('timeout') });
+    }, 30000);
+
+    // Currently the media type is always 'microphone', but we send the requested types for future extensibility.
+    me.set_('operation', { name: 'request-microphone-permission', data: { mediaTypes: ['microphone'] } });
+  });
+};
+
+AirConsole.prototype._resolveMediaPermission_ = function(result) {
+  clearTimeout(this.media_permission_timeout_);
+  this.media_permission_pending_ = false;
+  this.media_permission_timeout_ = undefined;
+  var resolve = this.media_permission_resolve_;
+  this.media_permission_resolve_ = undefined;
+  if (resolve) {
+    resolve(result);
+  }
+};
+
 /** ------------------------------------------------------------------------ *
  * @chapter                          ADS                                     *
  * ------------------------------------------------------------------------- */
@@ -1453,6 +1524,51 @@ AirConsole.prototype.onPostMessage_ = function(event) {
     }
   } else if (data.action === 'setGameSafeArea') {
     me.onSetSafeArea(data.gameSafeArea);
+  } else if (data.action === 'operation') {
+    const opName = data.name;
+    if (opName === 'microphone-permission-denied') {
+      me._resolveMediaPermission_({success: false, error: new Error('Permission denied')});
+    } else if (opName === 'microphone-permission-granted' || opName === 'microphone-permission-undefined') {
+      const userPromptStartTime = performance.now();
+      navigator.mediaDevices.getUserMedia({audio: true, video: false}).then(
+        function success(stream) {
+          if (!stream.getAudioTracks().length) {
+            me._resolveMediaPermission_({success: false, error: new Error('No audio tracks')});
+          } else {
+            me._resolveMediaPermission_({success: true, stream: stream});
+          }
+        },
+        function failure(err) {
+          if (opName === 'microphone-permission-granted') {
+            me._resolveMediaPermission_({success: false, error: err});
+          } else if (opName === 'microphone-permission-undefined') {
+            const userPromptDuration = performance.now() - userPromptStartTime;
+            if (err.name === 'NotAllowedError') {
+              if (userPromptDuration < 300) {
+                me.set_('operation', {name: 'microphone-permission-user-hard-denied', data: {}});
+              } else {
+                me.set_('operation', {name: 'microphone-permission-user-soft-denied', data: {}});
+              }
+            }
+
+            // TODO(ENG-2540): Why not this approach Dragan? Is this simply due to the perceived unreliability of the
+            //  permissions API on Safari or is there a technical reason that this approach would not work?
+            // if (navigator.permissions && navigator.permissions.query) {
+            //   navigator.permissions.query({name: 'microphone'}).then(function(status) {
+            //     const opDenial = status.state === 'denied'
+            //         ? 'microphone-permission-user-hard-denied'
+            //         : 'microphone-permission-user-soft-denied';
+            //     me.set_('operation', {name: opDenial, data: {}});
+            //   }, function() {
+            //     me.set_('operation', {name: 'microphone-permission-user-soft-denied', data: {}});
+            //   });
+            // } else {
+            //   me.set_('operation', {name: 'microphone-permission-user-soft-denied', data: {}});
+            // }
+          }
+        }
+      );
+    }
   }
 };
 
