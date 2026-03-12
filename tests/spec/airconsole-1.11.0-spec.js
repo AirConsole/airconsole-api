@@ -384,4 +384,17 @@ describe("AirConsole 1.11.0", function () {
 
         testAirConsole110Plus();
     });
+
+    /**
+     ======================================================================================
+     TEST MEDIA PERMISSIONS FUNCTIONALITY
+     */
+
+    describe("Media Permissions", function () {
+        afterEach(function () {
+            tearDown();
+        });
+
+        testMediaPermissions();
+    });
 });
