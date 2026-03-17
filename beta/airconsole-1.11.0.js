@@ -713,31 +713,37 @@ AirConsole.prototype.onMicrophoneAccessGranted = function(device_id) {};
  */
 AirConsole.prototype.onMicrophoneAccessDenied = function(device_id, reason) {};
 
+/**
+ * @typedef {Object} AirConsole~GetUserMediaConstraint
+ * @property {boolean} audio - Whether to request audio permissions.
+ * @property {boolean | object} video - True, to use default camera video stream or specific object following the
+ *   {@link https://developer.mozilla.org/en-US/docs/Web/API/MediaDevices/getUserMedia getUserMedia constraints}.
+ */
 
 /**
  * Requests media permissions (e.g. microphone) for the controller.
  * Can only be called by a controller (not the screen).
- * @param {Array.<string>} mediaTypes - Array of media types to request.
- *   Currently only ["microphone"] is supported.
+ * @param {Object.<AirConsole~GetUserMediaConstraint>} constraints - User Media Request constraints
+ *   Currently only 'audio' is supported.
  * @return {Promise.<{success: boolean, stream: MediaStream=, error: Error=}>}
  */
-AirConsole.prototype.requestMediaPermissions = function requestMediaPermissions(mediaTypes) {
+AirConsole.prototype.getUserMedia = function getUserMedia(constraints) {
   var me = this;
   return new Promise(function(resolve) {
     if (me.device_id === AirConsole.SCREEN) {
-      resolve({ success: false, error: new Error('requestMediaPermissions is not supported on screen') });
+      resolve({ success: false, error: new Error('getUserMedia failed: getUserMedia is not supported on screen') });
       return;
     }
     if (me.device_id === undefined || me.device_id === null) {
-      resolve({ success: false, error: new Error('AirConsole not ready') });
+      resolve({ success: false, error: new Error('getUserMedia failed: AirConsole not ready') });
       return;
     }
     if (me.media_permission_pending_) {
-      resolve({ success: false, error: new Error('Request already in progress') });
+      resolve({ success: false, error: new Error('getUserMedia failed: Request already in progress') });
       return;
     }
-    if (!mediaTypes || mediaTypes.indexOf('microphone') === -1) {
-      resolve({ success: false, error: new Error('unsupported media type') });
+    if (!constraints || !(constraints.hasOwnProperty('audio') || constraints.hasOwnProperty('video'))) {
+      resolve({ success: false, error: new Error('getUserMedia failed: audio or video constraint must be specified') });
       return;
     }
     me.media_permission_pending_ = true;
@@ -746,16 +752,17 @@ AirConsole.prototype.requestMediaPermissions = function requestMediaPermissions(
       me._resolveMediaPermission_({ success: false, error: new Error('timeout') });
     }, 30000);
 
-    // Currently the media type is always 'microphone', but we send the requested types for future extensibility.
-    me.set_('operation', { name: 'request-microphone-permission', data: { mediaTypes: ['microphone'] } });
+    // Send the request to the platform to decide where and how the user media request needs to take place based on
+    //  browser or controller environment.
+    me.sendEvent_('request-media-permission', { constraints: constraints });
   });
 };
 
-AirConsole.prototype._resolveMediaPermission_ = function(result) {
+AirConsole.prototype._resolveMediaPermission_ = function _resolveMediaPermission_(result) {
   clearTimeout(this.media_permission_timeout_);
   this.media_permission_pending_ = false;
   this.media_permission_timeout_ = undefined;
-  var resolve = this.media_permission_resolve_;
+  const resolve = this.media_permission_resolve_;
   this.media_permission_resolve_ = undefined;
   if (resolve) {
     resolve(result);
@@ -1426,6 +1433,13 @@ AirConsole.prototype.onPostMessage_ = function(event) {
         if (data.device_data._is_profile_update) {
           me.onDeviceProfileChange(sender);
         }
+        if (data.device_data._is_multimedia_update) {
+          if (data.device_data.microphone && data.device_data.microphone.granted === true) {
+            me.onMicrophoneAccessGranted(sender);
+          } else if (data.device_data.microphone && data.device_data.microphone.granted === false) {
+            me.onMicrophoneAccessDenied(sender, data.device_data.microphone.reason);
+          }
+        }
       }
     }
   } else if (data.action === "ready") {
@@ -1524,47 +1538,31 @@ AirConsole.prototype.onPostMessage_ = function(event) {
     }
   } else if (data.action === 'setGameSafeArea') {
     me.onSetSafeArea(data.gameSafeArea);
-  } else if (data.action === 'operation') {
-    const opName = data.name;
-    if (opName === 'microphone-permission-denied') {
-      me._resolveMediaPermission_({success: false, error: new Error('Permission denied')});
-    } else if (opName === 'microphone-permission-granted' || opName === 'microphone-permission-undefined') {
+  } else if (data.action === 'event') {
+    const { type } = data;
+    if (type === 'microphone-permission-denied') {
+      me._resolveMediaPermission_({success: false, error: new Error('getUserMedia failed: Permission denied')});
+    } else if (type === 'microphone-permission-granted' || type === 'microphone-permission-undefined') {
       const userPromptStartTime = performance.now();
       navigator.mediaDevices.getUserMedia({audio: true, video: false}).then(
         function success(stream) {
-          if (!stream.getAudioTracks().length) {
-            me._resolveMediaPermission_({success: false, error: new Error('No audio tracks')});
-          } else {
-            me._resolveMediaPermission_({success: true, stream: stream});
-          }
+          me._resolveMediaPermission_({success: true, stream: stream});
+          me.sendEvent_('microphone-permission-granted', {});
         },
         function failure(err) {
-          if (opName === 'microphone-permission-granted') {
+          // Native controller
+          if (type === 'microphone-permission-granted') {
             me._resolveMediaPermission_({success: false, error: err});
-          } else if (opName === 'microphone-permission-undefined') {
+          } else if (type === 'microphone-permission-undefined') {
+            // web based controller
             const userPromptDuration = performance.now() - userPromptStartTime;
             if (err.name === 'NotAllowedError') {
               if (userPromptDuration < 300) {
-                me.set_('operation', {name: 'microphone-permission-user-hard-denied', data: {}});
+                me.sendEvent_('microphone-permission-user-hard-denied', {});
               } else {
-                me.set_('operation', {name: 'microphone-permission-user-soft-denied', data: {}});
+                me.sendEvent_('microphone-permission-user-soft-denied', {});
               }
             }
-
-            // TODO(ENG-2540): Why not this approach Dragan? Is this simply due to the perceived unreliability of the
-            //  permissions API on Safari or is there a technical reason that this approach would not work?
-            // if (navigator.permissions && navigator.permissions.query) {
-            //   navigator.permissions.query({name: 'microphone'}).then(function(status) {
-            //     const opDenial = status.state === 'denied'
-            //         ? 'microphone-permission-user-hard-denied'
-            //         : 'microphone-permission-user-soft-denied';
-            //     me.set_('operation', {name: opDenial, data: {}});
-            //   }, function() {
-            //     me.set_('operation', {name: 'microphone-permission-user-soft-denied', data: {}});
-            //   });
-            // } else {
-            //   me.set_('operation', {name: 'microphone-permission-user-soft-denied', data: {}});
-            // }
           }
         }
       );
@@ -1640,6 +1638,16 @@ AirConsole.postMessage_ = function(data) {
  */
 AirConsole.prototype.set_ = function(key, value) {
   AirConsole.postMessage_({ action: "set", key: key, value: value });
+};
+
+/**
+ * Sends an event to the external AirConsole framework.
+ * @param {string} eventType - The type of the event.
+ * @param {serializable} eventData - The data of the event. Must be serializable.
+ * @private
+ */
+AirConsole.prototype.sendEvent_ = (eventType, eventData) => {
+  AirConsole.postMessage_({ action: 'event', type: eventType, data: eventData });
 };
 
 /**
