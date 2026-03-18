@@ -390,11 +390,11 @@ describe("AirConsole 1.11.0", function () {
      TEST MEDIA PERMISSIONS FUNCTIONALITY
      */
 
-    describe("Media Permissions", function () {
+    describe("User Media Permissions", function () {
         afterEach(function () {
             tearDown();
         });
 
-        testMediaPermissions();
+        testUserMediaPermissions();
     });
 });
