@@ -697,21 +697,32 @@ AirConsole.prototype.vibrate = function(options) {
  * ------------------------------------------------------------------------- */
 
 /**
- * Gets called on the game screen when a controller is granted microphone
- * access as a result of calling requestMicrophoneAccess on that controller.
+ * Gets called on the game screen when a controller is granted user media
+ * access as a result of calling getUserMedia on that controller.
  * @abstract
  * @param {number} device_id - The device_id of the controller that was granted access.
  */
-AirConsole.prototype.onMicrophoneAccessGranted = function(device_id) {};
+AirConsole.prototype.onUserMediaAccessGranted = function(device_id) {};
 
 /**
- * Gets called on the game screen when microphone access is denied or
- * subsequently lost for a controller that called requestMicrophoneAccess.
+ * @typedef {string} AirConsole~MicDenialReason
+ * @enum {string}
+ * @property {string} DENIED_BY_USER - The user denied the permission request.
+ * @property {string} NOT_SUPPORTED - The browser does not support the requested media type.
+ * @property {string} AIRCONSOLE_NOT_READY - The controller called getUserMedia before onReady was called or after the device got disconnected.
+ * @property {string} REQUEST_PENDING - The controller called getUserMedia while another getUserMedia request is still pending.
+ * @property {string} INVALID_CONSTRAINTS - The controller called getUserMedia with invalid constraints (e.g. no audio or video constraint specified).
+ * @property {string} TIMEOUT - The user did not respond to the permission request in time.
+ */
+
+/**
+ * Gets called on the game screen when user media access is denied or
+ * subsequently lost for a controller that called getUserMedia.
  * @abstract
  * @param {number} device_id - The device_id of the controller.
  * @param {AirConsole~MicDenialReason} reason - The reason for denial or loss.
  */
-AirConsole.prototype.onMicrophoneAccessDenied = function(device_id, reason) {};
+AirConsole.prototype.onUserMediaAccessDenied = function(device_id, reason) {};
 
 /**
  * @typedef {Object} AirConsole~GetUserMediaConstraint
@@ -746,6 +757,7 @@ AirConsole.prototype.getUserMedia = function getUserMedia(constraints) {
       resolve({ success: false, error: new Error('getUserMedia failed: audio or video constraint must be specified') });
       return;
     }
+    me.media_permission_constraints_ = constraints;
     me.media_permission_pending_ = true;
     me.media_permission_resolve_ = resolve;
     me.media_permission_timeout_ = setTimeout(function() {
@@ -761,6 +773,8 @@ AirConsole.prototype.getUserMedia = function getUserMedia(constraints) {
 AirConsole.prototype._resolveMediaPermission_ = function _resolveMediaPermission_(result) {
   clearTimeout(this.media_permission_timeout_);
   this.media_permission_pending_ = false;
+  this.media_permission_constraints_ = undefined;
+  this.resolveMediaPermissionError_ = undefined;
   this.media_permission_timeout_ = undefined;
   const resolve = this.media_permission_resolve_;
   this.media_permission_resolve_ = undefined;
@@ -1433,11 +1447,11 @@ AirConsole.prototype.onPostMessage_ = function(event) {
         if (data.device_data._is_profile_update) {
           me.onDeviceProfileChange(sender);
         }
-        if (data.device_data._is_multimedia_update) {
-          if (data.device_data.microphone && data.device_data.microphone.granted === true) {
-            me.onMicrophoneAccessGranted(sender);
-          } else if (data.device_data.microphone && data.device_data.microphone.granted === false) {
-            me.onMicrophoneAccessDenied(sender, data.device_data.microphone.reason);
+        if (data.device_data._is_usermediapermission_update) {
+          if (data.device_data.userMediaPermission && data.device_data.userMediaPermission.granted === true) {
+            me.onUserMediaAccessGranted(sender);
+          } else if (data.device_data.userMediaPermission && data.device_data.userMediaPermission.granted === false) {
+            me.onUserMediaAccessDenied(sender, data.device_data.userMediaPermission.reason);
           }
         }
       }
@@ -1540,28 +1554,30 @@ AirConsole.prototype.onPostMessage_ = function(event) {
     me.onSetSafeArea(data.gameSafeArea);
   } else if (data.action === 'event') {
     const { type } = data;
-    if (type === 'microphone-permission-denied') {
-      me._resolveMediaPermission_({success: false, error: new Error('getUserMedia failed: Permission denied')});
-    } else if (type === 'microphone-permission-granted' || type === 'microphone-permission-undefined') {
+    if (type === 'usermedia-permission-denied') {
+      const { denial, error } = data.data;
+      me._resolveMediaPermission_({
+        success: false,
+        reason: denial ? 'denied-permanent' : 'denied-temporary',
+        error: me.resolveMediaPermissionError_
+      });
+    } else if (type === 'usermedia-permission-granted' || type === 'usermedia-permission-prompt') {
       const userPromptStartTime = performance.now();
-      navigator.mediaDevices.getUserMedia({audio: true, video: false}).then(
+      navigator.mediaDevices.getUserMedia(me.media_permission_constraints_).then(
         function success(stream) {
           me._resolveMediaPermission_({success: true, stream: stream});
-          me.sendEvent_('microphone-permission-granted', {});
+          me.sendEvent_('usermedia-permission-user-granted', {});
         },
         function failure(err) {
           // Native controller
-          if (type === 'microphone-permission-granted') {
+          if (type === 'usermedia-permission-granted') {
             me._resolveMediaPermission_({success: false, error: err});
-          } else if (type === 'microphone-permission-undefined') {
+          } else if (type === 'usermedia-permission-prompt') {
+            me.resolveMediaPermissionError_ = err;
             // web based controller
             const userPromptDuration = performance.now() - userPromptStartTime;
             if (err.name === 'NotAllowedError') {
-              if (userPromptDuration < 300) {
-                me.sendEvent_('microphone-permission-user-hard-denied', {});
-              } else {
-                me.sendEvent_('microphone-permission-user-soft-denied', {});
-              }
+              me.sendEvent_('usermedia-permission-user-denied', { userPromptDuration});
             }
           }
         }
@@ -1646,7 +1662,7 @@ AirConsole.prototype.set_ = function(key, value) {
  * @param {serializable} eventData - The data of the event. Must be serializable.
  * @private
  */
-AirConsole.prototype.sendEvent_ = (eventType, eventData) => {
+AirConsole.prototype.sendEvent_ = function(eventType, eventData) {
   AirConsole.postMessage_({ action: 'event', type: eventType, data: eventData });
 };
 
