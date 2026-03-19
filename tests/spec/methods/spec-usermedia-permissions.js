@@ -142,7 +142,7 @@ function testUserMediaPermissions() {
 
      dispatchCustomMessageEvent({ action: 'event', type: 'usermedia-permission-granted' });
 
-     const result = await airconsole.getUserMedia({audio:true}); //.then(function(result) {
+     const result = await airconsole.getUserMedia({audio:true});
      expect(result.success).toBe(false);
      expect(result.error).toBe(testError);
     });
