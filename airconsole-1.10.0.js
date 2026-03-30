@@ -250,14 +250,16 @@ AirConsole.prototype.arePlayersSilenced = function () {
 }
 
 /**
- * Returns the platform capability configuration.
- * Use this to branch on capabilities instead of platform or partner names.
+ * Returns the platform capability configuration delivered in the ready event.
+ * Use this to branch on device capabilities instead of platform or partner
+ * names.  Only available on the screen; controllers receive undefined.
  * Can only be called after onReady.
  * @return {Object|undefined} An object with:
  *   supportedVideoFormats {string[]} - e.g. ["vp9","h264","vp8"]
  *   transparentVideoSupported {boolean}
  *   unityVideoSupported {boolean}
  *   graphicsQualityTier {string} - "low", "medium", or "high"
+ * Returns undefined on controllers or if the platform did not send it.
  * @since 1.10.0
  */
 AirConsole.prototype.getConfiguration = function() {
