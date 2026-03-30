@@ -115,4 +115,10 @@ function testConnectivity(overwrite_its, params) {
     expect(airconsole.getConfiguration()).toBeUndefined();
   });
 
+  it ("Should return undefined configuration before onReady fires", function() {
+    // getConfiguration() must return undefined until the READY message has been processed;
+    // a freshly-constructed AirConsole instance has not yet received a ready event.
+    expect(airconsole.getConfiguration()).toBeUndefined();
+  });
+
 }
