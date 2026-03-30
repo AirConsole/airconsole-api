@@ -250,6 +250,21 @@ AirConsole.prototype.arePlayersSilenced = function () {
 }
 
 /**
+ * Returns the platform capability configuration.
+ * Use this to branch on capabilities instead of platform or partner names.
+ * Can only be called after onReady.
+ * @return {Object|undefined} An object with:
+ *   supportedVideoFormats {string[]} - e.g. ["vp9","h264","vp8"]
+ *   transparentVideoSupported {boolean}
+ *   unityVideoSupported {boolean}
+ *   graphicsQualityTier {string} - "low", "medium", or "high"
+ * @since 1.10.0
+ */
+AirConsole.prototype.getConfiguration = function() {
+  return this.configuration;
+}
+
+/**
  * Dictionary of silenced update messages queued during a running game session.
  * @private
  * @since 1.9.0
@@ -1472,6 +1487,7 @@ AirConsole.prototype.onPostMessage_ = function(event) {
     }
 
     me.gameSafeArea = data.gameSafeArea;
+    me.configuration = data.configuration;
     if (data.translations) {
       me.translations = data.translations;
       var elements = document.querySelectorAll("[data-translation]");
