@@ -12,6 +12,8 @@ Release notes follow the [keep a changelog](https://keepachangelog.com/en/1.0.0/
 
 ### Added
 
+- Added `AirConsole.getConfiguration()` to expose the platform capability configuration from the `ready` event on screens.
+
 ## [1.10.0] - 2026-02-17
 
 ### Added
