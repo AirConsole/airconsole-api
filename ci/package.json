@@ -11,8 +11,9 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@playwright/test": "^1.46.1",
-    "playwright": "^1.46.1",
-    "serve": "^14.2.3"
+    "@playwright/test": "^1.59.1",
+    "airconsole-api-playwright-test": "link:",
+    "playwright": "^1.59.1",
+    "serve": "^14.2.6"
   }
 }

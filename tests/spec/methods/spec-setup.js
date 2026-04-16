@@ -46,8 +46,22 @@ function testSetup(version) {
 
     it ("Should call postMessage_ on error", function() {
       spyOn(AirConsole, 'postMessage_');
-      dispatchCustomMessageEvent({}, 'error');
+      // Dispatching a real 'error' event on window is intercepted by Jasmine 4's
+      // global error handler. Capture the listener AirConsole registered and call it directly.
+      let errorListener = null;
+      const origAdd = window.addEventListener;
+      spyOn(window, 'addEventListener').and.callFake(function(type, fn, opts) {
+        if (type === 'error') errorListener = fn;
+        origAdd.call(window, type, fn, opts);
+      });
+      // Re-instantiate so our spy captures the registration
+      const airConsole = new AirConsole({setup_document: false});
+      window.addEventListener.and.callThrough();
+      if (errorListener) {
+        errorListener({ message: 'test error', error: null });
+      }
       expect(AirConsole.postMessage_).toHaveBeenCalled();
+      window.removeEventListener('error', errorListener);
     });
 
 }

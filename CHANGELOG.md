@@ -10,6 +10,10 @@ Release notes follow the [keep a changelog](https://keepachangelog.com/en/1.0.0/
 
 ## [Unreleased]
 
+### Changed
+
+- Changed `getUserMedia` browser-error rejection flow: controller now sends error to platform via `sendEvent_('userMediaPermissionDenied', { userPromptDuration, error })`; platform echoes back `userMediaPermissionDenied` with `data: { error }` which triggers `rejectMediaPermission_` locally, replacing the previous direct local rejection.
+
 ### Added
 
 - Added `AirConsole.getConfiguration()` to expose the platform capability configuration from the `ready` event on screens.

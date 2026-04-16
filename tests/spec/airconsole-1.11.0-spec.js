@@ -25,7 +25,7 @@ describe("AirConsole 1.11.0", function () {
 
     function tearDown() {
         if (airconsole) {
-            window.removeEventListener('message', airconsole.onPostMessage_);
+            window.removeEventListener('message', airconsole.messageEventListener_);
             airconsole = null;
         }
     }
