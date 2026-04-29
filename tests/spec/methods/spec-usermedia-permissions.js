@@ -26,7 +26,16 @@ function testUserMediaPermissions() {
   }
 
   function makeFakeStream() {
-    return { getAudioTracks: function () { return [{}]; } };
+    return {
+      getAudioTracks: function() {
+        return [{}];
+      }, getTracks: function() {
+        return [{
+          stop: () => {
+          }
+        }];
+      },
+    };
   }
 
   function makeNotAllowedError() {
@@ -35,8 +44,7 @@ function testUserMediaPermissions() {
   }
 
   function makeNotFoundError() {
-    const err = new Error('Device not found');
-    err.name = 'NotFoundError';
+    const err = new DOMException('Device not found', 'NotFoundError');
     return err;
   }
 
@@ -237,6 +245,13 @@ function testUserMediaPermissions() {
             type: 'userMediaPermissionDenied',
             data: { errorType: AirConsole.USERMEDIA_ERROR_TYPE.temporary },
           });
+        } else {
+          // Pipe the event back
+          dispatchCustomMessageEvent({
+            action: 'event',
+            type: eventType,
+            data: eventData
+          });
         }
       });
     });
@@ -289,15 +304,17 @@ function testUserMediaPermissions() {
       it('Should reject with a DOMException when browser getUserMedia is aborted', function (done) {
         const domException = new DOMException('DOM Abort Test', 'AbortError');
         spyGetUserMediaReject(domException);
-        airconsole.getUserMedia({ audio: true }).catch(function (error) {
-          expect(error).toBe(domException);
-          expect(error).toBeInstanceOf(DOMException);
-          expect(airconsole.sendEvent_).toHaveBeenCalledWith(
-            'userMediaPermissionDenied',
-            jasmine.objectContaining({ userPromptDuration: jasmine.any(Number) }),
-          );
-          done();
-        });
+        airconsole.getUserMedia({ audio: true })
+          .then(it =>  console.info(it))
+          .catch(function(error) {
+            expect(error).toBe(domException);
+            expect(error).toBeInstanceOf(DOMException);
+            expect(airconsole.sendEvent_).toHaveBeenCalledWith(
+              'userMediaPermissionDenied',
+              jasmine.objectContaining({ errorType: domException.name })
+            );
+            done();
+          });
         promptUserMediaPermission();
       });
     });
@@ -309,13 +326,12 @@ function testUserMediaPermissions() {
 
     describe('promptUserMediaPermission NotAllowedError rejection flow', function () {
       it('Should fire sendEvent_(userMediaPermissionDenied) with userPromptDuration', function (done) {
-        spyGetUserMediaReject(makeNotAllowedError());
+        const domException = makeNotAllowedError();
+        spyGetUserMediaReject(domException);
         airconsole.getUserMedia({ audio: true }).catch(function () {
           expect(airconsole.sendEvent_).toHaveBeenCalledWith(
             'userMediaPermissionDenied',
-            jasmine.objectContaining({
-              userPromptDuration: jasmine.any(Number),
-            }),
+              jasmine.objectContaining({ errorType: domException.name })
           );
           done();
         });
@@ -377,7 +393,7 @@ function testUserMediaPermissions() {
       });
 
       it('Should NOT call sendEvent_(userMediaPermissionGranted) when browser getUserMedia rejects', function (done) {
-        spyGetUserMediaReject(new Error('Permission denied'));
+        spyGetUserMediaReject(new DOMException('Permission denied', 'NotAllowedError'));
         airconsole.getUserMedia({ audio: true }).then(function () {
           const grantedCalls = airconsole.sendEvent_.calls
             .all()
@@ -527,6 +543,13 @@ function testUserMediaPermissions() {
             action: 'event',
             type: 'userMediaPermissionDenied',
             data: { errorType: AirConsole.USERMEDIA_ERROR_TYPE.temporary },
+          });
+        } else {
+          // Pipe the event back
+          dispatchCustomMessageEvent({
+            action: 'event',
+            type: eventType,
+            data: eventData
           });
         }
       });

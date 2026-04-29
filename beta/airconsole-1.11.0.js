@@ -1735,13 +1735,17 @@ AirConsole.prototype.onPostMessage_ = function(event) {
           // Native controller: platform already granted permission but stream open failed.
           if (type === 'userMediaPermissionGranted') {
             me.resolveMediaPermission_({ success: false, error });
-          } else if (type === 'promptUserMediaPermission') {
-            // Web-based controller: browser denied the permission dialog.
-            // Cache the error so we can reject with it when platform echoes back errorType.
-            me.cachedMediaError_ = error;
-            // Always notify the platform regardless of error type so its state machine can recover.
-            const userPromptDuration = performance.now() - userPromptStartTime;
-            me.sendEvent_('userMediaPermissionDenied', { errorType: error.name, userPromptDuration });
+          } else {
+            if (type === 'userMediaPermissionDenied') {
+              // Always notify the platform regardless of error type so its state machine can recover.
+              const userPromptDuration = performance.now() - userPromptStartTime;
+              me.sendEvent_('userMediaPermissionDenied', { errorType: error.name, userPromptDuration });
+            } else if (error instanceof DOMException) {
+              // Web-based controller: browser denied the permission dialog.
+              // Cache the error so we can reject with it when platform echoes back errorType.
+              me.cachedMediaError_ = error;
+              me.sendEvent_('userMediaPermissionDenied', { errorType: error.name });
+            }
           }
         }
       );
