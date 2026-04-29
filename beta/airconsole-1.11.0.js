@@ -1698,13 +1698,13 @@ AirConsole.prototype.onPostMessage_ = function(event) {
       ];
 
       const rawErrorType = data.data?.errorType;
-      const errorType = validErrorTypes.indexOf(rawErrorType) !== -1
+      const errorType = rawErrorType && validErrorTypes.indexOf(rawErrorType) !== -1
         ? rawErrorType
         : AirConsole.USERMEDIA_ERROR_TYPE.temporary;
 
       // If a browser error was cached (from a local getUserMedia failure that was sent to platform),
       // reject with the original error object to preserve instanceof checks.
-      if (me.cachedMediaError_ && rawErrorType.indexOf("AirConsole.") === -1) {
+      if (me.cachedMediaError_) {
         const cachedError = me.cachedMediaError_;
         me.cachedMediaError_ = null;
         me.rejectMediaPermission_(cachedError);
