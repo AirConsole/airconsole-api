@@ -770,6 +770,9 @@ AirConsole.prototype.onUserMediaAccessGranted = function(device_id, constraints)
  *   } else if (errorType === AirConsole.USERMEDIA_ERROR_TYPE.permanent) {
  *     console.log('Controller ' + device_id + ' permanently denied media access');
  *     // Disable features that require microphone access for this controller
+ *   } else if (errorType === AirConsole.USERMEDIA_ERROR_TYPE.outdated) {
+ *     console.log('Controller ' + device_id + ' has outdated software that does not support media access');
+ *     // Inform the user they need to update their device software
  *   }
  * };
  *
@@ -821,6 +824,9 @@ const mediaPermissionCallbacks_ = new WeakMap();
  *     // Try requesting media access again later, e.g. after a user interaction
  *   } else if (result.errorType === AirConsole.USERMEDIA_ERROR_TYPE.permanent) {
  *     console.log('User permanently denied media access');
+ *   } else if (result.errorType === AirConsole.USERMEDIA_ERROR_TYPE.outdated) {
+ *     console.log('Device software is too old to support media access');
+ *     // Inform the user they need to update their device software
  *   } else if (result.error) {
  *     console.error('Error requesting media access:', result.error);
  *   }
