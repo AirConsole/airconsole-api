@@ -10,9 +10,14 @@ Release notes follow the [keep a changelog](https://keepachangelog.com/en/1.0.0/
 
 ## [Unreleased]
 
-### Changed
+### Added 
 
-- Changed `getUserMedia` browser-error rejection flow: controller now sends error to platform via `sendEvent_('userMediaPermissionDenied', { userPromptDuration, error })`; platform echoes back `userMediaPermissionDenied` with `data: { error }` which triggers `rejectMediaPermission_` locally, replacing the previous direct local rejection.
+- New `AirConsole.getUserMedia` API for requesting access to the microphone on the controller.
+  - Matches the browser's `getUserMedia` API on the controller.
+  - As per 1.11.0, only the `audio` constraint is supported
+  - The support is consistent for browser based controllers as well as the native AirConsole controller for Android and iOS.
+  - `AirConsole.USERMEDIA_ERROR_TYPE` provides information in why the request was rejected: permant, temporary or in the controller application: if the application is outdated and the user needs to update it.
+  - The API is designed to be future proof, allowing for the addition of video support in the future without breaking changes.
 
 ### Added
 
