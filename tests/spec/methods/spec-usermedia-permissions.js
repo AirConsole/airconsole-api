@@ -85,7 +85,7 @@ function testUserMediaPermissions() {
     });
 
     it('Should reject with AirConsole.USERMEDIA_ERROR.alreadyPending when a request is already in progress', function(done) {
-      airconsole.media_permission_pending_ = true;
+      airconsole.mediaPermissionPending_ = true;
       airconsole.getUserMedia({ audio: true }).catch(function(error) {
         expect(error.name).toBe("AirConsole.UserMediaError");
         expect(error.message).toBe(AirConsole.USERMEDIA_ERROR.alreadyPending);
@@ -160,19 +160,19 @@ function testUserMediaPermissions() {
       dispatchCustomMessageEvent({ action: 'event', type: 'promptUserMediaPermission' });
     });
 
-    it('Should clear media_permission_pending_ after resolution', function(done) {
+    it('Should clear mediaPermissionPending_ after resolution', function(done) {
       const fakeStream = makeFakeStream();
       spyOn(navigator.mediaDevices, 'getUserMedia').and.returnValue(Promise.resolve(fakeStream));
       airconsole.getUserMedia({ audio: true }).then(function() {
-        expect(airconsole.media_permission_pending_).toBe(false);
+        expect(airconsole.mediaPermissionPending_).toBe(false);
         done();
       });
       dispatchCustomMessageEvent({ action: 'event', type: 'userMediaPermissionGranted' });
     });
 
-    it('Should clear media_permission_pending_ when userMediaPermissionDenied is received', function (done) {
+    it('Should clear mediaPermissionPending_ when userMediaPermissionDenied is received', function (done) {
       airconsole.getUserMedia({ audio: true }).catch(function () {
-        expect(airconsole.media_permission_pending_).toBe(false);
+        expect(airconsole.mediaPermissionPending_).toBe(false);
         done();
       });
       dispatchCustomMessageEvent({
@@ -292,10 +292,10 @@ function testUserMediaPermissions() {
         promptUserMediaPermission();
       });
 
-      it('Should clear media_permission_pending_ after rejection', function (done) {
+      it('Should clear mediaPermissionPending_ after rejection', function (done) {
         spyGetUserMediaReject(makeNotAllowedError());
         airconsole.getUserMedia({ audio: true }).catch(function () {
-          expect(airconsole.media_permission_pending_).toBe(false);
+          expect(airconsole.mediaPermissionPending_).toBe(false);
           done();
         });
         promptUserMediaPermission();
@@ -384,7 +384,7 @@ function testUserMediaPermissions() {
     it('Should call onUserMediaAccessDenied(device_id, temporary) when granted=false', function () {
       spyOn(airconsole, 'onUserMediaAccessDenied');
       const constraints = { audio: true };
-      airconsole.media_permission_constraints_ = constraints;
+      airconsole.mediaPermissionConstraints_ = constraints;
       broadcastPermissionUpdate({
         granted: false
       });
@@ -532,17 +532,17 @@ function testUserMediaPermissions() {
       );
     });
 
-    it('Should clear a pending media_permission_timeout_ on destroy', function () {
+    it('Should clear a pending mediaPermissionTimeout_ on destroy', function () {
       jasmine.clock().install();
       spyOn(navigator.mediaDevices, 'getUserMedia').and.returnValue(
         new Promise(function () {}),
       );
       spyOn(airconsole, 'sendEvent_');
       airconsole.getUserMedia({ audio: true });
-      expect(airconsole.media_permission_timeout_).toBeDefined();
+      expect(airconsole.mediaPermissionTimeout_).toBeDefined();
 
       airconsole.destroy();
-      expect(airconsole.media_permission_timeout_).toBeNull();
+      expect(airconsole.mediaPermissionTimeout_).toBeNull();
       jasmine.clock().uninstall();
     });
 

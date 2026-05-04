@@ -23,11 +23,11 @@ sequenceDiagram
     Game->>API: getUserMedia(constraints)
     alt Flow 1: early rejection
         Note over API: Validate caller and constraints
-        Note over API: Reject early when device is SCREEN, device_id is undefined, media_permission_pending_ is true, or constraints are invalid
+        Note over API: Reject early when device is SCREEN, device_id is undefined, mediaPermissionPending_ is true, or constraints are invalid
         API-->>Game: Promise rejects with AirConsoleUserMediaError
     else Request accepted
         Note over API: mediaPermissionCallbacks_.set(instance, { resolve, reject })
-        Note over API: media_permission_pending_ = true
+        Note over API: mediaPermissionPending_ = true
         Note over API: start 30s timeout
         API->>Platform: sendEvent_('requestUserMediaPermission', { constraints })
 
@@ -77,7 +77,7 @@ sequenceDiagram
             API-->>Game: Promise rejects with AirConsoleUserMediaError
         end
 
-        Note over API: Guard stale messages with media_permission_pending_
+        Note over API: Guard stale messages with mediaPermissionPending_
     end
 
     rect rgba(230, 230, 255, 0.35)
@@ -101,4 +101,4 @@ Callback storage lives in a `WeakMap`, which keeps resolve and reject handlers a
 
 The 30 second timeout is a safety net. It rejects with `AirConsoleUserMediaError.timeout` if the platform never answers.
 
-`media_permission_pending_` blocks duplicate requests and ignores stale platform messages after cleanup.
+`mediaPermissionPending_` blocks duplicate requests and ignores stale platform messages after cleanup.

@@ -815,7 +815,7 @@ AirConsole.prototype.getUserMedia = function getUserMedia(constraints) {
   if (this.device_id === undefined) {
     return Promise.reject(createAirConsoleUserMediaError(AirConsole.USERMEDIA_ERROR.notReady));
   }
-  if (this.media_permission_pending_) {
+  if (this.mediaPermissionPending_) {
     return Promise.reject(createAirConsoleUserMediaError(AirConsole.USERMEDIA_ERROR.alreadyPending));
   }
   if (!constraints || !('audio' in constraints || 'video' in constraints)) {
@@ -824,10 +824,10 @@ AirConsole.prototype.getUserMedia = function getUserMedia(constraints) {
 
   var me = this;
   return new Promise(function (resolve, reject) {
-    me.media_permission_constraints_ = constraints;
-    me.media_permission_pending_ = true;
+    me.mediaPermissionConstraints_ = constraints;
+    me.mediaPermissionPending_ = true;
     mediaPermissionCallbacks_.set(me, { resolve: resolve, reject: reject });
-    me.media_permission_timeout_ = setTimeout(function() {
+    me.mediaPermissionTimeout_ = setTimeout(function() {
       me.rejectMediaPermission_(createAirConsoleUserMediaError(AirConsole.USERMEDIA_ERROR.timeout));
     }, 30000);
 
@@ -838,10 +838,10 @@ AirConsole.prototype.getUserMedia = function getUserMedia(constraints) {
 };
 
 AirConsole.prototype.cleanUpMediaPermission_ = function cleanUpMediaPermission_() {
-  clearTimeout(this.media_permission_timeout_);
-  this.media_permission_pending_ = false;
-  this.media_permission_constraints_ = undefined;
-  this.media_permission_timeout_ = undefined;
+  clearTimeout(this.mediaPermissionTimeout_);
+  this.mediaPermissionPending_ = false;
+  this.mediaPermissionConstraints_ = undefined;
+  this.mediaPermissionTimeout_ = undefined;
   this.cachedMediaError_ = null;
   mediaPermissionCallbacks_.delete(this);
 }
@@ -867,9 +867,9 @@ AirConsole.prototype.rejectMediaPermission_ = function rejectMediaPermission_(er
  */
 AirConsole.prototype.destroy = function destroy() {
   window.removeEventListener('message', this.messageEventListener_);
-  if (this.media_permission_timeout_) {
-    clearTimeout(this.media_permission_timeout_);
-    this.media_permission_timeout_ = null;
+  if (this.mediaPermissionTimeout_) {
+    clearTimeout(this.mediaPermissionTimeout_);
+    this.mediaPermissionTimeout_ = null;
   }
 };
 
@@ -1542,9 +1542,9 @@ AirConsole.prototype.onPostMessage_ = function(event) {
           if (data.device_data.userMediaPermission) {
             const { granted } = data.device_data.userMediaPermission;
             if (granted) {
-              me.onUserMediaAccessGranted(sender, me.media_permission_constraints_);
+              me.onUserMediaAccessGranted(sender, me.mediaPermissionConstraints_);
             } else {
-              me.onUserMediaAccessDenied(sender, me.media_permission_constraints_);
+              me.onUserMediaAccessDenied(sender, me.mediaPermissionConstraints_);
             }
           }
         }
@@ -1651,7 +1651,7 @@ AirConsole.prototype.onPostMessage_ = function(event) {
 
     // Guard: ignore stale platform messages that arrive after state has been cleaned up
     // (e.g. after the 30-second timeout has already resolved the pending Promise).
-    if (!me.media_permission_pending_) {
+    if (!me.mediaPermissionPending_) {
       return;
     }
 
@@ -1667,9 +1667,9 @@ AirConsole.prototype.onPostMessage_ = function(event) {
         me.rejectMediaPermission_(error);
       }
     } else if (type === 'userMediaPermissionGranted' || type === 'promptUserMediaPermission') {
-      navigator.mediaDevices.getUserMedia(me.media_permission_constraints_).then(
+      navigator.mediaDevices.getUserMedia(me.mediaPermissionConstraints_).then(
         function success(stream) {
-          if (!me.media_permission_pending_) {
+          if (!me.mediaPermissionPending_) {
             // Timeout fired while the browser permission dialog was still open;
             // the outer Promise is already settled — stop the orphaned stream to release hardware.
             stream.getTracks().forEach(function (t) { t.stop(); });
@@ -1678,7 +1678,7 @@ AirConsole.prototype.onPostMessage_ = function(event) {
           // Note: 'userMediaPermissionGranted' is both sent upward (controller → platform) and
           // received downward (platform → controller for native controllers). The direction is
           // determined by context: outbound is sent here; inbound is handled by this event branch.
-          const grantedConstraints = me.media_permission_constraints_;
+          const grantedConstraints = me.mediaPermissionConstraints_;
           me.sendEvent_('userMediaPermissionGranted', {
             constraints: grantedConstraints,
           });
