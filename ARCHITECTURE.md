@@ -84,9 +84,9 @@ sequenceDiagram
         Note over Platform,Game: Flow 8: broadcast to other devices
         Platform->>API: device update with _is_userMediaPermission_update: true
         alt granted
-            API-->>Game: onUserMediaAccessGranted(device_id, constraints)
+            API-->>Game: onUserMediaAccessGranted(device_id)
         else denied
-            API-->>Game: onUserMediaAccessDenied(device_id, errorType)
+            API-->>Game: onUserMediaAccessDenied(device_id)
         end
     end
 ```

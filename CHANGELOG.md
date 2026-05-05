@@ -16,12 +16,19 @@ Release notes follow the [keep a changelog](https://keepachangelog.com/en/1.0.0/
   - Matches the browser's `getUserMedia` API on the controller.
   - As per 1.11.0, only the `audio` constraint is supported
   - The support is consistent for browser based controllers as well as the native AirConsole controller for Android and iOS.
-  - `AirConsole.USERMEDIA_ERROR_TYPE` provides information in why the request was rejected: permant, temporary or in the controller application: if the application is outdated and the user needs to update it.
   - The API is designed to be future proof, allowing for the addition of video support in the future without breaking changes.
-
-### Added
-
 - Added `ARCHITECTURE.md` with mermaid sequence diagram documenting the full media permission flow.
+
+### Changed
+
+- `getUserMedia` now uses standard Promise resolve/reject semantics: resolves with `MediaStream` on success, rejects with typed `Error` on failure. Removes the `{ success, stream?, reason?, error? }` envelope.
+- Browser `DOMException` objects are preserved across the platform roundtrip via a cache-and-echo pattern (`cachedMediaError_`), so `error instanceof DOMException` works in `.catch()`.
+- Video constraints are now explicitly rejected with `USERMEDIA_ERROR.invalidConstraints` instead of being silently ignored.
+- `onUserMediaAccessGranted(device_id)` and `onUserMediaAccessDenied(device_id)` no longer carry a second parameter.
+
+### Removed
+
+- Removed `MEDIA_PERMISSION_DENIED` enum (`temporary`/`permanent` distinction). Platform denials now reject with `AirConsoleUserMediaError("PermissionDenied")`; browser denials pass through the original `DOMException`.
 
 ## [1.10.0] - 2026-02-17
 

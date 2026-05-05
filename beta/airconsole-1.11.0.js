@@ -818,27 +818,21 @@ const mediaPermissionCallbacks_ = new WeakMap();
  */
 AirConsole.prototype.getUserMedia = function getUserMedia(constraints) {
   if (this.device_id === AirConsole.SCREEN) {
-    console.error(`AirConsole.getUserMedia not supported on screen`);
     return Promise.reject(new AirConsoleUserMediaError(AirConsole.USERMEDIA_ERROR.notSupportedOnScreen));
   }
   if (this.device_id === undefined) {
-    console.error(`AirConsole.getUserMedia requires device to be initialized`);
     return Promise.reject(new AirConsoleUserMediaError(AirConsole.USERMEDIA_ERROR.notReady));
   }
   if (this.mediaPermissionPending_) {
-    console.error(`AirConsole.getUserMedia already has a pending request`);
     return Promise.reject(new AirConsoleUserMediaError(AirConsole.USERMEDIA_ERROR.alreadyPending));
   }
   if (!constraints) {
-    console.error(`AirConsole.getUserMedia requires constraints to be provided`);
     return Promise.reject(new AirConsoleUserMediaError(AirConsole.USERMEDIA_ERROR.invalidConstraints));
   }
   if (!!constraints.video) {
-    console.error(`AirConsole.getUserMedia does not support video, please remove video from the constraints`);
     return Promise.reject(new AirConsoleUserMediaError(AirConsole.USERMEDIA_ERROR.invalidConstraints));
   }
   if (!('audio' in constraints)) {
-    console.error(`AirConsole.getUserMedia requires audio constraints to be provided`);
     return Promise.reject(new AirConsoleUserMediaError(AirConsole.USERMEDIA_ERROR.invalidConstraints));
   }
 
@@ -1705,7 +1699,6 @@ AirConsole.prototype.onPostMessage_ = function(event) {
         },
         function failure(error) {
           // Native controller: platform already granted permission but stream open failed.
-          // TODO(marc): Is this case still relevant?
           if (type === 'userMediaPermissionGranted') {
             me.rejectMediaPermission_(error);
           } else {
