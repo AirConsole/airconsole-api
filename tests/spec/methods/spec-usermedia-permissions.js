@@ -372,25 +372,21 @@ function testUserMediaPermissions() {
       });
     }
 
-    it('Should call onUserMediaAccessGranted(device_id, constraints) when granted=true', function () {
+    it('Should call onUserMediaAccessGranted(device_id) when granted=true', function () {
       spyOn(airconsole, 'onUserMediaAccessGranted');
       broadcastPermissionUpdate({ granted: true });
       expect(airconsole.onUserMediaAccessGranted).toHaveBeenCalledWith(
         DEVICE_ID,
-        undefined,
       );
     });
 
-    it('Should call onUserMediaAccessDenied(device_id, temporary) when granted=false', function () {
+    it('Should call onUserMediaAccessDenied(device_id) when granted=false', function () {
       spyOn(airconsole, 'onUserMediaAccessDenied');
-      const constraints = { audio: true };
-      airconsole.mediaPermissionConstraints_ = constraints;
       broadcastPermissionUpdate({
         granted: false
       });
       expect(airconsole.onUserMediaAccessDenied).toHaveBeenCalledWith(
         DEVICE_ID,
-        jasmine.objectContaining(constraints)
       );
     });
 

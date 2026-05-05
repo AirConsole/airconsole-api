@@ -724,18 +724,16 @@ AirConsole.prototype.vibrate = function(options) {
  * On the requesting device, the getUserMedia promise will provide the result immediately.
  * @abstract
  * @param {number} device_id - The device_id of the controller that was granted access.
- * @param {AirConsole~GetUserMediaConstraint|undefined} constraints - The constraints that were granted (e.g. {audio:
- *   true}). May be undefined if the platform does not include constraint information in the update payload.
  *
  * @example
- * airconsole.onUserMediaAccessGranted = function (device_id, constraints) {
- *    console.info('Controller ' + device_id + ' denied media access for ', JSON.stringify(constraints));
+ * airconsole.onUserMediaAccessGranted = function (device_id) {
+ *    console.info('Controller ' + device_id + ' was granted media access');
  * };
  *
  * @see AirConsole.prototype.getUserMedia
  * @see AirConsole.prototype.onUserMediaAccessDenied
  */
-AirConsole.prototype.onUserMediaAccessGranted = function(device_id, constraints) {};
+AirConsole.prototype.onUserMediaAccessGranted = function(device_id) {};
 
 /**
  * Gets called on all other devices in the game as a result of to a denied request to getUserMedia on the specific
@@ -743,18 +741,16 @@ AirConsole.prototype.onUserMediaAccessGranted = function(device_id, constraints)
  * On the requesting device, the getUserMedia promise will provide the result immediately.
  * @abstract
  * @param {number} device_id - The device_id of the controller.
- * @param {AirConsole~GetUserMediaConstraint|undefined} constraints - The constraints that were granted (e.g. {audio:
- *   true}). May be undefined if the platform does not include constraint information in the update payload.
  *
  * @example
- * airconsole.onUserMediaAccessDenied = function (device_id, constraints) {
-*    console.info('Controller ' + device_id + ' denied media access for ', JSON.stringify(constraints));
+ * airconsole.onUserMediaAccessDenied = function (device_id) {
+ *    console.info('Controller ' + device_id + ' was denied media access');
  * };
  *
  * @see AirConsole.prototype.getUserMedia
  * @see AirConsole.prototype.onUserMediaAccessGranted
  */
-AirConsole.prototype.onUserMediaAccessDenied = function (device_id, constraints) {};
+AirConsole.prototype.onUserMediaAccessDenied = function (device_id) {};
 
 /**
  * Module-private storage for pending getUserMedia promise callbacks.
@@ -1542,9 +1538,9 @@ AirConsole.prototype.onPostMessage_ = function(event) {
           if (data.device_data.userMediaPermission) {
             const { granted } = data.device_data.userMediaPermission;
             if (granted) {
-              me.onUserMediaAccessGranted(sender, me.mediaPermissionConstraints_);
+              me.onUserMediaAccessGranted(sender);
             } else {
-              me.onUserMediaAccessDenied(sender, me.mediaPermissionConstraints_);
+              me.onUserMediaAccessDenied(sender);
             }
           }
         }
@@ -1678,9 +1674,8 @@ AirConsole.prototype.onPostMessage_ = function(event) {
           // Note: 'userMediaPermissionGranted' is both sent upward (controller → platform) and
           // received downward (platform → controller for native controllers). The direction is
           // determined by context: outbound is sent here; inbound is handled by this event branch.
-          const grantedConstraints = me.mediaPermissionConstraints_;
           me.sendEvent_('userMediaPermissionGranted', {
-            constraints: grantedConstraints,
+            constraints: me.mediaPermissionConstraints_,
           });
           me.resolveMediaPermission_(stream);
         },
