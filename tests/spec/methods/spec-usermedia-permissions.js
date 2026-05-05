@@ -101,7 +101,31 @@ function testUserMediaPermissions() {
       });
     });
 
-    it('Should reject with AirConsole.USERMEDIA_ERROR.invalidConstraints when constraints have no audio or video property', function(done) {
+    it('Should reject with AirConsole.USERMEDIA_ERROR.invalidConstraints with constraint { audio: true, video: true }', function(done) {
+      airconsole.getUserMedia({ video: true }).catch(function(error) {
+        expect(error.name).toBe("AirConsole.UserMediaError");
+        expect(error.message).toBe(AirConsole.USERMEDIA_ERROR.invalidConstraints);
+        done();
+      });
+    });
+
+    it('Should reject with AirConsole.USERMEDIA_ERROR.invalidConstraints with constraint { video: true }', function(done) {
+      airconsole.getUserMedia({ video: true }).catch(function(error) {
+        expect(error.name).toBe("AirConsole.UserMediaError");
+        expect(error.message).toBe(AirConsole.USERMEDIA_ERROR.invalidConstraints);
+        done();
+      });
+    });
+
+    it('Should reject with AirConsole.USERMEDIA_ERROR.invalidConstraints with constraint { video: { width: 1280, height: 720 } }', function(done) {
+      airconsole.getUserMedia({ video: { width: 1280, height: 720 } }).catch(function(error) {
+        expect(error.name).toBe("AirConsole.UserMediaError");
+        expect(error.message).toBe(AirConsole.USERMEDIA_ERROR.invalidConstraints);
+        done();
+      });
+    });
+
+    it('Should reject with AirConsole.USERMEDIA_ERROR.invalidConstraints when constraints have no audio property', function(done) {
       airconsole.getUserMedia({ foo: true }).catch(function(error) {
         expect(error.name).toBe("AirConsole.UserMediaError");
         expect(error.message).toBe(AirConsole.USERMEDIA_ERROR.invalidConstraints);
