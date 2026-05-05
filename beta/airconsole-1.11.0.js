@@ -881,9 +881,11 @@ AirConsole.prototype.rejectMediaPermission_ = function rejectMediaPermission_(er
  */
 AirConsole.prototype.destroy = function destroy() {
   window.removeEventListener('message', this.messageEventListener_);
-  if (this.mediaPermissionTimeout_) {
+  if (this.mediaPermissionPending_) {
+    this.rejectMediaPermission_(new AirConsoleUserMediaError(AirConsole.USERMEDIA_ERROR.timeout));
+  } else if (this.mediaPermissionTimeout_) {
     clearTimeout(this.mediaPermissionTimeout_);
-    this.mediaPermissionTimeout_ = null;
+    this.mediaPermissionTimeout_ = undefined;
   }
 };
 
@@ -1698,6 +1700,9 @@ AirConsole.prototype.onPostMessage_ = function(event) {
           me.resolveMediaPermission_(stream);
         },
         function failure(error) {
+          if (!me.mediaPermissionPending_) {
+            return;
+          }
           // Native controller: platform already granted permission but stream open failed.
           if (type === 'userMediaPermissionGranted') {
             me.rejectMediaPermission_(error);
