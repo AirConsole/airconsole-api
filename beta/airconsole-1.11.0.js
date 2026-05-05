@@ -826,7 +826,7 @@ AirConsole.prototype.getUserMedia = function getUserMedia(constraints) {
   if (this.mediaPermissionPending_) {
     return Promise.reject(new AirConsoleUserMediaError(AirConsole.USERMEDIA_ERROR.alreadyPending));
   }
-  if (!constraints) {
+  if (!constraints || !constraints.audio) {
     return Promise.reject(new AirConsoleUserMediaError(AirConsole.USERMEDIA_ERROR.invalidConstraints));
   }
   if (!!constraints.video) {

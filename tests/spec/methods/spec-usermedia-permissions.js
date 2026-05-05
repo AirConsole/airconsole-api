@@ -117,6 +117,14 @@ function testUserMediaPermissions() {
       });
     });
 
+    it('Should reject with AirConsole.USERMEDIA_ERROR.invalidConstraints with constraint { audio: false }', function(done) {
+      airconsole.getUserMedia({ audio: false }).catch(function(error) {
+        expect(error.name).toBe("AirConsole.UserMediaError");
+        expect(error.message).toBe(AirConsole.USERMEDIA_ERROR.invalidConstraints);
+        done();
+      });
+    });
+
     it('Should reject with AirConsole.USERMEDIA_ERROR.invalidConstraints with constraint { video: { width: 1280, height: 720 } }', function(done) {
       airconsole.getUserMedia({ video: { width: 1280, height: 720 } }).catch(function(error) {
         expect(error.name).toBe("AirConsole.UserMediaError");
