@@ -66,11 +66,11 @@ function testUserMediaPermissions() {
 
     // Group 1: Early synchronous rejections
 
-    it('Should reject with AirConsole.USERMEDIA_ERROR.notSupportedOnScreen when device_id is SCREEN', function(done) {
+    it('Should reject with AirConsole.USER_MEDIA_ERROR_TYPE.notSupportedOnScreen when device_id is SCREEN', function(done) {
       airconsole.device_id = AirConsole.SCREEN;
       airconsole.getUserMedia({ audio: true }).catch(function(error) {
         expect(error.name).toBe("AirConsole.UserMediaError");
-        expect(error.message).toBe(AirConsole.USERMEDIA_ERROR.notSupportedOnScreen);
+        expect(error.message).toBe(AirConsole.USER_MEDIA_ERROR_TYPE.notSupportedOnScreen);
         done();
       });
     });
@@ -79,64 +79,64 @@ function testUserMediaPermissions() {
       airconsole.device_id = undefined;
       airconsole.getUserMedia({ audio: true }).catch(function(error) {
         expect(error.name).toBe("AirConsole.UserMediaError");
-        expect(error.message).toBe(AirConsole.USERMEDIA_ERROR.notReady);
+        expect(error.message).toBe(AirConsole.USER_MEDIA_ERROR_TYPE.notReady);
         done();
       });
     });
 
-    it('Should reject with AirConsole.USERMEDIA_ERROR.alreadyPending when a request is already in progress', function(done) {
+    it('Should reject with AirConsole.USER_MEDIA_ERROR_TYPE.alreadyPending when a request is already in progress', function(done) {
       airconsole.mediaPermissionPending_ = true;
       airconsole.getUserMedia({ audio: true }).catch(function(error) {
         expect(error.name).toBe("AirConsole.UserMediaError");
-        expect(error.message).toBe(AirConsole.USERMEDIA_ERROR.alreadyPending);
+        expect(error.message).toBe(AirConsole.USER_MEDIA_ERROR_TYPE.alreadyPending);
         done();
       });
     });
 
-    it('Should reject with AirConsole.USERMEDIA_ERROR.invalidConstraints when constraints are null', function(done) {
+    it('Should reject with AirConsole.USER_MEDIA_ERROR_TYPE.invalidConstraints when constraints are null', function(done) {
       airconsole.getUserMedia(null).catch(function(error) {
         expect(error.name).toBe("AirConsole.UserMediaError");
-        expect(error.message).toBe(AirConsole.USERMEDIA_ERROR.invalidConstraints);
+        expect(error.message).toBe(AirConsole.USER_MEDIA_ERROR_TYPE.invalidConstraints);
         done();
       });
     });
 
-    it('Should reject with AirConsole.USERMEDIA_ERROR.invalidConstraints with constraint { audio: true, video: true }', function(done) {
+    it('Should reject with AirConsole.USER_MEDIA_ERROR_TYPE.invalidConstraints with constraint { audio: true, video: true }', function(done) {
       airconsole.getUserMedia({ video: true }).catch(function(error) {
         expect(error.name).toBe("AirConsole.UserMediaError");
-        expect(error.message).toBe(AirConsole.USERMEDIA_ERROR.invalidConstraints);
+        expect(error.message).toBe(AirConsole.USER_MEDIA_ERROR_TYPE.invalidConstraints);
         done();
       });
     });
 
-    it('Should reject with AirConsole.USERMEDIA_ERROR.invalidConstraints with constraint { video: true }', function(done) {
+    it('Should reject with AirConsole.USER_MEDIA_ERROR_TYPE.invalidConstraints with constraint { video: true }', function(done) {
       airconsole.getUserMedia({ video: true }).catch(function(error) {
         expect(error.name).toBe("AirConsole.UserMediaError");
-        expect(error.message).toBe(AirConsole.USERMEDIA_ERROR.invalidConstraints);
+        expect(error.message).toBe(AirConsole.USER_MEDIA_ERROR_TYPE.invalidConstraints);
         done();
       });
     });
 
-    it('Should reject with AirConsole.USERMEDIA_ERROR.invalidConstraints with constraint { audio: false }', function(done) {
+    it('Should reject with AirConsole.USER_MEDIA_ERROR_TYPE.invalidConstraints with constraint { audio: false }', function(done) {
       airconsole.getUserMedia({ audio: false }).catch(function(error) {
         expect(error.name).toBe("AirConsole.UserMediaError");
-        expect(error.message).toBe(AirConsole.USERMEDIA_ERROR.invalidConstraints);
+        expect(error.message).toBe(AirConsole.USER_MEDIA_ERROR_TYPE.invalidConstraints);
         done();
       });
     });
 
-    it('Should reject with AirConsole.USERMEDIA_ERROR.invalidConstraints with constraint { video: { width: 1280, height: 720 } }', function(done) {
+    it('Should reject with AirConsole.USER_MEDIA_ERROR_TYPE.invalidConstraints with constraint { video: { width: 1280, height: 720 } }', function(done) {
       airconsole.getUserMedia({ video: { width: 1280, height: 720 } }).catch(function(error) {
         expect(error.name).toBe("AirConsole.UserMediaError");
-        expect(error.message).toBe(AirConsole.USERMEDIA_ERROR.invalidConstraints);
+        expect(error.message).toBe(AirConsole.USER_MEDIA_ERROR_TYPE.invalidConstraints);
         done();
       });
     });
 
-    it('Should reject with AirConsole.USERMEDIA_ERROR.invalidConstraints when constraints have no audio property', function(done) {
+    it('Should reject with AirConsole.USER_MEDIA_ERROR_TYPE.invalidConstraints when constraints have no audio property', function(done) {
       airconsole.getUserMedia({ foo: true }).catch(function(error) {
         expect(error.name).toBe("AirConsole.UserMediaError");
-        expect(error.message).toBe(AirConsole.USERMEDIA_ERROR.invalidConstraints);
+        expect(error.message).toBe(AirConsole.USER_MEDIA_ERROR_TYPE.invalidConstraints);
         done();
       });
     });
@@ -151,7 +151,7 @@ function testUserMediaPermissions() {
 
     // Group 2: resolveMediaPermission_ via platform event responses
 
-    it('Should reject AirConsole.USERMEDIA_ERROR.permissionDenied on userMediaPermissionDenied', function(done) {
+    it('Should reject AirConsole.USER_MEDIA_ERROR_TYPE.permissionDenied on userMediaPermissionDenied', function(done) {
       airconsole.getUserMedia({ audio: true }).catch(function(error) {
         expect(error.name).toBe('AirConsole.UserMediaError');
         expect(error.message).toBe('PermissionDenied');
@@ -215,10 +215,10 @@ function testUserMediaPermissions() {
 
     // Group 3: Timeout
 
-    it('Should reject with AirConsole.USERMEDIA_ERROR.timeout after 30000ms', function(done) {
+    it('Should reject with AirConsole.USER_MEDIA_ERROR_TYPE.timeout after 30000ms', function(done) {
       airconsole.getUserMedia({ audio: true }).catch(function(error) {
         expect(error.name).toBe("AirConsole.UserMediaError");
-        expect(error.message).toBe(AirConsole.USERMEDIA_ERROR.timeout);
+        expect(error.message).toBe(AirConsole.USER_MEDIA_ERROR_TYPE.timeout);
         done();
       });
       jasmine.clock().tick(30001);
@@ -588,7 +588,7 @@ function testUserMediaPermissions() {
       spyOn(airconsole, 'sendEvent_');
       airconsole.getUserMedia({ audio: true }).catch(function (error) {
         expect(error.name).toBe('AirConsole.UserMediaError');
-        expect(error.message).toBe(AirConsole.USERMEDIA_ERROR.timeout);
+        expect(error.message).toBe(AirConsole.USER_MEDIA_ERROR_TYPE.timeout);
         done();
       });
       airconsole.destroy();

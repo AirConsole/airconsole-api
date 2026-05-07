@@ -136,7 +136,7 @@ AirConsole.VIBRATE = {
  * Error message identifiers returned in the `error.message` field of a failed getUserMedia result.
  * These follow the same single-word naming convention as browser DOMException names.
  *
- * @typedef {Object} AirConsole.USERMEDIA_ERROR
+ * @typedef {Object} AirConsole.USER_MEDIA_ERROR_TYPE
  * @property {string} notSupportedOnScreen - getUserMedia cannot be called on the screen device.
  * @property {string} notReady - AirConsole is not yet ready (device_id not assigned).
  * @property {string} alreadyPending - A getUserMedia request is already in progress.
@@ -146,7 +146,7 @@ AirConsole.VIBRATE = {
  *
  * @see AirConsole.prototype.getUserMedia
  */
-AirConsole.USERMEDIA_ERROR = {
+AirConsole.USER_MEDIA_ERROR_TYPE = {
   notSupportedOnScreen: "NotSupportedOnScreen",
   notReady: "NotReady",
   alreadyPending: "AlreadyPending",
@@ -161,7 +161,7 @@ AirConsole.USERMEDIA_ERROR = {
  *
  * @extends {Error}
  *
- * @param {AirConsole.USERMEDIA_ERROR} message - The message is of type AirConsole.USERMEDIA_ERROR.
+ * @param {AirConsole.USER_MEDIA_ERROR_TYPE} message - The message is of type AirConsole.USER_MEDIA_ERROR_TYPE.
  */
 class AirConsoleUserMediaError extends Error {
   constructor(message) {
@@ -737,7 +737,8 @@ AirConsole.prototype.vibrate = function(options) {
 /**
  * Gets called on all other devices in the game as a result of to a successful request to getUserMedia on the specific
  *  device with device_id.
- * On the requesting device, the getUserMedia promise will provide the result immediately.
+ * On the requesting device, this callback is not invoked at this time.
+ * The requesting device currently needs to rely on the getUserMedia promise which will provide the result at the point of promise resolution.
  * @abstract
  * @param {number} device_id - The device_id of the controller that was granted access.
  *
@@ -754,7 +755,8 @@ AirConsole.prototype.onUserMediaAccessGranted = function(device_id) {};
 /**
  * Gets called on all other devices in the game as a result of to a denied request to getUserMedia on the specific
  *  device with device_id.
- * On the requesting device, the getUserMedia promise will provide the result immediately.
+ * On the requesting device, this callback is not invoked at this time.
+ * The requesting device currently needs to rely on the getUserMedia promise which will provide the result at the point of promise resolution.
  * @abstract
  * @param {number} device_id - The device_id of the controller.
  *
@@ -787,9 +789,9 @@ const mediaPermissionCallbacks_ = new WeakMap();
  *
  * @param {AirConsole~GetUserMediaConstraint} constraints - Media constraints. Must include `audio: true`.
  *   Video constraints are not supported and will cause the promise to reject with
- *   {@link AirConsole.USERMEDIA_ERROR}.invalidConstraints.
+ *   {@link AirConsole.USER_MEDIA_ERROR_TYPE}.invalidConstraints.
  * @return {Promise<MediaStream>} Resolves with the granted {@link https://developer.mozilla.org/en-US/docs/Web/API/MediaStream MediaStream}
- *   on success. Rejects with {AirConsoleUserMediaError} (see {@link AirConsole.USERMEDIA_ERROR}) for
+ *   on success. Rejects with {AirConsoleUserMediaError} (see {@link AirConsole.USER_MEDIA_ERROR_TYPE}) for
  *   AirConsole-specific failures, or with a native
  *   {@link https://developer.mozilla.org/en-US/docs/Web/API/MediaDevices/getUserMedia DOMException}
  *   (e.g. `NotAllowedError`, `NotFoundError`) when the browser itself denies the request.
@@ -804,7 +806,7 @@ const mediaPermissionCallbacks_ = new WeakMap();
  *   // stream.getTracks().forEach(function(t) { t.stop(); });
  * }).catch(function(error) {
  *   if (error.name === 'AirConsole.UserMediaError') {
- *     // AirConsole-specific error, see AirConsole.USERMEDIA_ERROR for possible values
+ *     // AirConsole-specific error, see AirConsole.USER_MEDIA_ERROR_TYPE for possible values
  *     console.error('AirConsole media error:', error.message);
  *   } else {
  *     // Native browser error (e.g. NotAllowedError, NotFoundError, AbortError)
@@ -812,28 +814,28 @@ const mediaPermissionCallbacks_ = new WeakMap();
  *   }
  * });
  *
- * @see AirConsole.USERMEDIA_ERROR
+ * @see AirConsole.USER_MEDIA_ERROR_TYPE
  * @see AirConsole.prototype.onUserMediaAccessGranted
  * @see AirConsole.prototype.onUserMediaAccessDenied
  */
 AirConsole.prototype.getUserMedia = function getUserMedia(constraints) {
   if (this.device_id === AirConsole.SCREEN) {
-    return Promise.reject(new AirConsoleUserMediaError(AirConsole.USERMEDIA_ERROR.notSupportedOnScreen));
+    return Promise.reject(new AirConsoleUserMediaError(AirConsole.USER_MEDIA_ERROR_TYPE.notSupportedOnScreen));
   }
   if (this.device_id === undefined) {
-    return Promise.reject(new AirConsoleUserMediaError(AirConsole.USERMEDIA_ERROR.notReady));
+    return Promise.reject(new AirConsoleUserMediaError(AirConsole.USER_MEDIA_ERROR_TYPE.notReady));
   }
   if (this.mediaPermissionPending_) {
-    return Promise.reject(new AirConsoleUserMediaError(AirConsole.USERMEDIA_ERROR.alreadyPending));
+    return Promise.reject(new AirConsoleUserMediaError(AirConsole.USER_MEDIA_ERROR_TYPE.alreadyPending));
   }
   if (!constraints || !constraints.audio) {
-    return Promise.reject(new AirConsoleUserMediaError(AirConsole.USERMEDIA_ERROR.invalidConstraints));
+    return Promise.reject(new AirConsoleUserMediaError(AirConsole.USER_MEDIA_ERROR_TYPE.invalidConstraints));
   }
   if (!!constraints.video) {
-    return Promise.reject(new AirConsoleUserMediaError(AirConsole.USERMEDIA_ERROR.invalidConstraints));
+    return Promise.reject(new AirConsoleUserMediaError(AirConsole.USER_MEDIA_ERROR_TYPE.invalidConstraints));
   }
   if (!('audio' in constraints)) {
-    return Promise.reject(new AirConsoleUserMediaError(AirConsole.USERMEDIA_ERROR.invalidConstraints));
+    return Promise.reject(new AirConsoleUserMediaError(AirConsole.USER_MEDIA_ERROR_TYPE.invalidConstraints));
   }
 
   var me = this;
@@ -842,7 +844,7 @@ AirConsole.prototype.getUserMedia = function getUserMedia(constraints) {
     me.mediaPermissionPending_ = true;
     mediaPermissionCallbacks_.set(me, { resolve: resolve, reject: reject });
     me.mediaPermissionTimeout_ = setTimeout(function() {
-      me.rejectMediaPermission_(new AirConsoleUserMediaError(AirConsole.USERMEDIA_ERROR.timeout));
+      me.rejectMediaPermission_(new AirConsoleUserMediaError(AirConsole.USER_MEDIA_ERROR_TYPE.timeout));
     }, 30000);
 
     // Send the request to the platform to decide where and how the user media request needs to take place based on
@@ -882,7 +884,7 @@ AirConsole.prototype.rejectMediaPermission_ = function rejectMediaPermission_(er
 AirConsole.prototype.destroy = function destroy() {
   window.removeEventListener('message', this.messageEventListener_);
   if (this.mediaPermissionPending_) {
-    this.rejectMediaPermission_(new AirConsoleUserMediaError(AirConsole.USERMEDIA_ERROR.timeout));
+    this.rejectMediaPermission_(new AirConsoleUserMediaError(AirConsole.USER_MEDIA_ERROR_TYPE.timeout));
   } else if (this.mediaPermissionTimeout_) {
     clearTimeout(this.mediaPermissionTimeout_);
     this.mediaPermissionTimeout_ = undefined;
@@ -1679,7 +1681,7 @@ AirConsole.prototype.onPostMessage_ = function(event) {
         me.cachedMediaError_ = null;
         me.rejectMediaPermission_(cachedError);
       } else {
-        const error = new AirConsoleUserMediaError(AirConsole.USERMEDIA_ERROR.permissionDenied);
+        const error = new AirConsoleUserMediaError(AirConsole.USER_MEDIA_ERROR_TYPE.permissionDenied);
         me.rejectMediaPermission_(error);
       }
     } else if (type === 'userMediaPermissionGranted' || type === 'promptUserMediaPermission') {

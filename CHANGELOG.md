@@ -23,7 +23,7 @@ Release notes follow the [keep a changelog](https://keepachangelog.com/en/1.0.0/
 
 - `getUserMedia` now uses standard Promise resolve/reject semantics: resolves with `MediaStream` on success, rejects with typed `Error` on failure. Removes the `{ success, stream?, reason?, error? }` envelope.
 - Browser `DOMException` objects are preserved across the platform roundtrip via a cache-and-echo pattern (`cachedMediaError_`), so `error instanceof DOMException` works in `.catch()`.
-- Video constraints are now explicitly rejected with `USERMEDIA_ERROR.invalidConstraints` instead of being silently ignored.
+- Video constraints are now explicitly rejected with `USER_MEDIA_ERROR_TYPE.invalidConstraints` instead of being silently ignored.
 - `onUserMediaAccessGranted(device_id)` and `onUserMediaAccessDenied(device_id)` no longer carry a second parameter.
 
 ### Removed
