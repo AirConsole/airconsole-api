@@ -215,13 +215,13 @@ function testUserMediaPermissions() {
 
     // Group 3: Timeout
 
-    it('Should reject with AirConsole.USER_MEDIA_ERROR_TYPE.timeout after 30000ms', function(done) {
+    it('Should reject with AirConsole.USER_MEDIA_ERROR_TYPE.timeout after 45000ms', function(done) {
       airconsole.getUserMedia({ audio: true }).catch(function(error) {
         expect(error.name).toBe("AirConsole.UserMediaError");
         expect(error.message).toBe(AirConsole.USER_MEDIA_ERROR_TYPE.timeout);
         done();
       });
-      jasmine.clock().tick(30001);
+      jasmine.clock().tick(45001);
     });
   });
 
@@ -285,10 +285,7 @@ function testUserMediaPermissions() {
           .catch(function(error) {
             expect(error).toBe(domException);
             expect(error).toBeInstanceOf(DOMException);
-            expect(airconsole.sendEvent_).toHaveBeenCalledWith(
-              'userMediaPermissionDenied',
-              jasmine.objectContaining({ errorType: domException.name })
-            );
+            expect(airconsole.sendEvent_).toHaveBeenCalledWith('userMediaPermissionDenied');
             done();
           });
         promptUserMediaPermission();
@@ -303,10 +300,7 @@ function testUserMediaPermissions() {
         const domException = makeNotAllowedError();
         spyGetUserMediaReject(domException);
         airconsole.getUserMedia({ audio: true }).catch(function () {
-          expect(airconsole.sendEvent_).toHaveBeenCalledWith(
-            'userMediaPermissionDenied',
-              jasmine.objectContaining({ errorType: domException.name })
-          );
+          expect(airconsole.sendEvent_).toHaveBeenCalledWith('userMediaPermissionDenied');
           done();
         });
         promptUserMediaPermission();
@@ -482,7 +476,7 @@ function testUserMediaPermissions() {
     beforeEach(function () {
       initAirConsoleAsController();
       // Simulate the platform echo for denial events.
-      // In the new flow, the controller caches the error locally. Platform echoes back with errorType.
+      // In the new flow, the controller caches the error locally.
       spyOn(airconsole, 'sendEvent_').and.callFake(function (eventType, eventData) {
         // Pipe the event back
         dispatchCustomMessageEvent({
