@@ -644,8 +644,8 @@ function testUserMediaPermissions() {
 
       // Trigger promptUserMediaPermission to start the browser flow
       dispatchCustomMessageEvent({ action: 'event', type: 'promptUserMediaPermission' });
-      // Fire the 30s timeout
-      jasmine.clock().tick(30001);
+      // Fire the 45s timeout
+      jasmine.clock().tick(45001);
     });
 
     it('Should stop orphaned stream tracks when browser succeeds after timeout', function (done) {
@@ -693,7 +693,7 @@ function testUserMediaPermissions() {
       });
 
       dispatchCustomMessageEvent({ action: 'event', type: 'promptUserMediaPermission' });
-      jasmine.clock().tick(30001);
+      jasmine.clock().tick(45001);
     });
   });
 
