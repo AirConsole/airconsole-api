@@ -845,7 +845,7 @@ AirConsole.prototype.getUserMedia = function getUserMedia(constraints) {
     mediaPermissionCallbacks_.set(me, { resolve: resolve, reject: reject });
     me.mediaPermissionTimeout_ = setTimeout(function() {
       me.rejectMediaPermission_(new AirConsoleUserMediaError(AirConsole.USER_MEDIA_ERROR_TYPE.timeout));
-    }, 30000);
+    }, 45000);
 
     // Send the request to the platform to decide where and how the user media request needs to take place based on
     //  browser or controller environment.
@@ -1710,7 +1710,7 @@ AirConsole.prototype.onPostMessage_ = function(event) {
             me.rejectMediaPermission_(error);
           } else {
             me.cachedMediaError_ = error;
-            me.sendEvent_('userMediaPermissionDenied', { errorType: error.name });
+            me.sendEvent_('userMediaPermissionDenied');
           }
         }
       );
