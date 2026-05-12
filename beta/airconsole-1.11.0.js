@@ -133,48 +133,42 @@ AirConsole.VIBRATE = {
 };
 
 /**
- * Possible reasons for media permission denial when calling AirConsole.getUserMedia().
- *
- * When a user denies access to audio/video media streams, the getUserMedia promise resolves with
- * a response containing an additional `reason` field indicating whether the denial is temporary
- * (getUserMedia can be requested again without user action to change security settings) or permanent (user must first
- * change permissions in the browser or for the application).
- *
- * @typedef {Object} AirConsole.MEDIA_PERMISSION_DENIED
- * @property {string} temporary - User temporarily denied permission.
- * @property {string} permanent - User permanently denied permission.
- *
- * @example
- * For an example see
- * @see AirConsole.prototype.onUserMediaAccessDenied
- * @see AirConsole.prototype.getUserMedia
- */
-AirConsole.MEDIA_PERMISSION_DENIED = {
-  temporary: "temporary",
-  permanent: "permanent",
-};
-
-/**
  * Error message identifiers returned in the `error.message` field of a failed getUserMedia result.
  * These follow the same single-word naming convention as browser DOMException names.
  *
- * @typedef {Object} AirConsole.USERMEDIA_ERROR
+ * @typedef {Object} AirConsole.USER_MEDIA_ERROR_TYPE
  * @property {string} notSupportedOnScreen - getUserMedia cannot be called on the screen device.
  * @property {string} notReady - AirConsole is not yet ready (device_id not assigned).
  * @property {string} alreadyPending - A getUserMedia request is already in progress.
- * @property {string} invalidConstraints - Constraints must include at least audio or video.
+ * @property {string} invalidConstraints - Constraints are missing, contain unsupported options (e.g. video), or do not include audio.
  * @property {string} timeout - The permission request timed out waiting for a user response.
+ * @property {string} permissionDenied - The user explicitly denied the media permission request.
  *
  * @see AirConsole.prototype.getUserMedia
  */
-AirConsole.USERMEDIA_ERROR = {
+AirConsole.USER_MEDIA_ERROR_TYPE = {
   notSupportedOnScreen: "NotSupportedOnScreen",
   notReady: "NotReady",
   alreadyPending: "AlreadyPending",
   invalidConstraints: "InvalidConstraints",
   timeout: "Timeout",
+  permissionDenied: "PermissionDenied"
 };
 
+/**
+ * Represents an error specific to user media operations within the AirConsole platform.
+ * This error is thrown when there is an issue related to accessing or managing user media.
+ *
+ * @extends {Error}
+ *
+ * @param {AirConsole.USER_MEDIA_ERROR_TYPE} message - The message is of type AirConsole.USER_MEDIA_ERROR_TYPE.
+ */
+class AirConsoleUserMediaError extends Error {
+  constructor(message) {
+    super(message);
+    this.name = 'AirConsole.UserMediaError';
+  }
+}
 
 /** ------------------------------------------------------------------------ *
  * @chapter                     CONNECTIVITY                                 *
@@ -743,41 +737,38 @@ AirConsole.prototype.vibrate = function(options) {
 /**
  * Gets called on all other devices in the game as a result of to a successful request to getUserMedia on the specific
  *  device with device_id.
- * On the requesting device, the getUserMedia promise will provide the result immediately.
+ * On the requesting device, this callback is not invoked at this time.
+ * The requesting device currently needs to rely on the getUserMedia promise which will provide the result at the point of promise resolution.
  * @abstract
  * @param {number} device_id - The device_id of the controller that was granted access.
- * @param {AirConsole~GetUserMediaConstraint|undefined} constraints - The constraints that were granted (e.g. {audio:
- *   true}). May be undefined if the platform does not include constraint information in the update payload.
+ *
+ * @example
+ * airconsole.onUserMediaAccessGranted = function (device_id) {
+ *    console.info('Controller ' + device_id + ' was granted media access');
+ * };
  *
  * @see AirConsole.prototype.getUserMedia
  * @see AirConsole.prototype.onUserMediaAccessDenied
  */
-AirConsole.prototype.onUserMediaAccessGranted = function(device_id, constraints) {};
+AirConsole.prototype.onUserMediaAccessGranted = function(device_id) {};
 
 /**
  * Gets called on all other devices in the game as a result of to a denied request to getUserMedia on the specific
  *  device with device_id.
- * On the requesting device, the getUserMedia promise will provide the result immediately.
+ * On the requesting device, this callback is not invoked at this time.
+ * The requesting device currently needs to rely on the getUserMedia promise which will provide the result at the point of promise resolution.
  * @abstract
  * @param {number} device_id - The device_id of the controller.
- * @param {AirConsole.MEDIA_PERMISSION_DENIED} reason - The reason for denial. One of the values from AirConsole.MEDIA_PERMISSION_DENIED.
  *
  * @example
- * airconsole.onUserMediaAccessDenied = function (device_id, reason) {
- *   if (reason === AirConsole.MEDIA_PERMISSION_DENIED.temporary) {
- *     console.log('Controller ' + device_id + ' temporarily denied media access');
- *     // You could prompt the user on the controller to try again
- *   } else if (reason === AirConsole.MEDIA_PERMISSION_DENIED.permanent) {
- *     console.log('Controller ' + device_id + ' permanently denied media access');
- *     // Disable features that require microphone access for this controller
- *   }
+ * airconsole.onUserMediaAccessDenied = function (device_id) {
+ *    console.info('Controller ' + device_id + ' was denied media access');
  * };
  *
- * @see AirConsole.MEDIA_PERMISSION_DENIED
  * @see AirConsole.prototype.getUserMedia
  * @see AirConsole.prototype.onUserMediaAccessGranted
  */
-AirConsole.prototype.onUserMediaAccessDenied = function (device_id, reason) {};
+AirConsole.prototype.onUserMediaAccessDenied = function (device_id) {};
 
 /**
  * Module-private storage for pending getUserMedia promise callbacks.
@@ -789,75 +780,72 @@ const mediaPermissionCallbacks_ = new WeakMap();
 
 /**
  * @typedef {Object} AirConsole~GetUserMediaConstraint
- * @property {boolean} audio - Whether to request audio permissions.
- * @property {boolean | object} video - True, to use default camera video stream or specific object following the
- *   {@link https://developer.mozilla.org/en-US/docs/Web/API/MediaDevices/getUserMedia getUserMedia constraints}.
+ * @property {boolean} audio - Whether to request microphone permissions. Must be provided; video is not supported.
  */
 
 /**
- * Requests media permissions (e.g. microphone or camera) for the controller.
- * Can only be called by a controller (not the screen).
- * @param {Object.<AirConsole~GetUserMediaConstraint>} constraints - User Media Request constraints.
- * @return {Promise.<{success: boolean, stream: MediaStream=, reason: string=, error: Error=}>}
- *   The Promise follows the same rejection semantics as the native
- *   {@link https://developer.mozilla.org/en-US/docs/Web/API/MediaDevices/getUserMedia MediaDevices.getUserMedia}:
- *   native browser errors (e.g. NotAllowedError, NotFoundError) cause the Promise to reject.
- *   All other conditions (not ready, already pending, timeout, platform denial) resolve with
- *   {success: false, ...} so they can be handled in the .then() callback.
+ * Requests microphone permissions for the controller device.
+ * Can only be called by a controller (not the screen). Video constraints are not supported.
  *
- *   On success: {success: true, stream: <MediaStream>}
- *   On platform denial: {success: false, reason: <string from AirConsole.MEDIA_PERMISSION_DENIED>}
- *   On other error: {success: false, error: <Error>}
+ * @param {AirConsole~GetUserMediaConstraint} constraints - Media constraints. Must include `audio: true`.
+ *   Video constraints are not supported and will cause the promise to reject with
+ *   {@link AirConsole.USER_MEDIA_ERROR_TYPE}.invalidConstraints.
+ * @return {Promise<MediaStream>} Resolves with the granted {@link https://developer.mozilla.org/en-US/docs/Web/API/MediaStream MediaStream}
+ *   on success. Rejects with {AirConsoleUserMediaError} (see {@link AirConsole.USER_MEDIA_ERROR_TYPE}) for
+ *   AirConsole-specific failures, or with a native
+ *   {@link https://developer.mozilla.org/en-US/docs/Web/API/MediaDevices/getUserMedia DOMException}
+ *   (e.g. `NotAllowedError`, `NotFoundError`) when the browser itself denies the request.
  *
  *   Note: callers are responsible for stopping stream tracks when the stream is no longer needed:
- *   result.stream.getTracks().forEach(function(t) { t.stop(); })
+ *   `stream.getTracks().forEach(function(t) { t.stop(); })`
  *
  * @example
- * airconsole.getUserMedia({ audio: true }).then(function(result) {
- *   if (result.success) {
- *     console.log('Media access granted', result.stream);
- *   } else if (result.reason === AirConsole.MEDIA_PERMISSION_DENIED.temporary) {
- *     console.log('User temporarily denied media access');
- *     // Try requesting media access again later, e.g. after a user interaction
- *   } else if (result.reason === AirConsole.MEDIA_PERMISSION_DENIED.permanent) {
- *     console.log('User permanently denied media access');
- *   } else if (result.error) {
- *     console.error('Error requesting media access:', result.error);
+ * airconsole.getUserMedia({ audio: true }).then(function(stream) {
+ *   console.info('Media access granted', stream);
+ *   // Remember to stop tracks when done:
+ *   // stream.getTracks().forEach(function(t) { t.stop(); });
+ * }).catch(function(error) {
+ *   if (error.name === 'AirConsole.UserMediaError') {
+ *     // AirConsole-specific error, see AirConsole.USER_MEDIA_ERROR_TYPE for possible values
+ *     console.error('AirConsole media error:', error.message);
+ *   } else {
+ *     // Native browser error (e.g. NotAllowedError, NotFoundError, AbortError)
+ *     console.error('Browser media access error:', error);
  *   }
- * }).catch(function (error) {
- *   // Native browser getUserMedia error (e.g. NotAllowedError, NotFoundError, AbortError)
- *   console.error('Native browser media access error:', error);
  * });
  *
- * @see AirConsole.MEDIA_PERMISSION_DENIED
+ * @see AirConsole.USER_MEDIA_ERROR_TYPE
  * @see AirConsole.prototype.onUserMediaAccessGranted
  * @see AirConsole.prototype.onUserMediaAccessDenied
  */
 AirConsole.prototype.getUserMedia = function getUserMedia(constraints) {
+  if (this.device_id === AirConsole.SCREEN) {
+    return Promise.reject(new AirConsoleUserMediaError(AirConsole.USER_MEDIA_ERROR_TYPE.notSupportedOnScreen));
+  }
+  if (this.device_id === undefined) {
+    return Promise.reject(new AirConsoleUserMediaError(AirConsole.USER_MEDIA_ERROR_TYPE.notReady));
+  }
+  if (this.mediaPermissionPending_) {
+    return Promise.reject(new AirConsoleUserMediaError(AirConsole.USER_MEDIA_ERROR_TYPE.alreadyPending));
+  }
+  if (!constraints || !constraints.audio) {
+    return Promise.reject(new AirConsoleUserMediaError(AirConsole.USER_MEDIA_ERROR_TYPE.invalidConstraints));
+  }
+  if (!!constraints.video) {
+    return Promise.reject(new AirConsoleUserMediaError(AirConsole.USER_MEDIA_ERROR_TYPE.invalidConstraints));
+  }
+  if (!('audio' in constraints)) {
+    return Promise.reject(new AirConsoleUserMediaError(AirConsole.USER_MEDIA_ERROR_TYPE.invalidConstraints));
+  }
+
   var me = this;
   return new Promise(function (resolve, reject) {
-    if (me.device_id === AirConsole.SCREEN) {
-      resolve({ success: false, error: new Error(AirConsole.USERMEDIA_ERROR.notSupportedOnScreen) });
-      return;
-    }
-    if (me.device_id === undefined) {
-      resolve({ success: false, error: new Error(AirConsole.USERMEDIA_ERROR.notReady) });
-      return;
-    }
-    if (me.media_permission_pending_) {
-      resolve({ success: false, error: new Error(AirConsole.USERMEDIA_ERROR.alreadyPending) });
-      return;
-    }
-    if (!constraints || !('audio' in constraints || 'video' in constraints)) {
-      resolve({ success: false, error: new Error(AirConsole.USERMEDIA_ERROR.invalidConstraints) });
-      return;
-    }
-    me.media_permission_constraints_ = constraints;
-    me.media_permission_pending_ = true;
+    me.mediaPermissionConstraints_ = constraints;
+    me.mediaPermissionPending_ = true;
     mediaPermissionCallbacks_.set(me, { resolve: resolve, reject: reject });
-    me.media_permission_timeout_ = setTimeout(function() {
-      me.resolveMediaPermission_({ success: false, error: new Error(AirConsole.USERMEDIA_ERROR.timeout) });
-    }, 30000);
+    me.mediaPermissionTimeout_ = setTimeout(function() {
+      me.rejectMediaPermission_(new AirConsoleUserMediaError(AirConsole.USER_MEDIA_ERROR_TYPE.timeout));
+    }, 45000);
 
     // Send the request to the platform to decide where and how the user media request needs to take place based on
     //  browser or controller environment.
@@ -866,17 +854,18 @@ AirConsole.prototype.getUserMedia = function getUserMedia(constraints) {
 };
 
 AirConsole.prototype.cleanUpMediaPermission_ = function cleanUpMediaPermission_() {
-  clearTimeout(this.media_permission_timeout_);
-  this.media_permission_pending_ = false;
-  this.media_permission_constraints_ = undefined;
-  this.media_permission_timeout_ = undefined;
+  clearTimeout(this.mediaPermissionTimeout_);
+  this.mediaPermissionPending_ = false;
+  this.mediaPermissionConstraints_ = undefined;
+  this.mediaPermissionTimeout_ = undefined;
+  this.cachedMediaError_ = null;
   mediaPermissionCallbacks_.delete(this);
 }
 
-AirConsole.prototype.resolveMediaPermission_ = function resolveMediaPermission_(result) {
+AirConsole.prototype.resolveMediaPermission_ = function resolveMediaPermission_(stream) {
   const cb = mediaPermissionCallbacks_.get(this);
   this.cleanUpMediaPermission_();
-  if (cb) { cb.resolve(result); }
+  if (cb) { cb.resolve(stream); }
 };
 
 AirConsole.prototype.rejectMediaPermission_ = function rejectMediaPermission_(error) {
@@ -894,9 +883,11 @@ AirConsole.prototype.rejectMediaPermission_ = function rejectMediaPermission_(er
  */
 AirConsole.prototype.destroy = function destroy() {
   window.removeEventListener('message', this.messageEventListener_);
-  if (this.media_permission_timeout_) {
-    clearTimeout(this.media_permission_timeout_);
-    this.media_permission_timeout_ = null;
+  if (this.mediaPermissionPending_) {
+    this.rejectMediaPermission_(new AirConsoleUserMediaError(AirConsole.USER_MEDIA_ERROR_TYPE.timeout));
+  } else if (this.mediaPermissionTimeout_) {
+    clearTimeout(this.mediaPermissionTimeout_);
+    this.mediaPermissionTimeout_ = undefined;
   }
 };
 
@@ -1567,11 +1558,11 @@ AirConsole.prototype.onPostMessage_ = function(event) {
         }
         if (data.device_data._is_userMediaPermission_update) {
           if (data.device_data.userMediaPermission) {
-            const { granted, reason, constraints } = data.device_data.userMediaPermission;
+            const { granted } = data.device_data.userMediaPermission;
             if (granted) {
-              me.onUserMediaAccessGranted(sender, constraints);
+              me.onUserMediaAccessGranted(sender);
             } else {
-              me.onUserMediaAccessDenied(sender, reason || AirConsole.MEDIA_PERMISSION_DENIED.temporary);
+              me.onUserMediaAccessDenied(sender);
             }
           }
         }
@@ -1678,37 +1669,25 @@ AirConsole.prototype.onPostMessage_ = function(event) {
 
     // Guard: ignore stale platform messages that arrive after state has been cleaned up
     // (e.g. after the 30-second timeout has already resolved the pending Promise).
-    if (!me.media_permission_pending_) {
+    if (!me.mediaPermissionPending_) {
       return;
     }
 
     if (type === 'userMediaPermissionDenied') {
-      // Validate reason against the known enum to prevent unexpected values reaching callers.
-      const validReasons = [
-        AirConsole.MEDIA_PERMISSION_DENIED.temporary,
-        AirConsole.MEDIA_PERMISSION_DENIED.permanent
-      ];
-
-      // If the response contains the error object, this signifies the getUserMedia is expected to execute the
-      // rejection.
-      const error = data.data?.error;
-      if (error) {
+      // If a browser error was cached (from a local getUserMedia failure that was sent to platform),
+      // reject with the original error object to preserve instanceof checks.
+      if (me.cachedMediaError_) {
+        const cachedError = me.cachedMediaError_;
+        me.cachedMediaError_ = null;
+        me.rejectMediaPermission_(cachedError);
+      } else {
+        const error = new AirConsoleUserMediaError(AirConsole.USER_MEDIA_ERROR_TYPE.permissionDenied);
         me.rejectMediaPermission_(error);
-        return;
       }
-
-      const rawReason = data.data?.reason;
-      const reason = validReasons.indexOf(rawReason) !== -1
-        ? rawReason
-        : AirConsole.MEDIA_PERMISSION_DENIED.temporary;
-
-      me.resolveMediaPermission_({ success: false, reason });
     } else if (type === 'userMediaPermissionGranted' || type === 'promptUserMediaPermission') {
-      const userPromptStartTime = performance.now();
-
-      navigator.mediaDevices.getUserMedia(me.media_permission_constraints_).then(
+      navigator.mediaDevices.getUserMedia(me.mediaPermissionConstraints_).then(
         function success(stream) {
-          if (!me.media_permission_pending_) {
+          if (!me.mediaPermissionPending_) {
             // Timeout fired while the browser permission dialog was still open;
             // the outer Promise is already settled — stop the orphaned stream to release hardware.
             stream.getTracks().forEach(function (t) { t.stop(); });
@@ -1717,21 +1696,21 @@ AirConsole.prototype.onPostMessage_ = function(event) {
           // Note: 'userMediaPermissionGranted' is both sent upward (controller → platform) and
           // received downward (platform → controller for native controllers). The direction is
           // determined by context: outbound is sent here; inbound is handled by this event branch.
-          const grantedConstraints = me.media_permission_constraints_;
           me.sendEvent_('userMediaPermissionGranted', {
-            constraints: grantedConstraints,
+            constraints: me.mediaPermissionConstraints_,
           });
-          me.resolveMediaPermission_({ success: true, stream: stream });
+          me.resolveMediaPermission_(stream);
         },
         function failure(error) {
+          if (!me.mediaPermissionPending_) {
+            return;
+          }
           // Native controller: platform already granted permission but stream open failed.
           if (type === 'userMediaPermissionGranted') {
-            me.resolveMediaPermission_({ success: false, error });
-          } else if (type === 'promptUserMediaPermission') {
-            // Web-based controller: browser denied the permission dialog.
-            // Always notify the platform regardless of error type so its state machine can recover.
-            const userPromptDuration = performance.now() - userPromptStartTime;
-            me.sendEvent_('userMediaPermissionDenied', { userPromptDuration, error });
+            me.rejectMediaPermission_(error);
+          } else {
+            me.cachedMediaError_ = error;
+            me.sendEvent_('userMediaPermissionDenied');
           }
         }
       );
