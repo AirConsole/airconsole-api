@@ -671,7 +671,7 @@ function testUserMediaPermissions() {
       });
 
       dispatchCustomMessageEvent({ action: 'event', type: 'promptUserMediaPermission' });
-      jasmine.clock().tick(30001);
+      jasmine.clock().tick(45001);
     });
 
     it('Should not set cachedMediaError_ when browser failure arrives after timeout', function (done) {
