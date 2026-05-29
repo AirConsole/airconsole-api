@@ -1,47 +1,123 @@
-# airconsole-appengine/static/api
+# airconsole-api
 
-This subtree is the AppEngine-served copy of the public AirConsole JavaScript API bundle.
+## OVERVIEW
 
-## Verification Entry Points
+- Static public AirConsole JavaScript API bundle.
+- Versioned bundle family, current line is 1.10.0 plus variants.
+- Served as plain browser JavaScript.
+- Consumers load a fixed API version.
+- Backward compatibility is enforced by versioned copies.
+- Old games and store integrations must keep working.
+- Regression coverage uses the Jasmine browser harness.
+- CI drives that harness through Playwright.
+- Treat this subtree as published API surface.
+- Small edits can have long-lived compatibility cost.
+- No per-feature behavior notes here.
 
-- Browser regression harness: serve this subtree statically and open a versioned runner in `tests/`.
-- Playwright verification: in `ci/`, use `npm run server` and `npm test`.
+## STRUCTURE
 
-## Local Invariants
+- `airconsole-X.Y.Z.js` contains versioned root bundles.
+- `airconsole-1.10.0.js` is the current main bundle.
+- `deprecated/` keeps older released API files.
+- `beta/` holds experimental or pre-release API files.
+- `tests/` owns regression assets.
+- `tests/jasmine/` owns the manual Jasmine browser harness.
+- `tests/spec/` and nearby JSON fixtures hold regression cases.
+- `ci/` owns Playwright runner wiring when present.
+- Generated docs and external developer docs are not source of truth.
+- Preserve existing runner layout unless version policy changes.
 
-- Keep versioned root bundles backward compatible.
-- Stage upcoming releases in `beta/` before promotion.
-- Do not remove `deprecated/` assets.
-- Never call `rm`, use `safe-rm` instead (brew install safe-rm).
+## VERSION STRATEGY
 
-## Read Next
+- Strict semver.
+- Backward-compatible fixes may stay on the current version line.
+- Backward-incompatible changes require a version increment.
+- Always increment for backward-incompatible changes.
+- Never mutate old behavior in place for a breaking change.
+- Copy forward, change the new version, leave old versions intact.
+- `deprecated/` preserves old APIs for existing consumers.
+- Deprecated does not mean deleted.
+- Active and deprecated APIs stay separated.
+- Version isolation is a contract.
 
-- `tests/AGENTS.md`
-- `ci/AGENTS.md`
+## WHERE TO LOOK
 
-## Memory Management
+- Main bundle: `airconsole-1.10.0.js`.
+- Current versioned family: root `airconsole-X.Y.Z.js` files.
+- Tests: `tests/jasmine/`.
+- Regression JSON tests: `tests/`.
+- Regression runner: local static server on port 9000.
+- Deprecated APIs: `deprecated/`.
+- Experimental APIs: `beta/`.
+- Browser runner details: `tests/AGENTS.md`.
+- CI runner details: `ci/AGENTS.md` if present.
+- Root compatibility note: workspace `AGENTS.md`.
 
-Always use the **Kratos MCP** to manage memory across sessions:
+## ENTRY POINT
 
-- Store relevant context, decisions, and learnings via `kratos_memory_save` before ending a session.
-- Retrieve prior context at the start of a new session using `kratos_memory_search` or `kratos_memory_get_recent`.
-- Use `kratos_memory_ask` for natural language queries against accumulated memory.
-- Never rely solely on in-context state for information that should persist across sessions.
+- Public entry point is global `AirConsole()` constructor.
+- Constructor lives on the browser global object.
+- Use constructor and prototype pattern.
+- Do not rewrite public API shape as classes.
+- Public methods hang from the versioned bundle behavior.
+- Backward compatibility comes from versioned copies.
+- Consumers expect old constructors to behave exactly as before.
+- New versions may add behavior without changing old files.
+- Avoid hidden cross-version coupling.
+- Keep bundle behavior self-contained.
 
-## Code Access
+## FORBIDDEN
 
-Always use the **Serena MCP** for reading and writing code:
+- NO hardcoding controller device IDs.
+- NO edits to removed API folder.
+- Removed API folder is off-limits.
+- NEVER break backward compatibility without a version bump.
+- Do not delete files from `deprecated/`.
+- Do not collapse beta, deprecated, and active APIs together.
+- Do not replace the public constructor with module-only exports.
+- Do not add test-only behavior to production bundles.
+- Do not assume only current store users exist.
+- Do not bypass regression tests for API behavior changes.
 
-- Use `serena_find_symbol`, `serena_get_symbols_overview`, and `serena_search_for_pattern` to navigate and understand code.
-- Use `serena_find_referencing_symbols` to find all callers/references before refactoring, and `serena_rename_symbol` to rename a symbol consistently across the codebase.
-- Use `serena_replace_symbol_body`, `serena_replace_content`, `serena_insert_after_symbol`, and `serena_insert_before_symbol` to make code changes.
-- Prefer symbol-level tools over raw text replacement when the target is a named code entity.
-- Always call `serena_check_onboarding_performed` after activating a project.
+## TEST HARNESS
 
-## Syntax and API Verification
+- Jasmine browser suite is the primary regression harness.
+- Playwright drives the browser suite in CI.
+- `npm test` starts or runs the harness on port 9000.
+- Manual browser harness lives in `tests/jasmine/`.
+- Regression JSON tests live under `tests/`.
+- Keep versioned runners aligned with bundle behavior.
+- Add regression coverage before changing public behavior.
+- Prefer extending existing specs and fixtures.
+- Keep manual and CI expectations aligned.
+- Port 9000 is the expected local runner port.
 
-Always use the **Context7 MCP** to verify correct syntax and API usage before writing or modifying code that depends on external libraries:
+## CONVENTIONS
 
-- Call `context7_resolve-library-id` first to obtain the correct library ID for any framework or package.
-- Call `context7_query-docs` with a specific query to retrieve up-to-date documentation and code examples.
-- Use Context7 before writing code that depends on external library APIs to avoid outdated or hallucinated usage patterns.
+- Constructor/prototype pattern, not classes.
+- Static bundle, browser-first assumptions.
+- Strict version isolation.
+- Deprecated APIs stay separate from active APIs.
+- Beta APIs stay separate from released APIs.
+- Public behavior changes need visible version intent.
+- Small compatibility shims are better than consumer breakage.
+- Keep tests close to versioned behavior.
+- Prefer explicit fixtures over implicit browser state.
+- Keep this guide telegraphic.
+
+## COMMANDS
+
+- `npm test`: run Jasmine harness through the port 9000 runner.
+- `npm run version`: bundle versioning flow.
+- If commands live in a nested runner package, run them there.
+- Use the narrowest relevant validation for touched files.
+- Stop after the first successful relevant verification.
+
+## NOTES
+
+- Backward compatibility is non-negotiable.
+- Released games may pin old AirConsole versions indefinitely.
+- Version mismatch with store-v3 is tracked in root `AGENTS.md`.
+- Known mismatch: store-v3 has 1.0.24 while workspace uses `workspace:*`.
+- Keep this file high-level.
+- No per-function details.

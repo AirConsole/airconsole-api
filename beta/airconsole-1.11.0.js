@@ -306,8 +306,12 @@ AirConsole.prototype.arePlayersSilenced = function () {
  * Returns undefined on controllers or if the platform did not send it.
  * @since 1.10.0
  */
-AirConsole.prototype.getConfiguration = function() {
-  return this.configuration;
+AirConsole.prototype.getConfiguration = function () {
+  if (this.device_id === AirConsole.SCREEN) {
+    return this.configuration;
+  }
+
+  throw "Only the AirConsole.SCREEN can call getConfiguration!";
 }
 
 /**
