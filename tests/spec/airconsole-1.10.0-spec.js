@@ -384,21 +384,4 @@ describe("AirConsole 1.10.0", function () {
 
         testAirConsole110Plus();
     });
-
-    /**
-     ======================================================================================
-     TEST CONFIGURATION FUNCTIONALITY
-     */
-
-    describe("Configuration", function () {
-        beforeEach(function () {
-            initAirConsole();
-        });
-
-        afterEach(function () {
-            tearDown();
-        });
-
-        testGetConfiguration();
-    });
 });

@@ -294,27 +294,37 @@ AirConsole.prototype.arePlayersSilenced = function () {
 }
 
 /**
+ * Configuration Object
+ * @typedef {object} AirConsole~Configuration
+ * @property {string[]} supportedVideoFormats - Supported video codecs in order of priority e.g. ["vp9","h264","vp8"]
+ * @property {boolean} transparentVideoSupported - true, if transparent videos are supported.
+ * @property {boolean} unityVideoSupported - true, if Unity is allowed to play videos.
+ * @property {string} graphicsQualityTier - graphics quality tier, approximation of available hardware resources CPU / GPU wise, e.g. "low", "medium", or "high"
+ */
+
+/**
  * Returns the platform capability configuration delivered in the ready event.
  * Use this to branch on device capabilities instead of platform or partner
  * names.  Only available on the screen; throws on controllers.
  * Can only be called after onReady.
- * @return {Object|undefined} An object with:
- *   supportedVideoFormats {string[]} - e.g. ["vp9","h264","vp8"]
- *   transparentVideoSupported {boolean}
- *   unityVideoSupported {boolean}
- *   graphicsQualityTier {string} - "low", "medium", or "high"
- * Throws on controllers. Returns an empty object on the screen if the platform did
- * not send a configuration payload.
- * @throws {string} "Only the AirConsole.SCREEN can call getConfiguration!"
+ * @return {AirConsole~Configuration|{}} - Resolved game configuration
+ * Returns an empty object on the screen if the platform did not send a configuration payload.
+ * @throws {string} "getConfiguration is only supported on AirConsole.SCREEN."
  *   when called from a controller.
- * @since 1.10.0
+ * @throws {string} "getConfiguration is available only after onReady."
+ *   when called before the onReady has been invoked on the screen.
+ * @since 1.11.0
  */
 AirConsole.prototype.getConfiguration = function () {
+  if (this.device_id === undefined) {
+    throw "getConfiguration is available only after onReady.";
+  }
+
   if (this.device_id === AirConsole.SCREEN) {
     return this.configuration || {};
   }
 
-  throw "Only the AirConsole.SCREEN can call getConfiguration!";
+  throw "getConfiguration is only supported on AirConsole.SCREEN.";
 }
 
 /**

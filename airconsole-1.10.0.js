@@ -1365,7 +1365,6 @@ AirConsole.prototype.onPostMessage_ = function(event) {
     }
 
     me.gameSafeArea = data.gameSafeArea;
-    me.configuration = data.configuration;
     if (data.translations) {
       me.translations = data.translations;
       var elements = document.querySelectorAll("[data-translation]");
