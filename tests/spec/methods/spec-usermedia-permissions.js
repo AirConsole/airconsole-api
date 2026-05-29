@@ -26,18 +26,26 @@ function testUserMediaPermissions() {
   }
 
   function makeFakeStream() {
-    return { getAudioTracks: function () { return [{}]; } };
+    return {
+      getAudioTracks: function() {
+        return [{}];
+      },
+      getTracks: function() {
+        return [{
+          stop: () => {
+          }
+        }];
+      },
+    };
   }
 
   function makeNotAllowedError() {
-    const err = new Error('Permission denied by user');
-    err.name = 'NotAllowedError';
+    const err = new DOMException('Permission denied by user', 'NotAllowedError');
     return err;
   }
 
   function makeNotFoundError() {
-    const err = new Error('Device not found');
-    err.name = 'NotFoundError';
+    const err = new DOMException('Device not found', 'NotFoundError');
     return err;
   }
 
@@ -58,53 +66,77 @@ function testUserMediaPermissions() {
 
     // Group 1: Early synchronous rejections
 
-    it('Should resolve {success:false} when device_id is SCREEN', function(done) {
+    it('Should reject with AirConsole.USER_MEDIA_ERROR_TYPE.notSupportedOnScreen when device_id is SCREEN', function(done) {
       airconsole.device_id = AirConsole.SCREEN;
-      airconsole.getUserMedia({ audio: true }).then(function(result) {
-        expect(result.success).toBe(false);
-        expect(result.error.message).toBe(AirConsole.USERMEDIA_ERROR.notSupportedOnScreen);
+      airconsole.getUserMedia({ audio: true }).catch(function(error) {
+        expect(error.name).toBe("AirConsole.UserMediaError");
+        expect(error.message).toBe(AirConsole.USER_MEDIA_ERROR_TYPE.notSupportedOnScreen);
         done();
       });
     });
 
-    it('Should resolve {success:false} when device_id is undefined', function(done) {
+    it('Should reject when device_id is undefined', function(done) {
       airconsole.device_id = undefined;
-      airconsole.getUserMedia({ audio: true }).then(function(result) {
-        expect(result.success).toBe(false);
-        expect(result.error.message).toBe(AirConsole.USERMEDIA_ERROR.notReady);
+      airconsole.getUserMedia({ audio: true }).catch(function(error) {
+        expect(error.name).toBe("AirConsole.UserMediaError");
+        expect(error.message).toBe(AirConsole.USER_MEDIA_ERROR_TYPE.notReady);
         done();
       });
     });
 
-    it('Should resolve {success:false} when a request is already in progress', function(done) {
-      airconsole.media_permission_pending_ = true;
-      airconsole.getUserMedia({ audio: true }).then(function(result) {
-        expect(result.success).toBe(false);
-        expect(result.error.message).toBe(AirConsole.USERMEDIA_ERROR.alreadyPending);
+    it('Should reject with AirConsole.USER_MEDIA_ERROR_TYPE.alreadyPending when a request is already in progress', function(done) {
+      airconsole.mediaPermissionPending_ = true;
+      airconsole.getUserMedia({ audio: true }).catch(function(error) {
+        expect(error.name).toBe("AirConsole.UserMediaError");
+        expect(error.message).toBe(AirConsole.USER_MEDIA_ERROR_TYPE.alreadyPending);
         done();
       });
     });
 
-    it('Should resolve {success:false} when constraints are null', function(done) {
-      airconsole.getUserMedia(null).then(function(result) {
-        expect(result.success).toBe(false);
-        expect(result.error.message).toBe(AirConsole.USERMEDIA_ERROR.invalidConstraints);
+    it('Should reject with AirConsole.USER_MEDIA_ERROR_TYPE.invalidConstraints when constraints are null', function(done) {
+      airconsole.getUserMedia(null).catch(function(error) {
+        expect(error.name).toBe("AirConsole.UserMediaError");
+        expect(error.message).toBe(AirConsole.USER_MEDIA_ERROR_TYPE.invalidConstraints);
         done();
       });
     });
 
-    it('Should resolve {success:false} when constraints are empty', function(done) {
-      airconsole.getUserMedia({}).then(function(result) {
-        expect(result.success).toBe(false);
-        expect(result.error.message).toBe(AirConsole.USERMEDIA_ERROR.invalidConstraints);
+    it('Should reject with AirConsole.USER_MEDIA_ERROR_TYPE.invalidConstraints with constraint { audio: true, video: true }', function(done) {
+      airconsole.getUserMedia({ video: true }).catch(function(error) {
+        expect(error.name).toBe("AirConsole.UserMediaError");
+        expect(error.message).toBe(AirConsole.USER_MEDIA_ERROR_TYPE.invalidConstraints);
         done();
       });
     });
 
-    it('Should resolve {success:false} when constraints have no audio or video property', function(done) {
-      airconsole.getUserMedia({ foo: true }).then(function(result) {
-        expect(result.success).toBe(false);
-        expect(result.error.message).toBe(AirConsole.USERMEDIA_ERROR.invalidConstraints);
+    it('Should reject with AirConsole.USER_MEDIA_ERROR_TYPE.invalidConstraints with constraint { video: true }', function(done) {
+      airconsole.getUserMedia({ video: true }).catch(function(error) {
+        expect(error.name).toBe("AirConsole.UserMediaError");
+        expect(error.message).toBe(AirConsole.USER_MEDIA_ERROR_TYPE.invalidConstraints);
+        done();
+      });
+    });
+
+    it('Should reject with AirConsole.USER_MEDIA_ERROR_TYPE.invalidConstraints with constraint { audio: false }', function(done) {
+      airconsole.getUserMedia({ audio: false }).catch(function(error) {
+        expect(error.name).toBe("AirConsole.UserMediaError");
+        expect(error.message).toBe(AirConsole.USER_MEDIA_ERROR_TYPE.invalidConstraints);
+        done();
+      });
+    });
+
+    it('Should reject with AirConsole.USER_MEDIA_ERROR_TYPE.invalidConstraints with constraint { video: { width: 1280, height: 720 } }', function(done) {
+      airconsole.getUserMedia({ video: { width: 1280, height: 720 } }).catch(function(error) {
+        expect(error.name).toBe("AirConsole.UserMediaError");
+        expect(error.message).toBe(AirConsole.USER_MEDIA_ERROR_TYPE.invalidConstraints);
+        done();
+      });
+    });
+
+    it('Should reject with AirConsole.USER_MEDIA_ERROR_TYPE.invalidConstraints when constraints have no audio property', function(done) {
+      airconsole.getUserMedia({ foo: true }).catch(function(error) {
+        expect(error.name).toBe("AirConsole.UserMediaError");
+        expect(error.message).toBe(AirConsole.USER_MEDIA_ERROR_TYPE.invalidConstraints);
         done();
       });
     });
@@ -119,82 +151,77 @@ function testUserMediaPermissions() {
 
     // Group 2: resolveMediaPermission_ via platform event responses
 
-    it('Should resolve {success:false, reason:temporary} on userMediaPermissionDenied', function(done) {
-      airconsole.getUserMedia({ audio: true }).then(function(result) {
-        expect(result.success).toBe(false);
-        expect(result.reason).toBe('temporary');
+    it('Should reject AirConsole.USER_MEDIA_ERROR_TYPE.permissionDenied on userMediaPermissionDenied', function(done) {
+      airconsole.getUserMedia({ audio: true }).catch(function(error) {
+        expect(error.name).toBe('AirConsole.UserMediaError');
+        expect(error.message).toBe('PermissionDenied');
         done();
       });
       dispatchCustomMessageEvent({
         action: 'event', type: 'userMediaPermissionDenied',
-        data: { reason: AirConsole.MEDIA_PERMISSION_DENIED.temporary }
       });
     });
 
-    it('Should resolve {success:false, reason:permanent} on userMediaPermissionDenied with permanent reason', function(done) {
-      airconsole.getUserMedia({ audio: true }).then(function(result) {
-        expect(result.success).toBe(false);
-        expect(result.reason).toBe('permanent');
-        done();
-      });
-      dispatchCustomMessageEvent({
-        action: 'event', type: 'userMediaPermissionDenied',
-        data: { reason: AirConsole.MEDIA_PERMISSION_DENIED.permanent }
-      });
-    });
-
-    it('Should resolve {success:true, stream} on userMediaPermissionGranted when browser succeeds', function(done) {
+    it('Should resolve stream on userMediaPermissionGranted when browser succeeds', function(done) {
       const fakeStream = makeFakeStream();
       spyOn(navigator.mediaDevices, 'getUserMedia').and.returnValue(Promise.resolve(fakeStream));
-      airconsole.getUserMedia({ audio: true }).then(function(result) {
-        expect(result.success).toBe(true);
-        expect(result.stream).toBe(fakeStream);
+      airconsole.getUserMedia({ audio: true }).then(function(stream) {
+        expect(stream).toBe(fakeStream);
         done();
       });
       dispatchCustomMessageEvent({ action: 'event', type: 'userMediaPermissionGranted' });
     });
 
-    it('Should resolve {success:false, error} on userMediaPermissionGranted when browser rejects', function(done) {
+    it('Should reject on userMediaPermissionGranted when browser rejects', function(done) {
       const testError = new Error('getUserMedia failed: Permission denied');
       spyOn(navigator.mediaDevices, 'getUserMedia').and.callFake(function() { return Promise.reject(testError); });
-      airconsole.getUserMedia({ audio: true }).then(function(result) {
-        expect(result.success).toBe(false);
-        expect(result.error).toBe(testError);
+      airconsole.getUserMedia({ audio: true }).catch(function(error) {
+        expect(error).toBe(testError);
         done();
       });
       dispatchCustomMessageEvent({ action: 'event', type: 'userMediaPermissionGranted' });
     });
 
-    it('Should resolve {success:true, stream} on promptUserMediaPermission when browser succeeds', function(done) {
+    it('Should resolve stream on promptUserMediaPermission when browser succeeds', function(done) {
       const fakeStream = makeFakeStream();
       spyOn(navigator.mediaDevices, 'getUserMedia').and.returnValue(Promise.resolve(fakeStream));
-      airconsole.getUserMedia({ audio: true }).then(function(result) {
-        expect(result.success).toBe(true);
-        expect(result.stream).toBe(fakeStream);
+      airconsole.getUserMedia({ audio: true }).then(function(stream) {
+        expect(stream).toEqual(fakeStream);
         done();
       });
       dispatchCustomMessageEvent({ action: 'event', type: 'promptUserMediaPermission' });
     });
 
-    it('Should clear media_permission_pending_ after resolution', function(done) {
+    it('Should clear mediaPermissionPending_ after resolution', function(done) {
       const fakeStream = makeFakeStream();
       spyOn(navigator.mediaDevices, 'getUserMedia').and.returnValue(Promise.resolve(fakeStream));
       airconsole.getUserMedia({ audio: true }).then(function() {
-        expect(airconsole.media_permission_pending_).toBe(false);
+        expect(airconsole.mediaPermissionPending_).toBe(false);
         done();
       });
       dispatchCustomMessageEvent({ action: 'event', type: 'userMediaPermissionGranted' });
     });
 
-    // Group 3: Timeout
-
-    it('Should resolve {success:false, error:{message:AirConsole.USERMEDIA_ERROR.timeout}} after 30000ms', function(done) {
-      airconsole.getUserMedia({ audio: true }).then(function(result) {
-        expect(result.success).toBe(false);
-        expect(result.error.message).toBe(AirConsole.USERMEDIA_ERROR.timeout);
+    it('Should clear mediaPermissionPending_ when userMediaPermissionDenied is received', function (done) {
+      airconsole.getUserMedia({ audio: true }).catch(function () {
+        expect(airconsole.mediaPermissionPending_).toBe(false);
         done();
       });
-      jasmine.clock().tick(30001);
+      dispatchCustomMessageEvent({
+        action: 'event',
+        type: 'userMediaPermissionDenied',
+      });
+    });
+
+    // Group 3: Timeout
+
+    it('Should reject with AirConsole.USER_MEDIA_ERROR_TYPE.timeout after 45000ms', function(done) {
+      airconsole.getUserMedia({ audio: true }).catch(function(error) {
+        expect(error.name).toBe("AirConsole.UserMediaError");
+        expect(error.message).toBe(AirConsole.USER_MEDIA_ERROR_TYPE.timeout);
+        done();
+      });
+      jasmine.clock().tick(45001);
     });
   });
 
@@ -203,18 +230,13 @@ function testUserMediaPermissions() {
   describe('media permission flows', function () {
     beforeEach(function () {
       initAirConsoleAsController();
-      // Spy on sendEvent_ and simulate the platform echo for denial events that carry an error.
-      // In the new flow the controller notifies the platform of the denial (with the error object)
-      // and the platform echoes back a userMediaPermissionDenied event containing the error,
-      // which triggers rejectMediaPermission_ locally.
+      // Spy on sendEvent_ and simulate the platform echo for denial events.
       spyOn(airconsole, 'sendEvent_').and.callFake(function (eventType, eventData) {
-        if (eventType === 'userMediaPermissionDenied' && eventData && eventData.error) {
-          dispatchCustomMessageEvent({
-            action: 'event',
-            type: 'userMediaPermissionDenied',
-            data: { error: eventData.error },
-          });
-        }
+        dispatchCustomMessageEvent({
+          action: 'event',
+          type: eventType,
+          data: eventData
+        });
       });
     });
 
@@ -230,12 +252,10 @@ function testUserMediaPermissions() {
       spyOn(navigator.mediaDevices, 'getUserMedia').and.returnValue(Promise.resolve(stream));
     }
 
-    // Dispatches a userMediaPermissionDenied event with an optional reason
-    // (defaults to temporary, matching the most common test scenario).
-    function dispatchDenied(reason) {
+    // Dispatches a userMediaPermissionDenied event
+    function dispatchDenied() {
       dispatchCustomMessageEvent({
         action: 'event', type: 'userMediaPermissionDenied',
-        data: { reason: reason || AirConsole.MEDIA_PERMISSION_DENIED.temporary }
       });
     }
 
@@ -246,13 +266,8 @@ function testUserMediaPermissions() {
         let resolutionCount = 0;
         airconsole
           .getUserMedia({ audio: true })
-          .then(function (result) {
-            resolutionCount++;
-            expect(result.success).toBe(false);
-            expect(result.reason).toBe('temporary');
-          })
           .catch(function () {
-            fail('Should not reject after resolution');
+            resolutionCount++;
           })
           .then(function () {
             // Second event — no-op since promise already settled
@@ -263,55 +278,50 @@ function testUserMediaPermissions() {
         dispatchDenied();
       });
 
-      it('Should reject with a browser-style AbortError when browser getUserMedia is aborted', function (done) {
-        const browserError = new Error('The operation was aborted.');
-        browserError.name = 'AbortError';
-        spyGetUserMediaReject(browserError);
-        airconsole.getUserMedia({ audio: true }).catch(function (error) {
-          expect(airconsole.sendEvent_).toHaveBeenCalledWith(
-            'userMediaPermissionDenied',
-            jasmine.objectContaining({ error: browserError }),
-          );
-          done();
-        });
+      it('Should reject with a DOMException when browser getUserMedia is aborted', function (done) {
+        const domException = new DOMException('DOM Abort Test', 'AbortError');
+        spyGetUserMediaReject(domException);
+        airconsole.getUserMedia({ audio: true })
+          .catch(function(error) {
+            expect(error).toBe(domException);
+            expect(error).toBeInstanceOf(DOMException);
+            expect(airconsole.sendEvent_).toHaveBeenCalledWith('userMediaPermissionDenied');
+            done();
+          });
         promptUserMediaPermission();
       });
     });
 
     // --- Group 5: promptUserMediaPermission + NotAllowedError ---
     // Platform sends 'promptUserMediaPermission'; browser getUserMedia fails with NotAllowedError.
-    // Implementation fires sendEvent_('userMediaPermissionDenied') then rejects the promise.
-
+    // Implementation caches the error, fires sendEvent_('userMediaPermissionDenied').
     describe('promptUserMediaPermission NotAllowedError rejection flow', function () {
-      it('Should fire sendEvent_(userMediaPermissionDenied) with userPromptDuration', function (done) {
-        spyGetUserMediaReject(makeNotAllowedError());
+      it('Should fire sendEvent_(userMediaPermissionDenied)', function (done) {
+        const domException = makeNotAllowedError();
+        spyGetUserMediaReject(domException);
         airconsole.getUserMedia({ audio: true }).catch(function () {
-          expect(airconsole.sendEvent_).toHaveBeenCalledWith(
-            'userMediaPermissionDenied',
-            jasmine.objectContaining({
-              userPromptDuration: jasmine.any(Number),
-            }),
-          );
+          expect(airconsole.sendEvent_).toHaveBeenCalledWith('userMediaPermissionDenied');
           done();
         });
         promptUserMediaPermission();
       });
 
-      it('Should reject the promise with the NotAllowedError', function (done) {
+      it('Should reject the promise with the cached NotAllowedError', function (done) {
         const notAllowedError = makeNotAllowedError();
         spyGetUserMediaReject(notAllowedError);
         airconsole.getUserMedia({ audio: true }).catch(function (error) {
           expect(error).toBe(notAllowedError);
+          expect(error).toBeInstanceOf(DOMException);
           expect(error.name).toBe('NotAllowedError');
           done();
         });
         promptUserMediaPermission();
       });
 
-      it('Should clear media_permission_pending_ after rejection', function (done) {
+      it('Should clear mediaPermissionPending_ after rejection', function (done) {
         spyGetUserMediaReject(makeNotAllowedError());
         airconsole.getUserMedia({ audio: true }).catch(function () {
-          expect(airconsole.media_permission_pending_).toBe(false);
+          expect(airconsole.mediaPermissionPending_).toBe(false);
           done();
         });
         promptUserMediaPermission();
@@ -324,7 +334,6 @@ function testUserMediaPermissions() {
       it('Should call sendEvent_(userMediaPermissionGranted) on userMediaPermissionGranted event', function (done) {
         spyGetUserMediaResolve(makeFakeStream());
         airconsole.getUserMedia({ audio: true }).then(function (result) {
-          expect(result.success).toBe(true);
           expect(airconsole.sendEvent_).toHaveBeenCalledWith(
             'userMediaPermissionGranted',
             { constraints: { audio: true } },
@@ -340,7 +349,6 @@ function testUserMediaPermissions() {
       it('Should call sendEvent_(userMediaPermissionGranted) on promptUserMediaPermission event', function (done) {
         spyGetUserMediaResolve(makeFakeStream());
         airconsole.getUserMedia({ audio: true }).then(function (result) {
-          expect(result.success).toBe(true);
           expect(airconsole.sendEvent_).toHaveBeenCalledWith(
             'userMediaPermissionGranted',
             { constraints: { audio: true } },
@@ -351,8 +359,8 @@ function testUserMediaPermissions() {
       });
 
       it('Should NOT call sendEvent_(userMediaPermissionGranted) when browser getUserMedia rejects', function (done) {
-        spyGetUserMediaReject(new Error('Permission denied'));
-        airconsole.getUserMedia({ audio: true }).then(function () {
+        spyGetUserMediaReject(new DOMException('Permission denied', 'NotAllowedError'));
+        airconsole.getUserMedia({ audio: true }).catch(function () {
           const grantedCalls = airconsole.sendEvent_.calls
             .all()
             .filter(function (call) {
@@ -390,45 +398,21 @@ function testUserMediaPermissions() {
       });
     }
 
-    it('Should call onUserMediaAccessGranted(device_id, constraints) when granted=true', function () {
+    it('Should call onUserMediaAccessGranted(device_id) when granted=true', function () {
       spyOn(airconsole, 'onUserMediaAccessGranted');
       broadcastPermissionUpdate({ granted: true });
       expect(airconsole.onUserMediaAccessGranted).toHaveBeenCalledWith(
         DEVICE_ID,
-        undefined,
       );
     });
 
-    it('Should call onUserMediaAccessDenied(device_id, temporary) when granted=false with temporary reason', function () {
+    it('Should call onUserMediaAccessDenied(device_id) when granted=false', function () {
       spyOn(airconsole, 'onUserMediaAccessDenied');
       broadcastPermissionUpdate({
-        granted: false,
-        reason: AirConsole.MEDIA_PERMISSION_DENIED.temporary,
+        granted: false
       });
       expect(airconsole.onUserMediaAccessDenied).toHaveBeenCalledWith(
         DEVICE_ID,
-        AirConsole.MEDIA_PERMISSION_DENIED.temporary,
-      );
-    });
-
-    it('Should call onUserMediaAccessDenied(device_id, permanent) when granted=false with permanent reason', function () {
-      spyOn(airconsole, 'onUserMediaAccessDenied');
-      broadcastPermissionUpdate({
-        granted: false,
-        reason: AirConsole.MEDIA_PERMISSION_DENIED.permanent,
-      });
-      expect(airconsole.onUserMediaAccessDenied).toHaveBeenCalledWith(
-        DEVICE_ID,
-        AirConsole.MEDIA_PERMISSION_DENIED.permanent,
-      );
-    });
-
-    it('Should default reason to temporary when granted=false but no reason field', function () {
-      spyOn(airconsole, 'onUserMediaAccessDenied');
-      broadcastPermissionUpdate({ granted: false });
-      expect(airconsole.onUserMediaAccessDenied).toHaveBeenCalledWith(
-        DEVICE_ID,
-        AirConsole.MEDIA_PERMISSION_DENIED.temporary,
       );
     });
 
@@ -488,19 +472,18 @@ function testUserMediaPermissions() {
   });
 
   // --- Groups 8, 10, 11: shared boilerplate (part 2, after Groups 7 and 9) ---
-
   describe('media permission flows', function () {
     beforeEach(function () {
       initAirConsoleAsController();
-      // Simulate the platform echo for denial events carrying an error (see first block for rationale).
+      // Simulate the platform echo for denial events.
+      // In the new flow, the controller caches the error locally.
       spyOn(airconsole, 'sendEvent_').and.callFake(function (eventType, eventData) {
-        if (eventType === 'userMediaPermissionDenied' && eventData && eventData.error) {
-          dispatchCustomMessageEvent({
-            action: 'event',
-            type: 'userMediaPermissionDenied',
-            data: { error: eventData.error },
-          });
-        }
+        // Pipe the event back
+        dispatchCustomMessageEvent({
+          action: 'event',
+          type: eventType,
+          data: eventData
+        });
       });
     });
 
@@ -512,13 +495,10 @@ function testUserMediaPermissions() {
       });
     }
 
-    function dispatchDenied(reason) {
+    function dispatchDenied() {
       dispatchCustomMessageEvent({
         action: 'event',
         type: 'userMediaPermissionDenied',
-        data: {
-          reason: reason || AirConsole.MEDIA_PERMISSION_DENIED.temporary,
-        },
       });
     }
 
@@ -539,65 +519,11 @@ function testUserMediaPermissions() {
         promptUserMediaPermission();
       });
     });
-
-    // --- Group 9b: platform echoes userMediaPermissionDenied with an error object ---
-
-    describe('platform-initiated userMediaPermissionDenied with error', function () {
-      it('Should reject the promise with the error when platform sends an AbortError', function (done) {
-        var abortError = new Error('The operation was aborted.');
-        abortError.name = 'AbortError';
-        airconsole.getUserMedia({ audio: true }).catch(function (error) {
-          expect(error).toBe(abortError);
-          expect(error.name).toBe('AbortError');
-          expect(error.message).toBe('The operation was aborted.');
-          done();
-        });
-        dispatchCustomMessageEvent({
-          action: 'event',
-          type: 'userMediaPermissionDenied',
-          data: { error: abortError },
-        });
-      });
-
-      it('Should clear media_permission_pending_ when platform sends error', function (done) {
-        var abortError = new Error('The operation was aborted.');
-        abortError.name = 'AbortError';
-        airconsole.getUserMedia({ audio: true }).catch(function () {
-          expect(airconsole.media_permission_pending_).toBe(false);
-          done();
-        });
-        dispatchCustomMessageEvent({
-          action: 'event',
-          type: 'userMediaPermissionDenied',
-          data: { error: abortError },
-        });
-      });
-    });
-
-    // --- Group 10: userMediaPermissionDenied with missing data field ---
-
-    describe('userMediaPermissionDenied with missing data', function () {
-      it('Should default reason to temporary when data field is absent', function (done) {
-        airconsole.getUserMedia({ audio: true }).then(function (result) {
-          expect(result.success).toBe(false);
-          expect(result.reason).toBe(
-            AirConsole.MEDIA_PERMISSION_DENIED.temporary,
-          );
-          done();
-        });
-        dispatchCustomMessageEvent({
-          action: 'event',
-          type: 'userMediaPermissionDenied',
-        });
-      });
-    });
-
     // --- Group 11: Re-entry after settlement ---
 
     describe('post-settlement re-entry', function () {
       it('Should allow a subsequent getUserMedia call after successful resolution', function (done) {
-        airconsole.getUserMedia({ audio: true }).then(function (result) {
-          expect(result.success).toBe(false);
+        airconsole.getUserMedia({ audio: true }).catch(function () {
           // Second call should start a new request (confirmed by sendEvent_ being called again)
           airconsole.sendEvent_.calls.reset();
           airconsole.getUserMedia({ audio: true });
@@ -628,17 +554,17 @@ function testUserMediaPermissions() {
       );
     });
 
-    it('Should clear a pending media_permission_timeout_ on destroy', function () {
+    it('Should clear a pending mediaPermissionTimeout_ on destroy', function () {
       jasmine.clock().install();
       spyOn(navigator.mediaDevices, 'getUserMedia').and.returnValue(
         new Promise(function () {}),
       );
       spyOn(airconsole, 'sendEvent_');
-      airconsole.getUserMedia({ audio: true });
-      expect(airconsole.media_permission_timeout_).toBeDefined();
+      airconsole.getUserMedia({ audio: true }).catch(function () {});
+      expect(airconsole.mediaPermissionTimeout_).toBeDefined();
 
       airconsole.destroy();
-      expect(airconsole.media_permission_timeout_).toBeNull();
+      expect(airconsole.mediaPermissionTimeout_).toBeUndefined();
       jasmine.clock().uninstall();
     });
 
@@ -647,5 +573,194 @@ function testUserMediaPermissions() {
         airconsole.destroy();
       }).not.toThrow();
     });
+
+    it('Should reject pending getUserMedia Promise on destroy', function (done) {
+      jasmine.clock().install();
+      spyOn(navigator.mediaDevices, 'getUserMedia').and.returnValue(
+        new Promise(function () {}),
+      );
+      spyOn(airconsole, 'sendEvent_');
+      airconsole.getUserMedia({ audio: true }).catch(function (error) {
+        expect(error.name).toBe('AirConsole.UserMediaError');
+        expect(error.message).toBe(AirConsole.USER_MEDIA_ERROR_TYPE.timeout);
+        done();
+      });
+      airconsole.destroy();
+      jasmine.clock().uninstall();
+    });
+
+    it('Should clear mediaPermissionPending_ when destroy rejects pending Promise', function (done) {
+      jasmine.clock().install();
+      spyOn(navigator.mediaDevices, 'getUserMedia').and.returnValue(
+        new Promise(function () {}),
+      );
+      spyOn(airconsole, 'sendEvent_');
+      airconsole.getUserMedia({ audio: true }).catch(function () {
+        expect(airconsole.mediaPermissionPending_).toBe(false);
+        done();
+      });
+      airconsole.destroy();
+      jasmine.clock().uninstall();
+    });
   }); // end 'destroy'
+
+  // --- Group 13: Race condition and edge case coverage ---
+
+  describe('race condition coverage', function () {
+    beforeEach(function () {
+      jasmine.clock().install();
+      initAirConsoleAsController();
+      spyOn(airconsole, 'sendEvent_');
+    });
+
+    afterEach(function () {
+      jasmine.clock().uninstall();
+      teardown();
+    });
+
+    it('Should not send userMediaPermissionDenied when browser failure arrives after timeout', function (done) {
+      var browserReject;
+      spyOn(navigator.mediaDevices, 'getUserMedia').and.callFake(function () {
+        return new Promise(function (resolve, reject) {
+          browserReject = reject;
+        });
+      });
+
+      airconsole.getUserMedia({ audio: true }).catch(function () {
+        // Timeout has fired. Now simulate the late browser failure.
+        airconsole.sendEvent_.calls.reset();
+        browserReject(new DOMException('Late denial', 'NotAllowedError'));
+
+        // Give microtasks a chance to run
+        setTimeout(function () {
+          expect(airconsole.sendEvent_).not.toHaveBeenCalledWith(
+            'userMediaPermissionDenied',
+            jasmine.anything(),
+          );
+          done();
+        }, 0);
+        jasmine.clock().tick(1);
+      });
+
+      // Trigger promptUserMediaPermission to start the browser flow
+      dispatchCustomMessageEvent({ action: 'event', type: 'promptUserMediaPermission' });
+      // Fire the 45s timeout
+      jasmine.clock().tick(45001);
+    });
+
+    it('Should stop orphaned stream tracks when browser succeeds after timeout', function (done) {
+      var stopSpy = jasmine.createSpy('stop');
+      var fakeStream = {
+        getAudioTracks: function () { return [{}]; },
+        getTracks: function () { return [{ stop: stopSpy }]; },
+      };
+      spyOn(navigator.mediaDevices, 'getUserMedia').and.callFake(function () {
+        // Simulate: timeout fires before browser resolves.
+        // Setting mediaPermissionPending_ to false models what cleanUpMediaPermission_ does.
+        airconsole.mediaPermissionPending_ = false;
+        return Promise.resolve(fakeStream);
+      });
+
+      airconsole.getUserMedia({ audio: true }).catch(function () {
+        // Give microtasks time to process the browser success callback.
+        setTimeout(function () {
+          expect(stopSpy).toHaveBeenCalled();
+          done();
+        }, 0);
+        jasmine.clock().tick(1);
+      });
+
+      dispatchCustomMessageEvent({ action: 'event', type: 'promptUserMediaPermission' });
+      jasmine.clock().tick(45001);
+    });
+
+    it('Should not set cachedMediaError_ when browser failure arrives after timeout', function (done) {
+      var browserReject;
+      spyOn(navigator.mediaDevices, 'getUserMedia').and.callFake(function () {
+        return new Promise(function (resolve, reject) {
+          browserReject = reject;
+        });
+      });
+
+      airconsole.getUserMedia({ audio: true }).catch(function () {
+        browserReject(new DOMException('Late error', 'NotFoundError'));
+
+        setTimeout(function () {
+          expect(airconsole.cachedMediaError_).toBeFalsy();
+          done();
+        }, 0);
+        jasmine.clock().tick(1);
+      });
+
+      dispatchCustomMessageEvent({ action: 'event', type: 'promptUserMediaPermission' });
+      jasmine.clock().tick(45001);
+    });
+  });
+
+  // --- Group 14: Stale message guard and type verification ---
+
+  describe('stale message guard and error types', function () {
+    beforeEach(function () {
+      initAirConsoleAsController();
+      spyOn(airconsole, 'sendEvent_');
+    });
+
+    afterEach(teardown);
+
+    it('Should ignore userMediaPermissionGranted after flow is already settled', function (done) {
+      spyOn(navigator.mediaDevices, 'getUserMedia');
+      airconsole.getUserMedia({ audio: true }).catch(function () {
+        // Flow is settled (denied). Now dispatch a stale granted event.
+        dispatchCustomMessageEvent({ action: 'event', type: 'userMediaPermissionGranted' });
+
+        setTimeout(function () {
+          expect(navigator.mediaDevices.getUserMedia).not.toHaveBeenCalled();
+          done();
+        }, 0);
+      });
+      dispatchCustomMessageEvent({ action: 'event', type: 'userMediaPermissionDenied' });
+    });
+
+    it('Should ignore userMediaPermissionDenied after flow is already settled', function (done) {
+      var catchCount = 0;
+      var fakeStream = makeFakeStream();
+      spyOn(navigator.mediaDevices, 'getUserMedia').and.returnValue(Promise.resolve(fakeStream));
+      airconsole.getUserMedia({ audio: true })
+        .then(function () {
+          // Flow is settled (granted). Now dispatch a stale denied event.
+          dispatchCustomMessageEvent({ action: 'event', type: 'userMediaPermissionDenied' });
+        })
+        .catch(function () {
+          catchCount++;
+        });
+
+      dispatchCustomMessageEvent({ action: 'event', type: 'userMediaPermissionGranted' });
+
+      setTimeout(function () {
+        expect(catchCount).toBe(0);
+        done();
+      }, 50);
+    });
+
+    it('Should produce errors that are instanceof Error', function (done) {
+      airconsole.device_id = AirConsole.SCREEN;
+      airconsole.getUserMedia({ audio: true }).catch(function (error) {
+        expect(error instanceof Error).toBe(true);
+        expect(error.name).toBe('AirConsole.UserMediaError');
+        done();
+      });
+    });
+
+    it('Should forward complex audio constraints to browser getUserMedia', function (done) {
+      var complexConstraints = { audio: { echoCancellation: true, noiseSuppression: false } };
+      spyOn(navigator.mediaDevices, 'getUserMedia').and.returnValue(
+        Promise.resolve(makeFakeStream()),
+      );
+      airconsole.getUserMedia(complexConstraints).then(function () {
+        expect(navigator.mediaDevices.getUserMedia).toHaveBeenCalledWith(complexConstraints);
+        done();
+      });
+      dispatchCustomMessageEvent({ action: 'event', type: 'userMediaPermissionGranted' });
+    });
+  });
 }

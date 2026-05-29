@@ -41,3 +41,4 @@ jobs:
       with:
         github_token: ${{ secrets.GITHUB_TOKEN }}
         publish_dir: ./docs  # The directory containing the generated HTML files
+        keep_files: true  # Preserve other content (e.g. beta/ subdirectory) on gh-pages

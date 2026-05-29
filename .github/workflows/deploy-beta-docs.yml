@@ -1,0 +1,40 @@
+name: Deploy Beta Docs to GitHub Pages
+
+on:
+  push:
+    branches:
+      - master
+    paths:
+      - 'beta/airconsole-*.js'
+
+jobs:
+  generate-and-deploy:
+    name: Generate and deploy beta docs
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout the repository
+      uses: actions/checkout@v4
+
+    - name: Install npm dependencies
+      run: |
+        npm install -g jsdoc@3.6.11
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.x'
+
+    # generate-docs.py creates output dir "api-1-11-0" from the input filename
+    - name: Generate beta documentation
+      run: |
+        python .github/generate-docs.py ./beta/airconsole-1.11.0.js
+        yes | cp -rf api-1-11-0/AirConsole.html api-1-11-0/index.html
+
+    - name: Deploy to GitHub Pages (beta subdirectory)
+      uses: peaceiris/actions-gh-pages@v3
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        publish_dir: ./api-1-11-0
+        destination_dir: beta  # Deploy to /beta/ subdirectory
+        keep_files: true  # Preserve other content on gh-pages
