@@ -403,15 +403,15 @@ describe("AirConsole 1.11.0", function () {
      TEST CONFIGURATION FUNCTIONALITY
      */
 
-    describe("Configuration", function () {
+    describe("Game Configuration", function () {
         beforeEach(function () {
             initAirConsole();
         });
 
-        afterEach(function () {
+        afterEach(function () {s
             tearDown();
         });
 
-        testGetConfiguration();
+        testGameConfiguration();
     });
 });

@@ -289,7 +289,7 @@ AirConsole.prototype.arePlayersSilenced = function () {
 
 /**
  * Configuration Object
- * @typedef {object} AirConsole~ScreenGameConfiguration
+ * @typedef {object} AirConsole~GameConfiguration
  * @property {boolean} transparentVideoSupported - true, if transparent videos are supported.
  * @property {boolean} unityVideoSupported - true, if Unity is allowed to play videos.
  * @property {string} gamePerformanceLevel - graphics quality tier, approximation of available hardware resources CPU / GPU wise, e.g. "low", "medium", or "high".<br />
@@ -304,24 +304,23 @@ AirConsole.prototype.arePlayersSilenced = function () {
  * Use this to branch on device capabilities instead of platform or partner
  * names.  Only available on the screen; throws on controllers.
  * Can only be called after onReady.
- * @return {AirConsole~ScreenGameConfiguration|{}} - Resolved game configuration
+ * @return {AirConsole~GameConfiguration|{}} - Resolved game configuration
  * Returns an empty object on the screen if the platform did not send a configuration payload.
- * @throws {string} "getConfiguration is only supported on AirConsole.SCREEN."
- *   when called from a controller.
- * @throws {string} "getConfiguration is available only after onReady."
+ * Returns an empty object on the controller.
+ * @throws {string} "getGameConfiguration is available only after onReady."
  *   when called before the onReady has been invoked on the screen.
  * @since 1.11.0
  */
-AirConsole.prototype.getConfiguration = function () {
+AirConsole.prototype.getGameConfiguration = function () {
   if (this.device_id === undefined) {
-    throw "getConfiguration is available only after onReady.";
+    throw "getGameConfiguration is available only after onReady.";
   }
 
   if (this.device_id === AirConsole.SCREEN) {
     return this.configuration || {};
   }
 
-  throw "getConfiguration is only supported on AirConsole.SCREEN.";
+  return {};
 }
 
 /**
