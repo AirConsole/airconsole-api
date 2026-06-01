@@ -289,11 +289,11 @@ AirConsole.prototype.arePlayersSilenced = function () {
 
 /**
  * Configuration Object
- * @typedef {object} AirConsole~Configuration
+ * @typedef {object} AirConsole~ScreenGameConfiguration
  * @property {boolean} transparentVideoSupported - true, if transparent videos are supported.
  * @property {boolean} unityVideoSupported - true, if Unity is allowed to play videos.
- * @property {string} graphicsQualityTier - graphics quality tier, approximation of available hardware resources CPU / GPU wise, e.g. "low", "medium", or "high".<br />
- *  The graphicsQualityTier is based on our current internal testing.<br />
+ * @property {string} gamePerformanceLevel - graphics quality tier, approximation of available hardware resources CPU / GPU wise, e.g. "low", "medium", or "high".<br />
+ *  The gamePerformanceLevel is based on our current internal testing.<br />
  *  low: TV and similar resource limited platforms with slow or old CPU architectures, OpenGL ES2 / ES3 type GPU and < 512mb of RAM + VRAM available.
  *  medium: Automotive platforms, where resource allocation can prioritize other systems. <= 1024MB of RAM + VRAM available normally.
  *  high: Web on desktop, where generally the highest amount of resources are available
@@ -304,7 +304,7 @@ AirConsole.prototype.arePlayersSilenced = function () {
  * Use this to branch on device capabilities instead of platform or partner
  * names.  Only available on the screen; throws on controllers.
  * Can only be called after onReady.
- * @return {AirConsole~Configuration|{}} - Resolved game configuration
+ * @return {AirConsole~ScreenGameConfiguration|{}} - Resolved game configuration
  * Returns an empty object on the screen if the platform did not send a configuration payload.
  * @throws {string} "getConfiguration is only supported on AirConsole.SCREEN."
  *   when called from a controller.
@@ -774,8 +774,7 @@ AirConsole.prototype.vibrate = function(options) {
 /**
  * Gets called on all other devices in the game as a result of to a successful request to getUserMedia on the specific
  *  device with device_id.
- * On the requesting device, this callback is not invoked at this time.
- * The requesting device currently needs to rely on the getUserMedia promise which will provide the result at the point of promise resolution.
+ * On the requesting device, the getUserMedia promise will provide the result immediately.
  * @abstract
  * @param {number} device_id - The device_id of the controller that was granted access.
  *

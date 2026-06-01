@@ -4,7 +4,7 @@ function testGetConfiguration() {
     const configuration = {
       transparentVideoSupported: true,
       unityVideoSupported: true,
-      graphicsQualityTier: "high"
+      gamePerformanceLevel: "high"
     };
     dispatchCustomMessageEvent({
       action: "ready",
@@ -37,7 +37,7 @@ function testGetConfiguration() {
     const configuration = {
       transparentVideoSupported: true,
       unityVideoSupported: true,
-      graphicsQualityTier: "high"
+      gamePerformanceLevel: "high"
     };
     dispatchCustomMessageEvent({
       action: "ready",
