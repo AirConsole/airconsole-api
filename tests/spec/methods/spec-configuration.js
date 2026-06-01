@@ -2,7 +2,6 @@ function testGetConfiguration() {
 
   it ("Should store configuration from ready event", function() {
     const configuration = {
-      supportedVideoFormats: ["vp9", "h264", "vp8"],
       transparentVideoSupported: true,
       unityVideoSupported: true,
       graphicsQualityTier: "high"
@@ -36,7 +35,6 @@ function testGetConfiguration() {
 
   it("Should throw when getConfiguration is called on controller", function () {
     const configuration = {
-      supportedVideoFormats: ["vp9", "h264", "vp8"],
       transparentVideoSupported: true,
       unityVideoSupported: true,
       graphicsQualityTier: "high"
