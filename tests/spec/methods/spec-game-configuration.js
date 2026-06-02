@@ -3,8 +3,7 @@ function testGameConfiguration() {
   it ("Should retain gameConfiguration from ready event", function() {
     const gameConfiguration = {
       transparentVideoSupported: true,
-      unityVideoSupported: true,
-      performanceLevel: "high"
+      unityVideoSupported: true
     };
     dispatchCustomMessageEvent({
       action: "ready",

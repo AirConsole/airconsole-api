@@ -292,11 +292,6 @@ AirConsole.prototype.arePlayersSilenced = function () {
  * @typedef {object} AirConsole~GameConfiguration
  * @property {boolean} transparentVideoSupported - true, if transparent videos are supported.
  * @property {boolean} unityVideoSupported - true, if Unity is allowed to play videos.
- * @property {string} performanceLevel - graphics quality tier, approximation of available hardware resources CPU / GPU wise, e.g. "low", "medium", or "high".<br />
- *  The performanceLevel is based on our current internal testing.<br />
- *  low: TV and similar resource limited platforms with slow or old CPU architectures, OpenGL ES2 / ES3 type GPU and < 512mb of RAM + VRAM available.
- *  medium: Automotive platforms, where resource allocation can prioritize other systems. <= 1024MB of RAM + VRAM available normally.
- *  high: Web on desktop, where generally the highest amount of resources are available
  */
 
 /**
