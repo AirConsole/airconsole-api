@@ -408,7 +408,7 @@ describe("AirConsole 1.11.0", function () {
             initAirConsole();
         });
 
-        afterEach(function () {s
+        afterEach(function () {
             tearDown();
         });
 

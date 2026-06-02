@@ -1,20 +1,20 @@
 function testGameConfiguration() {
 
-  it ("Should store configuration from ready event", function() {
-    const configuration = {
+  it ("Should retain gameConfiguration from ready event", function() {
+    const gameConfiguration = {
       transparentVideoSupported: true,
       unityVideoSupported: true,
-      gamePerformanceLevel: "high"
+      performanceLevel: "high"
     };
     dispatchCustomMessageEvent({
       action: "ready",
       code: 1237,
       device_id: 0,
       devices: [{}, undefined, airconsole.devices[DEVICE_ID]],
-      configuration: configuration
+      gameConfiguration: gameConfiguration
     });
 
-    expect(airconsole.getGameConfiguration()).toEqual(configuration);
+    expect(airconsole.getGameConfiguration()).toEqual(gameConfiguration);
   });
 
   it ("Should return `{}` when not provided in ready event", function() {

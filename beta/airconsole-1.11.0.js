@@ -292,21 +292,19 @@ AirConsole.prototype.arePlayersSilenced = function () {
  * @typedef {object} AirConsole~GameConfiguration
  * @property {boolean} transparentVideoSupported - true, if transparent videos are supported.
  * @property {boolean} unityVideoSupported - true, if Unity is allowed to play videos.
- * @property {string} gamePerformanceLevel - graphics quality tier, approximation of available hardware resources CPU / GPU wise, e.g. "low", "medium", or "high".<br />
- *  The gamePerformanceLevel is based on our current internal testing.<br />
+ * @property {string} performanceLevel - graphics quality tier, approximation of available hardware resources CPU / GPU wise, e.g. "low", "medium", or "high".<br />
+ *  The performanceLevel is based on our current internal testing.<br />
  *  low: TV and similar resource limited platforms with slow or old CPU architectures, OpenGL ES2 / ES3 type GPU and < 512mb of RAM + VRAM available.
  *  medium: Automotive platforms, where resource allocation can prioritize other systems. <= 1024MB of RAM + VRAM available normally.
  *  high: Web on desktop, where generally the highest amount of resources are available
  */
 
 /**
- * Returns the platform capability configuration delivered in the ready event.
+ * Returns the platform specific gameConfiguration returns in the ready event.
  * Use this to branch on device capabilities instead of platform or partner
- * names.  Only available on the screen; throws on controllers.
+ * names.
  * Can only be called after onReady.
- * @return {AirConsole~GameConfiguration|{}} - Resolved game configuration
- * Returns an empty object on the screen if the platform did not send a configuration payload.
- * Returns an empty object on the controller.
+ * @return {AirConsole~GameConfiguration|{}} - The resolved game configuration
  * @throws {string} "getGameConfiguration is available only after onReady."
  *   when called before the onReady has been invoked on the screen.
  * @since 1.11.0
@@ -317,7 +315,7 @@ AirConsole.prototype.getGameConfiguration = function () {
   }
 
   if (this.device_id === AirConsole.SCREEN) {
-    return this.configuration || {};
+    return this.gameConfiguration || {};
   }
 
   return {};
@@ -1611,7 +1609,7 @@ AirConsole.prototype.onPostMessage_ = function(event) {
     }
 
     me.gameSafeArea = data.gameSafeArea;
-    me.configuration = data.configuration;
+    me.gameConfiguration = data.gameConfiguration;
     if (data.translations) {
       me.translations = data.translations;
       var elements = document.querySelectorAll("[data-translation]");
