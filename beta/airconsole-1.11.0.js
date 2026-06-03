@@ -290,12 +290,12 @@ AirConsole.prototype.arePlayersSilenced = function () {
 /**
  * Configuration Object
  * @typedef {object} AirConsole~GameConfiguration
- * @property {boolean} transparentVideoSupported - true, if transparent videos are supported.
- * @property {boolean} unityVideoSupported - true, if Unity is allowed to play videos.
+ * @property {boolean} transparentVideoSupport - true, if transparent videos are supported.
+ * @property {boolean} unityVideoSupport - true, if Unity is allowed to play videos.
  */
 
 /**
- * Returns the platform specific gameConfiguration returns in the ready event.
+ * Returns the platform specific gameConfiguration returned in the ready event.
  * Use this to branch on device capabilities instead of platform or partner
  * names.
  * Can only be called after onReady.
