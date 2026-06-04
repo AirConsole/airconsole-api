@@ -28,6 +28,7 @@ Release notes follow the [keep a changelog](https://keepachangelog.com/en/1.0.0/
 
 ### Removed
 
+- Added `AirConsole.getGameConfiguration()` to expose the platform capability gameConfiguration from the `ready` event on screens.
 - Removed `MEDIA_PERMISSION_DENIED` enum (`temporary`/`permanent` distinction). Platform denials now reject with `AirConsoleUserMediaError("PermissionDenied")`; browser denials pass through the original `DOMException`.
 
 ## [1.10.0] - 2026-02-17

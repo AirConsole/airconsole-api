@@ -288,6 +288,35 @@ AirConsole.prototype.arePlayersSilenced = function () {
 }
 
 /**
+ * Configuration Object
+ * @typedef {object} AirConsole~GameConfiguration
+ * @property {boolean} transparentVideoSupport - true, if transparent videos are supported.
+ * @property {boolean} unityVideoSupport - true, if Unity is allowed to play videos.
+ */
+
+/**
+ * Returns the platform specific gameConfiguration returned in the ready event.
+ * Use this to branch on device capabilities instead of platform or partner
+ * names.
+ * Can only be called after onReady.
+ * @return {AirConsole~GameConfiguration|{}} - The resolved game configuration
+ * @throws {string} "getGameConfiguration is available only after onReady."
+ *   when called before the onReady has been invoked on the screen.
+ * @since 1.11.0
+ */
+AirConsole.prototype.getGameConfiguration = function () {
+  if (this.device_id === undefined) {
+    throw "getGameConfiguration is available only after onReady.";
+  }
+
+  if (this.device_id === AirConsole.SCREEN) {
+    return this.gameConfiguration || {};
+  }
+
+  return {};
+}
+
+/**
  * Dictionary of silenced update messages queued during a running game session.
  * @private
  * @since 1.9.0
@@ -737,8 +766,7 @@ AirConsole.prototype.vibrate = function(options) {
 /**
  * Gets called on all other devices in the game as a result of to a successful request to getUserMedia on the specific
  *  device with device_id.
- * On the requesting device, this callback is not invoked at this time.
- * The requesting device currently needs to rely on the getUserMedia promise which will provide the result at the point of promise resolution.
+ * On the requesting device, the getUserMedia promise will provide the result immediately.
  * @abstract
  * @param {number} device_id - The device_id of the controller that was granted access.
  *
@@ -1576,6 +1604,7 @@ AirConsole.prototype.onPostMessage_ = function(event) {
     }
 
     me.gameSafeArea = data.gameSafeArea;
+    me.gameConfiguration = data.gameConfiguration;
     if (data.translations) {
       me.translations = data.translations;
       var elements = document.querySelectorAll("[data-translation]");

@@ -397,4 +397,21 @@ describe("AirConsole 1.11.0", function () {
 
         testUserMediaPermissions();
     });
+
+    /**
+     ======================================================================================
+     TEST CONFIGURATION FUNCTIONALITY
+     */
+
+    describe("Game Configuration", function () {
+        beforeEach(function () {
+            initAirConsole();
+        });
+
+        afterEach(function () {
+            tearDown();
+        });
+
+        testGameConfiguration();
+    });
 });
