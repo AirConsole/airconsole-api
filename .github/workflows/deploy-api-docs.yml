@@ -9,7 +9,7 @@ on:
 
 jobs:
   generate-and-deploy:
-    name: Generate and deploy GH Page
+    name: Generate and deploy live docs
     runs-on: ubuntu-latest
 
     steps:
@@ -27,18 +27,15 @@ jobs:
       with:
         python-version: '3.x'
 
-    # Run the Python script to generate HTML content
-    - name: Run Python script
+    # Run the Python script to generate HTML content (builds into docs/live, creates index.html)
+    - name: Generate live documentation
       run: |
-        mkdir api-1-10-0
-        python .github/generate-docs.py ./airconsole-1.10.0.js # Assumes your Python script generates the HTML content
-        yes | cp -rf api-1-10-0/AirConsole.html api-1-10-0/index.html
-        mv api-1-10-0 docs  # We rename this to ensure it is always the same folder for the last step
+        python .github/generate-docs.py --api=./airconsole-1.11.0.js --target=live
 
     # Deploy to GitHub Pages
     - name: Deploy to GitHub Pages
       uses: peaceiris/actions-gh-pages@v3
       with:
         github_token: ${{ secrets.GITHUB_TOKEN }}
-        publish_dir: ./docs  # The directory containing the generated HTML files
+        publish_dir: ./docs/live  # The directory containing the generated HTML files
         keep_files: true  # Preserve other content (e.g. beta/ subdirectory) on gh-pages
