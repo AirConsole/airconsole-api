@@ -10,26 +10,19 @@ Release notes follow the [keep a changelog](https://keepachangelog.com/en/1.0.0/
 
 ## [Unreleased]
 
+### Added
+
+## [1.11.0] - 2026-07-07
+
 ### Added 
 
+- Added `AirConsole.getGameConfiguration()` to expose the platform capability gameConfiguration from the `ready` event on screens.
 - New `AirConsole.getUserMedia` API for requesting access to the microphone on the controller.
   - Matches the browser's `getUserMedia` API on the controller.
   - As per 1.11.0, only the `audio` constraint is supported
   - The support is consistent for browser based controllers as well as the native AirConsole controller for Android and iOS.
   - The API is designed to be future proof, allowing for the addition of video support in the future without breaking changes.
 - Added `ARCHITECTURE.md` with mermaid sequence diagram documenting the full media permission flow.
-
-### Changed
-
-- `getUserMedia` now uses standard Promise resolve/reject semantics: resolves with `MediaStream` on success, rejects with typed `Error` on failure. Removes the `{ success, stream?, reason?, error? }` envelope.
-- Browser `DOMException` objects are preserved across the platform roundtrip via a cache-and-echo pattern (`cachedMediaError_`), so `error instanceof DOMException` works in `.catch()`.
-- Video constraints are now explicitly rejected with `USER_MEDIA_ERROR_TYPE.invalidConstraints` instead of being silently ignored.
-- `onUserMediaAccessGranted(device_id)` and `onUserMediaAccessDenied(device_id)` no longer carry a second parameter.
-
-### Removed
-
-- Added `AirConsole.getGameConfiguration()` to expose the platform capability gameConfiguration from the `ready` event on screens.
-- Removed `MEDIA_PERMISSION_DENIED` enum (`temporary`/`permanent` distinction). Platform denials now reject with `AirConsoleUserMediaError("PermissionDenied")`; browser denials pass through the original `DOMException`.
 
 ## [1.10.0] - 2026-02-17
 
