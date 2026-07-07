@@ -862,9 +862,6 @@ AirConsole.prototype.getUserMedia = function getUserMedia(constraints) {
   if (!!constraints.video) {
     return Promise.reject(new AirConsoleUserMediaError(AirConsole.USER_MEDIA_ERROR_TYPE.invalidConstraints));
   }
-  if (!('audio' in constraints)) {
-    return Promise.reject(new AirConsoleUserMediaError(AirConsole.USER_MEDIA_ERROR_TYPE.invalidConstraints));
-  }
 
   var me = this;
   return new Promise(function (resolve, reject) {
