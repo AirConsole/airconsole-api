@@ -25,16 +25,15 @@ jobs:
       with:
         python-version: '3.x'
 
-    # generate-docs.py creates output dir "api-1-11-0" from the input filename
+    # generate-docs.py builds into docs/beta and creates index.html
     - name: Generate beta documentation
       run: |
-        python .github/generate-docs.py ./beta/airconsole-1.11.0.js
-        yes | cp -rf api-1-11-0/AirConsole.html api-1-11-0/index.html
+        python .github/generate-docs.py --api=./beta/airconsole-1.11.1.js --target=beta
 
     - name: Deploy to GitHub Pages (beta subdirectory)
       uses: peaceiris/actions-gh-pages@v3
       with:
         github_token: ${{ secrets.GITHUB_TOKEN }}
-        publish_dir: ./api-1-11-0
+        publish_dir: ./docs/beta
         destination_dir: beta  # Deploy to /beta/ subdirectory
         keep_files: true  # Preserve other content on gh-pages

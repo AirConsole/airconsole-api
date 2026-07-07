@@ -6,6 +6,7 @@ import sys
 import shutil
 import re
 import os
+import argparse
 
 def normalizeChapter(chapter):
   chapter = chapter.title()
@@ -23,10 +24,14 @@ def getChapterFromLine(line):
   if "@chapter" in line:
     return line.split("@chapter")[1].split("*")[0].strip()
 
-filename = sys.argv[-1]
+parser = argparse.ArgumentParser()
+parser.add_argument("--api", required=True, help="Path to the airconsole JS file")
+parser.add_argument("--target", required=True, choices=["live", "beta"])
+args = parser.parse_args()
+filename = args.api
 inputs = [filename]
-output_dir = filename.split("/")[-1][:-3].replace(".", "-").replace(
-    "airconsole", "api")
+output_dir = os.path.join("docs", args.target)
+os.makedirs(output_dir, exist_ok=True)
 chapters = []
 api = open(filename).readlines()
 for line in api:
@@ -88,3 +93,6 @@ try:
 finally:
   shutil.rmtree(temp_dir)
   pass
+
+shutil.copyfile(os.path.join(output_dir, "AirConsole.html"),
+                os.path.join(output_dir, "index.html"))

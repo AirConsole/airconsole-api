@@ -1,7 +1,7 @@
 /**
  * AirConsole.
  * @copyright 2026 by N-Dream AG, Switzerland. All rights reserved.
- * @version 1.11.0
+ * @version 1.11.1
  *
  * IMPORTANT:
  * @see http://developers.airconsole.com/ for API documentation
@@ -860,9 +860,6 @@ AirConsole.prototype.getUserMedia = function getUserMedia(constraints) {
     return Promise.reject(new AirConsoleUserMediaError(AirConsole.USER_MEDIA_ERROR_TYPE.invalidConstraints));
   }
   if (!!constraints.video) {
-    return Promise.reject(new AirConsoleUserMediaError(AirConsole.USER_MEDIA_ERROR_TYPE.invalidConstraints));
-  }
-  if (!('audio' in constraints)) {
     return Promise.reject(new AirConsoleUserMediaError(AirConsole.USER_MEDIA_ERROR_TYPE.invalidConstraints));
   }
 
