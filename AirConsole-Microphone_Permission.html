@@ -30,7 +30,7 @@
 
     <div id="main">
         
-        <h1 class="page-title"><b>&#8627; Controller Inputs</b></h1>
+        <h1 class="page-title"><b>&#8627; Microphone Permission</b></h1>
         
         
 
@@ -228,19 +228,101 @@ Do not access properties of this object directly.
 
     
 
-    <h4 class="name" id="onDeviceMotion"><span class="type-signature">(abstract) </span>onDeviceMotion<span class="signature">(data)</span><span class="type-signature"></span></h4>
+    <h4 class="name" id="destroy"><span class="type-signature"></span>destroy<span class="signature">()</span><span class="type-signature"></span></h4>
 
     
 
 
 
 <div class="description">
-    Gets called every X milliseconds with device motion data iff the
-AirConsole was instantiated with the "device_motion" opts set to the
-interval in milliseconds. Only works for controllers.
-Note: Some browsers do not allow games to access accelerometer and gyroscope
-      in an iframe (your game). So use this method if you need gyroscope
-      or accelerometer data.
+    Releases resources held by this AirConsole instance.
+Call this when the instance is no longer needed — for example, when navigating
+away in a single-page application — to remove the message event listener and
+cancel any pending getUserMedia timeout. Failing to call destroy() in such
+environments will leave a dangling listener and possibly a live timeout.
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="./airconsole-1.11.0.js.html">./airconsole-1.11.0.js</a>, <a href="./airconsole-1.11.0.js.html#line909">line 909</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id="getUserMedia"><span class="type-signature"></span>getUserMedia<span class="signature">(constraints)</span><span class="type-signature"> &rarr; {Promise.&lt;MediaStream>}</span></h4>
+
+    
+
+
+
+<div class="description">
+    Requests microphone permissions for the controller device.
+Can only be called by a controller (not the screen). Video constraints are not supported.
 </div>
 
 
@@ -276,13 +358,13 @@ Note: Some browsers do not allow games to access accelerometer and gyroscope
 
         <tr>
             
-                <td class="name"><code>data</code></td>
+                <td class="name"><code>constraints</code></td>
             
 
             <td class="type">
             
                 
-<span class="param-type">object</span>
+<span class="param-type"><a href="AirConsole.html#~GetUserMediaConstraint">AirConsole~GetUserMediaConstraint</a></span>
 
 
             
@@ -292,8 +374,9 @@ Note: Some browsers do not allow games to access accelerometer and gyroscope
 
             
 
-            <td class="description last">data.x, data.y, data.z for accelerometer
-                       data.alpha, data.beta, data.gamma for gyroscope</td>
+            <td class="description last">Media constraints. Must include `audio: true`.
+  Video constraints are not supported and will cause the promise to reject with
+  AirConsole.USER_MEDIA_ERROR_TYPE.invalidConstraints.</td>
         </tr>
 
     
@@ -334,12 +417,23 @@ Note: Some browsers do not allow games to access accelerometer and gyroscope
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="./airconsole-1.11.0.js.html">./airconsole-1.11.0.js</a>, <a href="./airconsole-1.11.0.js.html#line728">line 728</a>
+        <a href="./airconsole-1.11.0.js.html">./airconsole-1.11.0.js</a>, <a href="./airconsole-1.11.0.js.html#line849">line 849</a>
     </li></ul></dd>
     
 
     
 
+    
+    <dt class="tag-see">See:</dt>
+    <dd class="tag-see">
+        <ul>
+            <li>AirConsole.USER_MEDIA_ERROR_TYPE</li>
+        
+            <li>AirConsole.prototype.onUserMediaAccessGranted</li>
+        
+            <li>AirConsole.prototype.onUserMediaAccessDenied</li>
+        </ul>
+    </dd>
     
 
     
@@ -357,6 +451,52 @@ Note: Some browsers do not allow games to access accelerometer and gyroscope
 
 
 
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    Resolves with the granted <a href="https://developer.mozilla.org/en-US/docs/Web/API/MediaStream">MediaStream</a>
+  on success. Rejects with {AirConsoleUserMediaError} (see AirConsole.USER_MEDIA_ERROR_TYPE) for
+  AirConsole-specific failures, or with a native
+  <a href="https://developer.mozilla.org/en-US/docs/Web/API/MediaDevices/getUserMedia">DOMException</a>
+  (e.g. `NotAllowedError`, `NotFoundError`) when the browser itself denies the request.
+
+  Note: callers are responsible for stopping stream tracks when the stream is no longer needed:
+  `stream.getTracks().forEach(function(t) { t.stop(); })`
+</div>
+
+
+
+<dl class="param-type">
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">Promise.&lt;MediaStream></span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+    <h5>Example</h5>
+    
+    <pre class="prettyprint"><code>airconsole.getUserMedia({ audio: true }).then(function(stream) {
+  console.info('Media access granted', stream);
+  // Remember to stop tracks when done:
+  // stream.getTracks().forEach(function(t) { t.stop(); });
+}).catch(function(error) {
+  if (error.name === 'AirConsole.UserMediaError') {
+    // AirConsole-specific error, see AirConsole.USER_MEDIA_ERROR_TYPE for possible values
+    console.error('AirConsole media error:', error.message);
+  } else {
+    // Native browser error (e.g. NotAllowedError, NotFoundError, AbortError)
+    console.error('Browser media access error:', error);
+  }
+});</code></pre>
 
 
 
@@ -365,16 +505,17 @@ Note: Some browsers do not allow games to access accelerometer and gyroscope
 
     
 
-    <h4 class="name" id="vibrate"><span class="type-signature"></span>vibrate<span class="signature">(options)</span><span class="type-signature"></span></h4>
+    <h4 class="name" id="onUserMediaAccessDenied"><span class="type-signature">(abstract) </span>onUserMediaAccessDenied<span class="signature">(device_id)</span><span class="type-signature"></span></h4>
 
     
 
 
 
 <div class="description">
-    Vibrates the device for a specific amount of time or playing back a specific pattern when
-used with the controller app. Only works for controllers.
-Note: iOS without controller app ignores the specified time and vibrates for a pre-set amount of time.
+    Gets called on all other devices in the game as a result of to a denied request to getUserMedia on the specific
+ device with device_id.
+On the requesting device, this callback is not invoked at this time.
+The requesting device currently needs to rely on the getUserMedia promise which will provide the result at the point of promise resolution.
 </div>
 
 
@@ -410,16 +551,13 @@ Note: iOS without controller app ignores the specified time and vibrates for a p
 
         <tr>
             
-                <td class="name"><code>options</code></td>
+                <td class="name"><code>device_id</code></td>
             
 
             <td class="type">
             
                 
-<span class="param-type">Number</span>
-|
-
-<span class="param-type"><a href="global.html#VibrationOptions">VibrationOptions</a></span>
+<span class="param-type">number</span>
 
 
             
@@ -429,9 +567,7 @@ Note: iOS without controller app ignores the specified time and vibrates for a p
 
             
 
-            <td class="description last">This represents either<br />
-- Milliseconds to vibrate the device<br />
-- Vibration options for fine-tuned vibration patterns</td>
+            <td class="description last">The device_id of the controller.</td>
         </tr>
 
     
@@ -472,12 +608,21 @@ Note: iOS without controller app ignores the specified time and vibrates for a p
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="./airconsole-1.11.0.js.html">./airconsole-1.11.0.js</a>, <a href="./airconsole-1.11.0.js.html#line757">line 757</a>
+        <a href="./airconsole-1.11.0.js.html">./airconsole-1.11.0.js</a>, <a href="./airconsole-1.11.0.js.html#line799">line 799</a>
     </li></ul></dd>
     
 
     
 
+    
+    <dt class="tag-see">See:</dt>
+    <dd class="tag-see">
+        <ul>
+            <li>AirConsole.prototype.getUserMedia</li>
+        
+            <li>AirConsole.prototype.onUserMediaAccessGranted</li>
+        </ul>
+    </dd>
     
 
     
@@ -495,6 +640,162 @@ Note: iOS without controller app ignores the specified time and vibrates for a p
 
 
 
+
+
+    <h5>Example</h5>
+    
+    <pre class="prettyprint"><code>airconsole.onUserMediaAccessDenied = function (device_id) {
+   console.info('Controller ' + device_id + ' was denied media access');
+};</code></pre>
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id="onUserMediaAccessGranted"><span class="type-signature">(abstract) </span>onUserMediaAccessGranted<span class="signature">(device_id)</span><span class="type-signature"></span></h4>
+
+    
+
+
+
+<div class="description">
+    Gets called on all other devices in the game as a result of to a successful request to getUserMedia on the specific
+ device with device_id.
+On the requesting device, the getUserMedia promise will provide the result immediately.
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>device_id</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The device_id of the controller that was granted access.</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="./airconsole-1.11.0.js.html">./airconsole-1.11.0.js</a>, <a href="./airconsole-1.11.0.js.html#line781">line 781</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+    <dt class="tag-see">See:</dt>
+    <dd class="tag-see">
+        <ul>
+            <li>AirConsole.prototype.getUserMedia</li>
+        
+            <li>AirConsole.prototype.onUserMediaAccessDenied</li>
+        </ul>
+    </dd>
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <h5>Example</h5>
+    
+    <pre class="prettyprint"><code>airconsole.onUserMediaAccessGranted = function (device_id) {
+   console.info('Controller ' + device_id + ' was granted media access');
+};</code></pre>
 
 
 

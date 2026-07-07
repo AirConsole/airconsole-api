@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>AirConsole - Documentation</title>
+    <title>AirConsoleUserMediaError - Documentation</title>
 
     <script src="scripts/prettify/prettify.js"></script>
     <script src="scripts/prettify/lang-css.js"></script>
@@ -30,7 +30,7 @@
 
     <div id="main">
         
-        <h1 class="page-title"><b>&#8627; Controller Inputs</b></h1>
+        <h1 class="page-title">AirConsoleUserMediaError</h1>
         
         
 
@@ -42,8 +42,11 @@
 <header>
     
         <h2>
-        AirConsole
+        AirConsoleUserMediaError
         </h2>
+        
+            <div class="class-description">Represents an error specific to user media operations within the AirConsole platform.
+This error is thrown when there is an issue related to accessing or managing user media.</div>
         
     
 </header>
@@ -54,18 +57,14 @@
         
 
     
+    <h2>Constructor</h2>
+    
 
-    <h4 class="name" id="AirConsole"><span class="type-signature"></span>new AirConsole<span class="signature">(opts)</span><span class="type-signature"> &rarr; {<a href="global.html#AirConsoleObject">AirConsoleObject</a>}</span></h4>
+    <h4 class="name" id="AirConsoleUserMediaError"><span class="type-signature"></span>new AirConsoleUserMediaError<span class="signature">(message)</span><span class="type-signature"></span></h4>
 
     
 
 
-
-<div class="description">
-    Your gateway object to AirConsole.
-There are getter and setter functions for all properties.
-Do not access properties of this object directly.
-</div>
 
 
 
@@ -100,13 +99,13 @@ Do not access properties of this object directly.
 
         <tr>
             
-                <td class="name"><code>opts</code></td>
+                <td class="name"><code>message</code></td>
             
 
             <td class="type">
             
                 
-<span class="param-type"><a href="AirConsole.html#~Config">AirConsole~Config</a></span>
+<span class="param-type"><a href="AirConsole.html#.USER_MEDIA_ERROR_TYPE">AirConsole.USER_MEDIA_ERROR_TYPE</a></span>
 
 
             
@@ -116,7 +115,7 @@ Do not access properties of this object directly.
 
             
 
-            <td class="description last">Constructor config, see bellow.</td>
+            <td class="description last">The message is of type AirConsole.USER_MEDIA_ERROR_TYPE.</td>
         </tr>
 
     
@@ -157,7 +156,7 @@ Do not access properties of this object directly.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="./airconsole-1.11.0.js.html">./airconsole-1.11.0.js</a>, <a href="./airconsole-1.11.0.js.html#line39">line 39</a>
+        <a href="airconsole-1.11.0.js.html">airconsole-1.11.0.js</a>, <a href="airconsole-1.11.0.js.html#line166">line 166</a>
     </li></ul></dd>
     
 
@@ -180,33 +179,22 @@ Do not access properties of this object directly.
 
 
 
-<h5>Returns:</h5>
-
-        
-<div class="param-desc">
-    The AirConsole object.
-</div>
-
-
-
-<dl class="param-type">
-    <dt>
-        Type
-    </dt>
-    <dd>
-        
-<span class="param-type"><a href="global.html#AirConsoleObject">AirConsoleObject</a></span>
-
-
-    </dd>
-</dl>
-
-    
 
 
 
     
     </div>
+
+    
+        <h3 class="subsection-title">Extends</h3>
+
+        
+
+
+    <ul>
+        <li>Error</li>
+    </ul>
+
 
     
 
@@ -221,27 +209,48 @@ Do not access properties of this object directly.
     
 
     
-        <h3 class="subsection-title">Methods</h3>
 
+    
+
+    
+</article>
+
+</section>
+
+
+
+
+
+
+
+<section>
+
+<header>
+    
+        <h2>
+        AirConsoleUserMediaError
+        </h2>
         
-            
+            <div class="class-description">Represents an error specific to user media operations within the AirConsole platform.
+This error is thrown when there is an issue related to accessing or managing user media.</div>
+        
+    
+</header>
+
+<article>
+    <div style='display:none;'>
+    
+        
+
+    
+    <h2>Constructor</h2>
+    
+
+    <h4 class="name" id="AirConsoleUserMediaError"><span class="type-signature"></span>new AirConsoleUserMediaError<span class="signature">(message)</span><span class="type-signature"></span></h4>
 
     
 
-    <h4 class="name" id="onDeviceMotion"><span class="type-signature">(abstract) </span>onDeviceMotion<span class="signature">(data)</span><span class="type-signature"></span></h4>
 
-    
-
-
-
-<div class="description">
-    Gets called every X milliseconds with device motion data iff the
-AirConsole was instantiated with the "device_motion" opts set to the
-interval in milliseconds. Only works for controllers.
-Note: Some browsers do not allow games to access accelerometer and gyroscope
-      in an iframe (your game). So use this method if you need gyroscope
-      or accelerometer data.
-</div>
 
 
 
@@ -276,13 +285,13 @@ Note: Some browsers do not allow games to access accelerometer and gyroscope
 
         <tr>
             
-                <td class="name"><code>data</code></td>
+                <td class="name"><code>message</code></td>
             
 
             <td class="type">
             
                 
-<span class="param-type">object</span>
+<span class="param-type">AirConsole.USER_MEDIA_ERROR_TYPE</span>
 
 
             
@@ -292,8 +301,7 @@ Note: Some browsers do not allow games to access accelerometer and gyroscope
 
             
 
-            <td class="description last">data.x, data.y, data.z for accelerometer
-                       data.alpha, data.beta, data.gamma for gyroscope</td>
+            <td class="description last">The message is of type AirConsole.USER_MEDIA_ERROR_TYPE.</td>
         </tr>
 
     
@@ -334,7 +342,7 @@ Note: Some browsers do not allow games to access accelerometer and gyroscope
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="./airconsole-1.11.0.js.html">./airconsole-1.11.0.js</a>, <a href="./airconsole-1.11.0.js.html#line728">line 728</a>
+        <a href="./airconsole-1.11.0.js.html">./airconsole-1.11.0.js</a>, <a href="./airconsole-1.11.0.js.html#line166">line 166</a>
     </li></ul></dd>
     
 
@@ -360,90 +368,19 @@ Note: Some browsers do not allow games to access accelerometer and gyroscope
 
 
 
-        
-            
+    
+    </div>
 
     
-
-    <h4 class="name" id="vibrate"><span class="type-signature"></span>vibrate<span class="signature">(options)</span><span class="type-signature"></span></h4>
-
-    
-
-
-
-<div class="description">
-    Vibrates the device for a specific amount of time or playing back a specific pattern when
-used with the controller app. Only works for controllers.
-Note: iOS without controller app ignores the specified time and vibrates for a pre-set amount of time.
-</div>
-
-
-
-
-
-
-
-
-
-    <h5>Parameters:</h5>
-    
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
+        <h3 class="subsection-title">Extends</h3>
 
         
 
-        
 
-        <th class="last">Description</th>
-    </tr>
-    </thead>
+    <ul>
+        <li>Error</li>
+    </ul>
 
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>options</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">Number</span>
-|
-
-<span class="param-type"><a href="global.html#VibrationOptions">VibrationOptions</a></span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">This represents either<br />
-- Milliseconds to vibrate the device<br />
-- Vibration options for fine-tuned vibration patterns</td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-
-
-
-
-
-<dl class="details">
 
     
 
@@ -451,54 +388,12 @@ Note: iOS without controller app ignores the specified time and vibrates for a p
 
     
 
-    
+     
 
     
 
     
 
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="./airconsole-1.11.0.js.html">./airconsole-1.11.0.js</a>, <a href="./airconsole-1.11.0.js.html#line757">line 757</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        
     
 
     
