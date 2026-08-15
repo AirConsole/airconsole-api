@@ -19,24 +19,11 @@ This subtree is the AppEngine-served copy of the public AirConsole JavaScript AP
 - `tests/AGENTS.md`
 - `ci/AGENTS.md`
 
-## Memory Management
-
-Always use the **Kratos MCP** to manage memory across sessions:
-
-- Store relevant context, decisions, and learnings via `kratos_memory_save` before ending a session.
-- Retrieve prior context at the start of a new session using `kratos_memory_search` or `kratos_memory_get_recent`.
-- Use `kratos_memory_ask` for natural language queries against accumulated memory.
-- Never rely solely on in-context state for information that should persist across sessions.
-
 ## Code Access
 
-Always use the **Serena MCP** for reading and writing code:
-
-- Use `serena_find_symbol`, `serena_get_symbols_overview`, and `serena_search_for_pattern` to navigate and understand code.
-- Use `serena_find_referencing_symbols` to find all callers/references before refactoring, and `serena_rename_symbol` to rename a symbol consistently across the codebase.
-- Use `serena_replace_symbol_body`, `serena_replace_content`, `serena_insert_after_symbol`, and `serena_insert_before_symbol` to make code changes.
-- Prefer symbol-level tools over raw text replacement when the target is a named code entity.
-- Always call `serena_check_onboarding_performed` after activating a project.
+- Before refactoring or renaming a symbol, find every reference to it and update all call sites together.
+- Prefer structural, symbol-aware edits over blind text replacement when the target is a named code entity.
+- Never rely solely on in-context state for information that should persist across sessions; write it down in the repository.
 
 ## Syntax and API Verification
 
