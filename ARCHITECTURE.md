@@ -102,3 +102,78 @@ Callback storage lives in a `WeakMap`, which keeps resolve and reject handlers a
 The 30 second timeout is a safety net. It rejects with `AirConsoleUserMediaError.timeout` if the platform never answers.
 
 `mediaPermissionPending_` blocks duplicate requests and ignores stale platform messages after cleanup.
+
+# Audio Input Device Selection
+
+## Why
+
+A phone controller connected to a car often captures through the car's Bluetooth hands-free microphone. Opening that
+stream activates the hands-free profile, the car's media session loses audio focus, and the platform pauses the
+session. The player can not act on that pause, so instead the platform offers them the other audio inputs of their
+phone and asks the game to capture from the one they pick.
+
+The platform decides on the controller side: it can not observe the car's audio focus itself, so it correlates an
+audio-focus-loss pause with recent microphone activity on that controller.
+
+## Actors
+
+**Game** reports its audio inputs and implements `onAudioInputDeviceChange` to swap streams.
+
+**API** forwards the reported devices to the platform and delivers the platform's selection to the game.
+
+**Platform** decides whether a pause was caused by the microphone and, if so, shows the audio input selection instead
+of the pause overlay.
+
+## Sequence
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Game
+    participant API
+    participant Platform
+    participant Browser
+
+    Game->>API: getUserMedia({ audio: true })
+    API->>Platform: sendEvent_('requestUserMediaPermission', { constraints })
+    API->>Platform: sendEvent_('microphoneRequested', {})
+    Note over Platform: arm the audio focus loss window
+    Note over API,Browser: media permission flow (see above)
+    Browser-->>API: stream
+    API->>Platform: sendEvent_('userMediaPermissionGranted', { constraints })
+    Note over Platform: re-arm the window, the microphone is now engaged
+    API-->>Game: Promise resolves with stream
+
+    Game->>Browser: enumerateDevices()
+    Browser-->>Game: MediaDeviceInfo[]
+    Game->>API: setAudioInputDevices(devices, activeDeviceId)
+    Note over API: keep audioinput entries with a deviceId,<br/>map to { deviceId, label, groupId }
+    API->>Platform: sendEvent_('audioInputDevicesReported', { devices, activeDeviceId })
+
+    Platform->>Platform: audio focus lost inside the window
+    Platform->>Platform: show audio input selection instead of the pause overlay
+    Platform->>API: event setAudioInputDevice { deviceId }
+    API-->>Game: onAudioInputDeviceChange(deviceId)
+    Game->>Browser: stop tracks, getUserMedia({ audio: { deviceId: { exact } } })
+    Browser-->>Game: new stream
+    Game->>API: setAudioInputDevices(devices, deviceId)
+    API->>Platform: sendEvent_('audioInputDevicesReported', ...)
+```
+
+## Key Design Decisions
+
+`setAudioInputDevices` accepts the result of `enumerateDevices()` unchanged. It keeps entries whose `kind` is
+`audioinput` (or that carry no `kind` at all, so plain objects can be reported too) and that have a `deviceId`, and
+reduces each to `{ deviceId, label, groupId }`. Nothing else about a `MediaDeviceInfo` is useful to the platform, and
+`toJSON` output would not survive `postMessage` cloning in every browser.
+
+`deviceId` values are scoped to the origin that enumerated them, so the platform treats them as opaque: it renders the
+`label` and hands the `deviceId` back unchanged. It never enumerates devices itself, because the ids it would get do
+not match the game's.
+
+`setAudioInputDevice` is handled before the `mediaPermissionPending_` guard in the inbound event handler. That guard
+exists to drop stale messages of a permission request that already settled, and audio input selection happens long
+after that, with no request pending.
+
+Reporting an empty list is how a game says the microphone is no longer in use. The platform then has nothing to offer
+and falls back to its normal pause handling.
