@@ -879,6 +879,7 @@ AirConsole.prototype.getUserMedia = function getUserMedia(constraints) {
     //  opening the microphone is what takes the audio focus away from the platform (E.g. a phone controller capturing
     //  through a car's Bluetooth microphone), so it can offer the player another audio input instead of pausing.
     if (constraints.audio) {
+      console.log('DRG:airconsole-1.11.0.js: 882:getUserMedia:microphoneRequested:', constraints);
       me.sendEvent_('microphoneRequested', {});
     }
   });
@@ -959,6 +960,9 @@ AirConsole.prototype.setAudioInputDevices = function setAudioInputDevices(device
 
   this.audioInputDevices_ = audioInputs;
   this.activeAudioInputDeviceId_ = activeDeviceId || '';
+
+  console.log('DRG:airconsole-1.11.0.js: 964:setAudioInputDevices:audioInputs:', audioInputs,
+    this.activeAudioInputDeviceId_);
 
   this.sendEvent_('audioInputDevicesReported', {
     devices: audioInputs,
@@ -1782,6 +1786,7 @@ AirConsole.prototype.onPostMessage_ = function(event) {
     // Audio input selection happens while a stream is already open, so it is handled before the media permission
     // guard below, which only applies to the events of a pending permission request.
     if (type === 'setAudioInputDevice') {
+      console.log('DRG:airconsole-1.11.0.js: 1789:onPostMessage_:setAudioInputDevice:', data.data);
       me.onAudioInputDeviceChange(data.data ? data.data.deviceId : undefined);
       return;
     }
@@ -1815,6 +1820,8 @@ AirConsole.prototype.onPostMessage_ = function(event) {
           // Note: 'userMediaPermissionGranted' is both sent upward (controller → platform) and
           // received downward (platform → controller for native controllers). The direction is
           // determined by context: outbound is sent here; inbound is handled by this event branch.
+          console.log('DRG:airconsole-1.11.0.js: 1823:onPostMessage_:userMediaPermissionGranted:',
+            me.mediaPermissionConstraints_);
           me.sendEvent_('userMediaPermissionGranted', {
             constraints: me.mediaPermissionConstraints_,
           });
