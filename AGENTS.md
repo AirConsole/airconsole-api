@@ -1,34 +1,33 @@
-# airconsole-appengine/static/api
+# AirConsole JavaScript API Guidelines
 
-This subtree is the AppEngine-served copy of the public AirConsole JavaScript API bundle.
+## Scope
 
-## Verification Entry Points
+This repository contains the public AirConsole browser API bundles. AppEngine
+checks it out as a submodule and serves it through the `static/api` symlink.
 
-- Browser regression harness: serve this subtree statically and open a versioned runner in `tests/`.
-- Playwright verification: in `ci/`, use `npm run server` and `npm test`.
+Read the nearest child guide before changing the browser regression harness in
+`tests/` or the Playwright harness in `ci/`.
 
-## Local Invariants
+## Compatibility rules
 
-- Keep versioned root bundles backward compatible.
-- Stage upcoming releases in `beta/` before promotion.
-- Do not remove `deprecated/` assets.
-- Never call `rm`, use `safe-rm` instead (brew install safe-rm).
+- Treat the released `airconsole-<version>.js` files as public, versioned APIs.
+  Preserve backward compatibility unless the task explicitly changes a supported
+  version contract.
+- Stage the next release in `beta/`; do not overwrite the current released bundle
+  as part of unrelated work.
+- Keep `deprecated/` bundles and old versioned test runners. Existing games may
+  still depend on them.
+- Update `CHANGELOG.md`, version-specific specs, documentation workflow inputs,
+  and every internal reference together when promoting or renaming a bundle.
+- Preserve the browser compatibility and coding style of the bundle being edited.
+  Do not add a new build system or dependency for a focused API change.
 
-## Read Next
+## Verification
 
-- `tests/AGENTS.md`
-- `ci/AGENTS.md`
-
-## Code Access
-
-- Before refactoring or renaming a symbol, find every reference to it and update all call sites together.
-- Prefer structural, symbol-aware edits over blind text replacement when the target is a named code entity.
-- Never rely solely on in-context state for information that should persist across sessions; write it down in the repository.
-
-## Syntax and API Verification
-
-Always use the **Context7 MCP** to verify correct syntax and API usage before writing or modifying code that depends on external libraries:
-
-- Call `context7_resolve-library-id` first to obtain the correct library ID for any framework or package.
-- Call `context7_query-docs` with a specific query to retrieve up-to-date documentation and code examples.
-- Use Context7 before writing code that depends on external library APIs to avoid outdated or hallucinated usage patterns.
+- Extend the matching Jasmine spec and open its versioned HTML runner under
+  `tests/` using a static server.
+- From `ci/`, run `npm test`. Playwright starts the port 9000 static server through
+  `playwright.config.js`; `npm run server` is available for manual runner checks.
+- Verify both the changed API behavior and compatibility with unchanged public
+  methods. A generated documentation build does not replace browser regression
+  coverage.
