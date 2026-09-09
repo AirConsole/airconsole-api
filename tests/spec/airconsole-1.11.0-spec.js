@@ -400,6 +400,19 @@ describe("AirConsole 1.11.0", function () {
 
     /**
      ======================================================================================
+     TEST AUDIO INPUT DEVICE SELECTION FUNCTIONALITY
+     */
+
+    describe("Audio Input Devices", function () {
+        afterEach(function () {
+            tearDown();
+        });
+
+        testAudioInputDevices();
+    });
+
+    /**
+     ======================================================================================
      TEST CONFIGURATION FUNCTIONALITY
      */
 

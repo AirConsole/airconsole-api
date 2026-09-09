@@ -875,6 +875,13 @@ AirConsole.prototype.getUserMedia = function getUserMedia(constraints) {
     // Send the request to the platform to decide where and how the user media request needs to take place based on
     //  browser or controller environment.
     me.sendEvent_('requestUserMediaPermission', { constraints: constraints });
+    // Let the platform know a microphone is being requested. The platform uses this to recognize situations where
+    //  opening the microphone is what takes the audio focus away from the platform (E.g. a phone controller capturing
+    //  through a car's Bluetooth microphone), so it can offer the player another audio input instead of pausing.
+    if (constraints.audio) {
+      console.log('DRG:airconsole-1.11.1.js: 882:getUserMedia:microphoneRequested:', constraints);
+      me.sendEvent_('microphoneRequested', {});
+    }
   });
 };
 
@@ -898,6 +905,89 @@ AirConsole.prototype.rejectMediaPermission_ = function rejectMediaPermission_(er
   this.cleanUpMediaPermission_();
   if (cb) { cb.reject(error); }
 }
+
+/**
+ * @typedef {Object} AirConsole~AudioInputDevice
+ * @property {string} deviceId - Identifier of the audio input, as reported by
+ *   {@link https://developer.mozilla.org/en-US/docs/Web/API/MediaDevices/enumerateDevices enumerateDevices}.
+ * @property {string} label - Human readable name of the audio input. Empty until a media permission was granted.
+ * @property {string} [groupId] - Identifier of the group the device belongs to.
+ */
+
+/**
+ * Reports the audio inputs available on this controller and the one the current stream uses.
+ * Can only be called by a controller (not the screen).
+ *
+ * The platform needs this to offer the player a different microphone when opening one takes the audio focus away, for
+ * example when a phone controller connected to a car captures through the car's Bluetooth microphone and the platform
+ * would otherwise pause. When the player picks a different audio input,
+ * {@link AirConsole.prototype.onAudioInputDeviceChange} is called with its `deviceId`.
+ *
+ * Call this whenever the situation changes: after a stream was opened, after switching to another device, and when
+ * `navigator.mediaDevices` fires `devicechange`. Report an empty list once the microphone is no longer in use, so the
+ * platform does not offer devices for a stream that does not exist anymore.
+ *
+ * Note: `deviceId` values are scoped to the origin that enumerated them. The platform only displays the `label` and
+ * hands the `deviceId` back unchanged.
+ *
+ * @param {Array<MediaDeviceInfo|AirConsole~AudioInputDevice>} devices - Devices to report. Entries of a kind other
+ *   than `audioinput` and entries without a `deviceId` are ignored, so the result of `enumerateDevices()` can be
+ *   passed as is.
+ * @param {string} [activeDeviceId] - The `deviceId` the current stream uses, e.g.
+ *   `stream.getAudioTracks()[0].getSettings().deviceId`.
+ *
+ * @example
+ * const devices = await navigator.mediaDevices.enumerateDevices();
+ * airconsole.setAudioInputDevices(devices, stream.getAudioTracks()[0].getSettings().deviceId);
+ *
+ * @see AirConsole.prototype.onAudioInputDeviceChange
+ * @see AirConsole.prototype.getUserMedia
+ */
+AirConsole.prototype.setAudioInputDevices = function setAudioInputDevices(devices, activeDeviceId) {
+  if (this.device_id === AirConsole.SCREEN) {
+    throw "Only controllers can call setAudioInputDevices!";
+  }
+
+  var audioInputs = (devices || []).filter(function isReportableAudioInput(device) {
+    return !!device && !!device.deviceId && (!device.kind || device.kind === 'audioinput');
+  }).map(function toAudioInputDevice(device) {
+    return {
+      deviceId: device.deviceId,
+      label: device.label || '',
+      groupId: device.groupId || ''
+    };
+  });
+
+  this.audioInputDevices_ = audioInputs;
+  this.activeAudioInputDeviceId_ = activeDeviceId || '';
+
+  console.log('DRG:airconsole-1.11.1.js: 964:setAudioInputDevices:audioInputs:', audioInputs,
+    this.activeAudioInputDeviceId_);
+
+  this.sendEvent_('audioInputDevicesReported', {
+    devices: audioInputs,
+    activeDeviceId: this.activeAudioInputDeviceId_
+  });
+};
+
+/**
+ * Gets called when the platform asks the game to capture from a different audio input, because the player picked one.
+ * Close the current stream and open a new one on the given device, then report the new situation with
+ * {@link AirConsole.prototype.setAudioInputDevices}.
+ * @abstract
+ * @param {string} device_id - The `deviceId` of the audio input to use, as previously reported by the game.
+ *
+ * @example
+ * airconsole.onAudioInputDeviceChange = async function (device_id) {
+ *   stream.getTracks().forEach(function (t) { t.stop(); });
+ *   stream = await navigator.mediaDevices.getUserMedia({ audio: { deviceId: { exact: device_id } } });
+ *   const devices = await navigator.mediaDevices.enumerateDevices();
+ *   airconsole.setAudioInputDevices(devices, device_id);
+ * };
+ *
+ * @see AirConsole.prototype.setAudioInputDevices
+ */
+AirConsole.prototype.onAudioInputDeviceChange = function(device_id) {};
 
 /**
  * Releases resources held by this AirConsole instance.
@@ -1693,6 +1783,14 @@ AirConsole.prototype.onPostMessage_ = function(event) {
   } else if (data.action === 'event') {
     const { type } = data;
 
+    // Audio input selection happens while a stream is already open, so it is handled before the media permission
+    // guard below, which only applies to the events of a pending permission request.
+    if (type === 'setAudioInputDevice') {
+      console.log('DRG:airconsole-1.11.1.js: 1789:onPostMessage_:setAudioInputDevice:', data.data);
+      me.onAudioInputDeviceChange(data.data ? data.data.deviceId : undefined);
+      return;
+    }
+
     // Guard: ignore stale platform messages that arrive after state has been cleaned up
     // (e.g. after the 30-second timeout has already resolved the pending Promise).
     if (!me.mediaPermissionPending_) {
@@ -1722,6 +1820,8 @@ AirConsole.prototype.onPostMessage_ = function(event) {
           // Note: 'userMediaPermissionGranted' is both sent upward (controller → platform) and
           // received downward (platform → controller for native controllers). The direction is
           // determined by context: outbound is sent here; inbound is handled by this event branch.
+          console.log('DRG:airconsole-1.11.1.js: 1823:onPostMessage_:userMediaPermissionGranted:',
+            me.mediaPermissionConstraints_);
           me.sendEvent_('userMediaPermissionGranted', {
             constraints: me.mediaPermissionConstraints_,
           });

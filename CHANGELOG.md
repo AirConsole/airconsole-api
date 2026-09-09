@@ -12,6 +12,15 @@ Release notes follow the [keep a changelog](https://keepachangelog.com/en/1.0.0/
 
 ### Added
 
+- New `AirConsole.setAudioInputDevices(devices, activeDeviceId)` for controllers to report their audio inputs and the
+  device the current microphone stream uses.
+- New `AirConsole.onAudioInputDeviceChange(device_id)` callback, called when the player picked a different microphone on
+  the platform. The game closes its current stream and opens a new one on the given device.
+  - Together these let the platform offer a different microphone instead of pausing when opening the microphone takes
+    the audio focus away, e.g. a phone controller connected to a car capturing through the car's Bluetooth microphone.
+- `getUserMedia` now also informs the platform that a microphone was requested, which the platform correlates with the
+  audio focus it loses.
+
 ## [1.11.0] - 2026-07-07
 
 ### Added 
