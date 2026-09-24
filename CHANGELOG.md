@@ -12,6 +12,8 @@ Release notes follow the [keep a changelog](https://keepachangelog.com/en/1.0.0/
 
 ### Added
 
+- Added `AirConsole.requestExitGamesAuth()` and `onExitGamesAuth(ticket)` so screens can authenticate with Photon (ExitGames) Custom Authentication.
+
 ## [1.11.0] - 2026-07-07
 
 ### Added 
