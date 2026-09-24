@@ -1132,6 +1132,34 @@ AirConsole.prototype.requestPersistentData = function (uids) {
  */
 AirConsole.prototype.onPersistentDataLoaded = function(data) {};
 
+
+/** ------------------------------------------------------------------------ *
+ * @chapter                     EXITGAMES (PHOTON) AUTHENTICATION             *
+ * ------------------------------------------------------------------------- */
+
+/**
+ * Requests a short-lived ticket for Photon (ExitGames) Custom Authentication.<br />
+ * Pass the ticket to Photon as the auth parameter "ticket" (AuthenticationValues.AddAuthParameter).
+ * Request a new ticket for every connection attempt: tickets expire after 15 minutes and a new
+ * request revokes the previous ticket.
+ * The result is delivered to onExitGamesAuth.
+ * @version 1.11.1
+ */
+AirConsole.prototype.requestExitGamesAuth = function () {
+  if (this.device_id !== AirConsole.SCREEN) {
+    throw new Error("Only the screen can request ExitGames authentication.");
+  }
+  this.set_("exitgamesauth", {});
+};
+
+/**
+ * Gets called when requestExitGamesAuth() finished.
+ * @abstract
+ * @param {String|null} ticket - The Photon auth ticket, or null if the request failed.
+ * @version 1.11.1
+ */
+AirConsole.prototype.onExitGamesAuth = function (ticket) {};
+
 /**
  * Stores a key-value pair persistently on the AirConsole servers.
  * Storage is per game. Total storage can not exceed 1 MB per game and uid.
@@ -1662,6 +1690,8 @@ AirConsole.prototype.onPostMessage_ = function(event) {
     me.onPersistentDataStored(data.uid);
   } else if (data.action == "persistentrequest") {
     me.onPersistentDataLoaded(data.data);
+  } else if (data.action == "exitgamesauth") {
+    me.onExitGamesAuth(data.data.ticket);
   } else if (data.action == "premium") {
     me.devices[data.device_id].premium = true;
     me.onPremium(data.device_id);
