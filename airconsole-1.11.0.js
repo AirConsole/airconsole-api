@@ -807,6 +807,15 @@ AirConsole.prototype.onUserMediaAccessDenied = function (device_id) {};
 const mediaPermissionCallbacks_ = new WeakMap();
 
 /**
+ * How long a getUserMedia request may stay unsettled, counted in unpaused time: the clock stops while the screen is
+ * paused. It covers everything a request waits on: the car-connection notice, the permission flow, the preferred
+ * audio input device exchange (including the built-in microphone requirement and the picker), the open and the web
+ * denial overlay.
+ * @private
+ */
+const PERMISSION_TIMEOUT_MS = 60000;
+
+/**
  * @typedef {Object} AirConsole~GetUserMediaConstraint
  * @property {boolean} audio - Whether to request microphone permissions. Must be provided; video is not supported.
  */
@@ -826,6 +835,10 @@ const mediaPermissionCallbacks_ = new WeakMap();
  *
  *   Note: callers are responsible for stopping stream tracks when the stream is no longer needed:
  *   `stream.getTracks().forEach(function(t) { t.stop(); })`
+ *
+ *   The platform may prefer another audio input (e.g. the phone's built-in microphone on a car head unit); the
+ *   API then resolves with a stream on that device. A request that stays unsettled for 60 s of unpaused time
+ *   rejects with {@link AirConsole.USER_MEDIA_ERROR_TYPE}.timeout; the clock stops while the screen is paused.
  *
  * @example
  * airconsole.getUserMedia({ audio: true }).then(function(stream) {
@@ -867,10 +880,13 @@ AirConsole.prototype.getUserMedia = function getUserMedia(constraints) {
   return new Promise(function (resolve, reject) {
     me.mediaPermissionConstraints_ = constraints;
     me.mediaPermissionPending_ = true;
+    me.mediaPermissionRequestId_ = (me.mediaPermissionRequestId_ || 0) + 1;
+    me.mediaPermissionHandOffAccepted_ = false;
+    me.preferredAudioInputDeviceHandler_ = null;
+    me.mediaPermissionStreams_ = [];
     mediaPermissionCallbacks_.set(me, { resolve: resolve, reject: reject });
-    me.mediaPermissionTimeout_ = setTimeout(function() {
-      me.rejectMediaPermission_(new AirConsoleUserMediaError(AirConsole.USER_MEDIA_ERROR_TYPE.timeout));
-    }, 45000);
+    me.mediaPermissionRemainingMs_ = PERMISSION_TIMEOUT_MS;
+    me.updatePermissionClock_();
 
     // Send the request to the platform to decide where and how the user media request needs to take place based on
     //  browser or controller environment.
@@ -883,6 +899,10 @@ AirConsole.prototype.cleanUpMediaPermission_ = function cleanUpMediaPermission_(
   this.mediaPermissionPending_ = false;
   this.mediaPermissionConstraints_ = undefined;
   this.mediaPermissionTimeout_ = undefined;
+  this.mediaPermissionTimerStartedAt_ = undefined;
+  this.mediaPermissionHandOffAccepted_ = false;
+  this.preferredAudioInputDeviceHandler_ = null;
+  this.mediaPermissionStreams_ = [];
   this.cachedMediaError_ = null;
   mediaPermissionCallbacks_.delete(this);
 }
@@ -898,6 +918,318 @@ AirConsole.prototype.rejectMediaPermission_ = function rejectMediaPermission_(er
   this.cleanUpMediaPermission_();
   if (cb) { cb.reject(error); }
 }
+
+/**
+ * Returns true while the screen is paused, as published in its presence (`paused = { state, reason }`).
+ * The screen only publishes `paused` once its pause state first changes, so a missing `paused`, or a missing screen
+ * entry, means "not paused".
+ * @private
+ * @return {boolean}
+ */
+AirConsole.prototype.isScreenPaused_ = function isScreenPaused_() {
+  const screen = this.devices && this.devices[AirConsole.SCREEN];
+  return !!(screen && screen.paused && screen.paused.state);
+};
+
+/**
+ * Starts or stops the permission clock to match the screen's pause state, keeping the remaining time across a pause.
+ * Called when a request starts and whenever the screen's presence changes.
+ * @private
+ */
+AirConsole.prototype.updatePermissionClock_ = function updatePermissionClock_() {
+  var me = this;
+  if (!me.mediaPermissionPending_) {
+    return;
+  }
+  const running = me.mediaPermissionTimeout_ !== undefined;
+  if (me.isScreenPaused_()) {
+    if (running) {
+      clearTimeout(me.mediaPermissionTimeout_);
+      me.mediaPermissionTimeout_ = undefined;
+      me.mediaPermissionRemainingMs_ -= Date.now() - me.mediaPermissionTimerStartedAt_;
+      me.mediaPermissionTimerStartedAt_ = undefined;
+    }
+  } else if (!running) {
+    me.mediaPermissionTimerStartedAt_ = Date.now();
+    me.mediaPermissionTimeout_ = setTimeout(function () {
+      me.expireMediaPermission_();
+    }, Math.max(0, me.mediaPermissionRemainingMs_));
+  }
+};
+
+/**
+ * Ends the pending request once the permission timeout expires: stops any stream the request holds, tells the
+ * platform, then rejects the game's promise. Sending before rejecting means the platform has handled the timeout
+ * before the game can retry.
+ * @private
+ */
+AirConsole.prototype.expireMediaPermission_ = function expireMediaPermission_() {
+  this.mediaPermissionTimeout_ = undefined;
+  this.stopMediaPermissionStreams_();
+  this.sendEvent_('userMediaRequestFailed', {
+    reason: 'timeout',
+    error: AirConsole.USER_MEDIA_ERROR_TYPE.timeout,
+  });
+  this.rejectMediaPermission_(new AirConsoleUserMediaError(AirConsole.USER_MEDIA_ERROR_TYPE.timeout));
+};
+
+/**
+ * Returns true if requestId is the request that is still pending.
+ * @private
+ * @param {number} requestId
+ * @return {boolean}
+ */
+AirConsole.prototype.isCurrentMediaPermission_ = function isCurrentMediaPermission_(requestId) {
+  return this.mediaPermissionPending_ && this.mediaPermissionRequestId_ === requestId;
+};
+
+/**
+ * Stops the tracks of every stream the pending request has opened and not handed to the game.
+ * @private
+ */
+AirConsole.prototype.stopMediaPermissionStreams_ = function stopMediaPermissionStreams_() {
+  (this.mediaPermissionStreams_ || []).forEach(function (stream) {
+    stream.getTracks().forEach(function (t) { t.stop(); });
+  });
+  this.mediaPermissionStreams_ = [];
+};
+
+/**
+ * Returns the name the platform receives for an error: the message of an AirConsoleUserMediaError, or the name of a
+ * browser DOMException.
+ * @private
+ * @param {*} error
+ * @return {string}
+ */
+AirConsole.getUserMediaErrorName_ = function getUserMediaErrorName_(error) {
+  if (error instanceof AirConsoleUserMediaError) {
+    return error.message;
+  }
+  return (error && error.name) || String(error);
+};
+
+/**
+ * Returns the device id the stream's audio track captures from, or '' when it has none.
+ * @private
+ * @param {MediaStream} stream
+ * @return {string}
+ */
+AirConsole.getActiveAudioInputDeviceId_ = function getActiveAudioInputDeviceId_(stream) {
+  const track = stream && stream.getAudioTracks && stream.getAudioTracks()[0];
+  if (!track || track.readyState === 'ended' || !track.getSettings) {
+    return '';
+  }
+  return track.getSettings().deviceId || '';
+};
+
+/**
+ * Returns the audio inputs from enumerateDevices(), or an empty list if they cannot be enumerated.
+ * @private
+ * @return {Promise<Array<{deviceId: string, label: string}>>}
+ */
+AirConsole.enumerateAudioInputDevices_ = function enumerateAudioInputDevices_() {
+  if (!navigator.mediaDevices || !navigator.mediaDevices.enumerateDevices) {
+    return Promise.resolve([]);
+  }
+  return navigator.mediaDevices.enumerateDevices().then(function (devices) {
+    return devices.filter(function (device) {
+      return device.kind === 'audioinput';
+    }).map(function (device) {
+      return { deviceId: device.deviceId, label: device.label };
+    });
+  }, function () {
+    return [];
+  });
+};
+
+/**
+ * Returns the game's constraints with deviceId merged into `audio` as a plain (non-exact) value, so the browser
+ * treats it as a preference and opens another microphone when that device is gone.
+ * @private
+ * @param {AirConsole~GetUserMediaConstraint} constraints
+ * @param {string|null} deviceId
+ * @return {Object}
+ */
+AirConsole.getConstraintsWithAudioInputDevice_ = function getConstraintsWithAudioInputDevice_(constraints, deviceId) {
+  if (!deviceId) {
+    return constraints;
+  }
+  const audio = typeof constraints.audio === 'object' ? Object.assign({}, constraints.audio) : {};
+  audio.deviceId = deviceId;
+  return Object.assign({}, constraints, { audio: audio });
+};
+
+/**
+ * Asks the platform which audio input the stream should use and waits for its preferredAudioInputDevice reply.
+ * The reply is accepted once per request, and only while it is awaited.
+ * @private
+ * @param {number} requestId
+ * @param {Object} payload - { devices, activeDeviceId } on a first request; empty on a later one.
+ * @param {function(string|null)} onReply
+ */
+AirConsole.prototype.requestPreferredAudioInputDevice_ = function requestPreferredAudioInputDevice_(requestId,
+  payload, onReply) {
+  var me = this;
+  if (!me.isCurrentMediaPermission_(requestId)) {
+    return;
+  }
+  me.preferredAudioInputDeviceHandler_ = function (deviceId) {
+    me.preferredAudioInputDeviceHandler_ = null;
+    me.audioInputExchangeCompleted_ = true;
+    onReply(deviceId || null);
+  };
+  me.sendEvent_('requestPreferredAudioInputDevice', payload);
+};
+
+/**
+ * Hands a stream to the game and reports the devices and the device the stream actually captures from.
+ * @private
+ * @param {number} requestId
+ * @param {MediaStream} stream
+ */
+AirConsole.prototype.resolveMediaPermissionWithReport_ = function resolveMediaPermissionWithReport_(requestId,
+  stream) {
+  var me = this;
+  if (!me.isCurrentMediaPermission_(requestId)) {
+    stream.getTracks().forEach(function (t) { t.stop(); });
+    return;
+  }
+  me.mediaPermissionStreams_ = me.mediaPermissionStreams_.filter(function (s) { return s !== stream; });
+  // Note: 'userMediaPermissionGranted' is both sent upward (controller → platform) and
+  // received downward (platform → controller for native controllers). The direction is
+  // determined by context: outbound is sent here; inbound is handled by the event branch.
+  me.sendEvent_('userMediaPermissionGranted', {
+    constraints: me.mediaPermissionConstraints_,
+  });
+  me.resolveMediaPermission_(stream);
+  AirConsole.enumerateAudioInputDevices_().then(function (devices) {
+    me.sendEvent_('setAudioInputDevices', {
+      devices: devices,
+      activeDeviceId: AirConsole.getActiveAudioInputDeviceId_(stream),
+    });
+  });
+};
+
+/**
+ * Ends the pending request after an open failed for a reason other than a permission denial: tells the platform,
+ * then lets the error reach the game.
+ * @private
+ * @param {number} requestId
+ * @param {*} error
+ */
+AirConsole.prototype.failMediaPermissionOpen_ = function failMediaPermissionOpen_(requestId, error) {
+  if (!this.isCurrentMediaPermission_(requestId)) {
+    return;
+  }
+  this.sendEvent_('userMediaRequestFailed', {
+    reason: 'open-error',
+    error: AirConsole.getUserMediaErrorName_(error),
+  });
+  this.rejectMediaPermission_(error);
+};
+
+/**
+ * Opens a stream for the pending request, holding it until it is handed to the game.
+ * @private
+ * @param {number} requestId
+ * @param {Object} constraints
+ * @return {Promise<MediaStream|null>} null when the request ended while the browser was opening.
+ */
+AirConsole.prototype.openMediaPermissionStream_ = function openMediaPermissionStream_(requestId, constraints) {
+  var me = this;
+  return navigator.mediaDevices.getUserMedia(constraints).then(function (stream) {
+    if (!me.isCurrentMediaPermission_(requestId)) {
+      // The request ended while the browser was opening; stop the orphaned stream to release hardware.
+      stream.getTracks().forEach(function (t) { t.stop(); });
+      return null;
+    }
+    me.mediaPermissionStreams_.push(stream);
+    return stream;
+  });
+};
+
+/**
+ * First request of a game: opens stream #1 with the game's constraints, asks for the preferred audio input device
+ * with the device list, then keeps stream #1, reopens a fresh stream if it ended, or switches to stream #2.
+ * @private
+ * @param {number} requestId
+ * @param {string} handOffType - 'promptUserMediaPermission' (web) or 'userMediaPermissionGranted' (native app).
+ */
+AirConsole.prototype.startFirstMediaPermissionRequest_ = function startFirstMediaPermissionRequest_(requestId,
+  handOffType) {
+  var me = this;
+  const constraints = me.mediaPermissionConstraints_;
+  me.openMediaPermissionStream_(requestId, constraints).then(function (stream1) {
+    if (!stream1) {
+      return;
+    }
+    AirConsole.enumerateAudioInputDevices_().then(function (devices) {
+      me.requestPreferredAudioInputDevice_(requestId, {
+        devices: devices,
+        activeDeviceId: AirConsole.getActiveAudioInputDeviceId_(stream1),
+      }, function (deviceId) {
+        const track = stream1.getAudioTracks()[0];
+        const live = !!track && track.readyState === 'live';
+        if (live && (deviceId === null || deviceId === AirConsole.getActiveAudioInputDeviceId_(stream1))) {
+          me.resolveMediaPermissionWithReport_(requestId, stream1);
+          return;
+        }
+        // Stream #1 ended, or is on another device: iOS refuses a second audio input while the first is live,
+        // so stop it before opening the next one.
+        me.stopMediaPermissionStreams_();
+        me.openMediaPermissionStream_(requestId,
+          AirConsole.getConstraintsWithAudioInputDevice_(constraints, deviceId)).then(function (stream) {
+          if (stream) {
+            me.resolveMediaPermissionWithReport_(requestId, stream);
+          }
+        }, function (error) {
+          me.failMediaPermissionOpen_(requestId, error);
+        });
+      });
+    });
+  }, function (error) {
+    if (!me.isCurrentMediaPermission_(requestId)) {
+      return;
+    }
+    if (handOffType === 'userMediaPermissionGranted') {
+      // Native controller: platform already granted permission but stream open failed.
+      me.failMediaPermissionOpen_(requestId, error);
+    } else {
+      me.cachedMediaError_ = error;
+      me.sendEvent_('userMediaPermissionDenied');
+    }
+  });
+};
+
+/**
+ * Later request in the same game: asks for the preferred audio input device before opening anything, then opens
+ * once with it merged in as a non-exact constraint.
+ * @private
+ * @param {number} requestId
+ */
+AirConsole.prototype.startLaterMediaPermissionRequest_ = function startLaterMediaPermissionRequest_(requestId) {
+  var me = this;
+  const constraints = me.mediaPermissionConstraints_;
+  me.requestPreferredAudioInputDevice_(requestId, {}, function (deviceId) {
+    me.openMediaPermissionStream_(requestId,
+      AirConsole.getConstraintsWithAudioInputDevice_(constraints, deviceId)).then(function (stream) {
+      if (stream) {
+        me.resolveMediaPermissionWithReport_(requestId, stream);
+      }
+    }, function (error) {
+      if (!me.isCurrentMediaPermission_(requestId)) {
+        return;
+      }
+      if (error && error.name === 'NotAllowedError') {
+        // The permission was revoked: a permission denial, which takes the base's denial path.
+        me.cachedMediaError_ = error;
+        me.sendEvent_('userMediaPermissionDenied');
+      } else {
+        me.failMediaPermissionOpen_(requestId, error);
+      }
+    });
+  });
+};
 
 /**
  * Releases resources held by this AirConsole instance.
@@ -1557,6 +1889,9 @@ AirConsole.prototype.onPostMessage_ = function(event) {
 
       var sender = data.device_id;
       me.devices[sender] = data.device_data;
+      if (sender === AirConsole.SCREEN) {
+        me.updatePermissionClock_();
+      }
       me.onDeviceStateChange(sender, data.device_data);
       var is_connect = me.isLocationLoadedMessage_(game_url_before, game_url, game_url_after);
       var is_disconnect = me.isLocationUnloadedMessage_(game_url_before, game_url, game_url_after);
@@ -1596,6 +1931,7 @@ AirConsole.prototype.onPostMessage_ = function(event) {
   } else if (data.action === "ready") {
     me.device_id = data.device_id;
     me.devices = data.devices;
+    me.updatePermissionClock_();
     if (me.server_time_offset !== false) {
       me.server_time_offset = data.server_time_offset || 0;
     }
@@ -1711,35 +2047,22 @@ AirConsole.prototype.onPostMessage_ = function(event) {
         me.rejectMediaPermission_(error);
       }
     } else if (type === 'userMediaPermissionGranted' || type === 'promptUserMediaPermission') {
-      navigator.mediaDevices.getUserMedia(me.mediaPermissionConstraints_).then(
-        function success(stream) {
-          if (!me.mediaPermissionPending_) {
-            // Timeout fired while the browser permission dialog was still open;
-            // the outer Promise is already settled — stop the orphaned stream to release hardware.
-            stream.getTracks().forEach(function (t) { t.stop(); });
-            return;
-          }
-          // Note: 'userMediaPermissionGranted' is both sent upward (controller → platform) and
-          // received downward (platform → controller for native controllers). The direction is
-          // determined by context: outbound is sent here; inbound is handled by this event branch.
-          me.sendEvent_('userMediaPermissionGranted', {
-            constraints: me.mediaPermissionConstraints_,
-          });
-          me.resolveMediaPermission_(stream);
-        },
-        function failure(error) {
-          if (!me.mediaPermissionPending_) {
-            return;
-          }
-          // Native controller: platform already granted permission but stream open failed.
-          if (type === 'userMediaPermissionGranted') {
-            me.rejectMediaPermission_(error);
-          } else {
-            me.cachedMediaError_ = error;
-            me.sendEvent_('userMediaPermissionDenied');
-          }
-        }
-      );
+      // The hand-off is accepted once per request: the store echoes userMediaPermissionGranted down whenever the
+      // API reports a grant, and without this guard the echo would open a second stream.
+      if (me.mediaPermissionHandOffAccepted_) {
+        return;
+      }
+      me.mediaPermissionHandOffAccepted_ = true;
+      if (me.audioInputExchangeCompleted_) {
+        me.startLaterMediaPermissionRequest_(me.mediaPermissionRequestId_);
+      } else {
+        me.startFirstMediaPermissionRequest_(me.mediaPermissionRequestId_, type);
+      }
+    } else if (type === 'preferredAudioInputDevice') {
+      // Accepted only while awaited; a reply meant for an earlier request is ignored.
+      if (me.preferredAudioInputDeviceHandler_) {
+        me.preferredAudioInputDeviceHandler_(data.data && data.data.deviceId);
+      }
     }
   }
 };

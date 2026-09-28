@@ -12,6 +12,17 @@ Release notes follow the [keep a changelog](https://keepachangelog.com/en/1.0.0/
 
 ### Added
 
+- `AirConsole.getUserMedia` asks the platform which audio input a stream should use before handing it to the game
+  (`requestPreferredAudioInputDevice` / `preferredAudioInputDevice`), so car head units can keep games on the phone's
+  built-in microphone. The first request of a game opens once, then keeps that stream, reopens it, or switches to the
+  preferred device; later requests open once with the device merged in as a non-exact `deviceId`.
+- The API reports the audio inputs and the active device after every successful open (`setAudioInputDevices`), and
+  failures the platform would not otherwise learn of (`userMediaRequestFailed`).
+
+### Changed
+
+- The `getUserMedia` timeout is now 60 s of unpaused time: it stops while the screen is paused.
+
 ## [1.11.0] - 2026-07-07
 
 ### Added 
