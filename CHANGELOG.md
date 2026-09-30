@@ -18,10 +18,13 @@ Release notes follow the [keep a changelog](https://keepachangelog.com/en/1.0.0/
   preferred device; later requests open once with the device merged in as a non-exact `deviceId`.
 - The API reports the audio inputs and the active device after every successful open (`setAudioInputDevices`), and
   failures the platform would not otherwise learn of (`userMediaRequestFailed`).
+- The preferred audio input device exchange runs only when the platform announces it in `ready`
+  (`preferredAudioInputDeviceSupported: true`); otherwise `getUserMedia` behaves as before.
 
 ### Changed
 
-- The `getUserMedia` timeout is now 60 s of unpaused time: it stops while the screen is paused.
+- With the exchange, the `getUserMedia` timeout is 60 s of unpaused time: it stops while the screen is paused.
+  Without it, the timeout stays 45 s.
 
 ## [1.11.0] - 2026-07-07
 

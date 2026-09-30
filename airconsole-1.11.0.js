@@ -816,6 +816,13 @@ const mediaPermissionCallbacks_ = new WeakMap();
 const PERMISSION_TIMEOUT_MS = 60000;
 
 /**
+ * The getUserMedia timeout when the platform does not announce the preferred audio input device exchange: counted in
+ * wall-clock time, as before the exchange existed.
+ * @private
+ */
+const BASE_PERMISSION_TIMEOUT_MS = 45000;
+
+/**
  * @typedef {Object} AirConsole~GetUserMediaConstraint
  * @property {boolean} audio - Whether to request microphone permissions. Must be provided; video is not supported.
  */
@@ -836,9 +843,10 @@ const PERMISSION_TIMEOUT_MS = 60000;
  *   Note: callers are responsible for stopping stream tracks when the stream is no longer needed:
  *   `stream.getTracks().forEach(function(t) { t.stop(); })`
  *
- *   The platform may prefer another audio input (e.g. the phone's built-in microphone on a car head unit); the
- *   API then resolves with a stream on that device. A request that stays unsettled for 60 s of unpaused time
- *   rejects with {@link AirConsole.USER_MEDIA_ERROR_TYPE}.timeout; the clock stops while the screen is paused.
+ *   On a platform that announces it (a car head unit), the platform may prefer another audio input, e.g. the
+ *   phone's built-in microphone; the API then resolves with a stream on that device. There a request that stays
+ *   unsettled for 60 s of unpaused time rejects with {@link AirConsole.USER_MEDIA_ERROR_TYPE}.timeout; the clock
+ *   stops while the screen is paused. Everywhere else the timeout is 45 s.
  *
  * @example
  * airconsole.getUserMedia({ audio: true }).then(function(stream) {
@@ -884,9 +892,17 @@ AirConsole.prototype.getUserMedia = function getUserMedia(constraints) {
     me.mediaPermissionHandOffAccepted_ = false;
     me.preferredAudioInputDeviceHandler_ = null;
     me.mediaPermissionStreams_ = [];
+    // Taken per request, so a later ready cannot switch flows while a request is pending.
+    me.mediaPermissionUsesExchange_ = me.preferredAudioInputDeviceSupported_ === true;
     mediaPermissionCallbacks_.set(me, { resolve: resolve, reject: reject });
-    me.mediaPermissionRemainingMs_ = PERMISSION_TIMEOUT_MS;
-    me.updatePermissionClock_();
+    if (me.mediaPermissionUsesExchange_) {
+      me.mediaPermissionRemainingMs_ = PERMISSION_TIMEOUT_MS;
+      me.updatePermissionClock_();
+    } else {
+      me.mediaPermissionTimeout_ = setTimeout(function() {
+        me.rejectMediaPermission_(new AirConsoleUserMediaError(AirConsole.USER_MEDIA_ERROR_TYPE.timeout));
+      }, BASE_PERMISSION_TIMEOUT_MS);
+    }
 
     // Send the request to the platform to decide where and how the user media request needs to take place based on
     //  browser or controller environment.
@@ -903,6 +919,7 @@ AirConsole.prototype.cleanUpMediaPermission_ = function cleanUpMediaPermission_(
   this.mediaPermissionHandOffAccepted_ = false;
   this.preferredAudioInputDeviceHandler_ = null;
   this.mediaPermissionStreams_ = [];
+  this.mediaPermissionUsesExchange_ = false;
   this.cachedMediaError_ = null;
   mediaPermissionCallbacks_.delete(this);
 }
@@ -933,12 +950,13 @@ AirConsole.prototype.isScreenPaused_ = function isScreenPaused_() {
 
 /**
  * Starts or stops the permission clock to match the screen's pause state, keeping the remaining time across a pause.
- * Called when a request starts and whenever the screen's presence changes.
+ * Called when a request starts and whenever the screen's presence changes. Does nothing for a request without the
+ * exchange, whose timeout is the base one.
  * @private
  */
 AirConsole.prototype.updatePermissionClock_ = function updatePermissionClock_() {
   var me = this;
-  if (!me.mediaPermissionPending_) {
+  if (!me.mediaPermissionPending_ || !me.mediaPermissionUsesExchange_) {
     return;
   }
   const running = me.mediaPermissionTimeout_ !== undefined;
@@ -971,6 +989,44 @@ AirConsole.prototype.expireMediaPermission_ = function expireMediaPermission_() 
     error: AirConsole.USER_MEDIA_ERROR_TYPE.timeout,
   });
   this.rejectMediaPermission_(new AirConsoleUserMediaError(AirConsole.USER_MEDIA_ERROR_TYPE.timeout));
+};
+
+/**
+ * Opens the stream on the permission hand-off, as before the preferred audio input device exchange existed. Used when
+ * the platform does not announce the exchange.
+ * @private
+ * @param {string} type - 'userMediaPermissionGranted' or 'promptUserMediaPermission'
+ */
+AirConsole.prototype.startBaseMediaPermissionRequest_ = function startBaseMediaPermissionRequest_(type) {
+  var me = this;
+  navigator.mediaDevices.getUserMedia(me.mediaPermissionConstraints_).then(
+    function success(stream) {
+      if (!me.mediaPermissionPending_) {
+        // Timeout fired while the browser permission dialog was still open;
+        // the outer Promise is already settled — stop the orphaned stream to release hardware.
+        stream.getTracks().forEach(function (t) { t.stop(); });
+        return;
+      }
+      // Note: 'userMediaPermissionGranted' is both sent upward (controller → platform) and
+      // received downward (platform → controller for native controllers). The direction is
+      // determined by context: outbound is sent here; inbound is handled by the event branch.
+      me.sendEvent_('userMediaPermissionGranted', {
+        constraints: me.mediaPermissionConstraints_,
+      });
+      me.resolveMediaPermission_(stream);
+    },
+    function failure(error) {
+      if (!me.mediaPermissionPending_) {
+        return;
+      }
+      // Native controller: platform already granted permission but stream open failed.
+      if (type === 'userMediaPermissionGranted') {
+        me.rejectMediaPermission_(error);
+      } else {
+        me.cachedMediaError_ = error;
+        me.sendEvent_('userMediaPermissionDenied');
+      }
+    });
 };
 
 /**
@@ -1931,6 +1987,7 @@ AirConsole.prototype.onPostMessage_ = function(event) {
   } else if (data.action === "ready") {
     me.device_id = data.device_id;
     me.devices = data.devices;
+    me.preferredAudioInputDeviceSupported_ = data.preferredAudioInputDeviceSupported === true;
     me.updatePermissionClock_();
     if (me.server_time_offset !== false) {
       me.server_time_offset = data.server_time_offset || 0;
@@ -2047,6 +2104,10 @@ AirConsole.prototype.onPostMessage_ = function(event) {
         me.rejectMediaPermission_(error);
       }
     } else if (type === 'userMediaPermissionGranted' || type === 'promptUserMediaPermission') {
+      if (!me.mediaPermissionUsesExchange_) {
+        me.startBaseMediaPermissionRequest_(type);
+        return;
+      }
       // The hand-off is accepted once per request: the store echoes userMediaPermissionGranted down whenever the
       // API reports a grant, and without this guard the echo would open a second stream.
       if (me.mediaPermissionHandOffAccepted_) {

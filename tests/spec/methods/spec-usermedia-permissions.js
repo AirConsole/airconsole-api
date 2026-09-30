@@ -20,14 +20,6 @@ function testUserMediaPermissions() {
     { kind: 'audiooutput', deviceId: 'speaker', label: 'Speaker', groupId: 'g1' },
   ];
 
-  // Platform stand-in for sendEvent_: answers requestPreferredAudioInputDevice with no preference, as a non-car
-  // platform does, and ignores every other event.
-  function replyNoPreference(eventType) {
-    if (eventType === 'requestPreferredAudioInputDevice') {
-      dispatchCustomMessageEvent({ action: 'event', type: 'preferredAudioInputDevice', data: { deviceId: null } });
-    }
-  }
-
   function teardown() {
     if (airconsole) {
       window.removeEventListener('message', airconsole.messageEventListener_);
@@ -76,7 +68,7 @@ function testUserMediaPermissions() {
     beforeEach(function () {
       jasmine.clock().install();
       initAirConsoleAsController();
-      spyOn(airconsole, 'sendEvent_').and.callFake(replyNoPreference);
+      spyOn(airconsole, 'sendEvent_');
     });
 
     afterEach(function () {
@@ -235,15 +227,13 @@ function testUserMediaPermissions() {
 
     // Group 3: Timeout
 
-    it('Should reject with AirConsole.USER_MEDIA_ERROR_TYPE.timeout after 60000ms', function(done) {
+    it('Should reject with AirConsole.USER_MEDIA_ERROR_TYPE.timeout after 45000ms', function(done) {
       airconsole.getUserMedia({ audio: true }).catch(function(error) {
         expect(error.name).toBe("AirConsole.UserMediaError");
         expect(error.message).toBe(AirConsole.USER_MEDIA_ERROR_TYPE.timeout);
         done();
       });
-      jasmine.clock().tick(59999);
-      expect(airconsole.mediaPermissionPending_).toBe(true);
-      jasmine.clock().tick(2);
+      jasmine.clock().tick(45001);
     });
   });
 
@@ -259,7 +249,6 @@ function testUserMediaPermissions() {
           type: eventType,
           data: eventData
         });
-        replyNoPreference(eventType);
       });
     });
 
@@ -468,7 +457,7 @@ function testUserMediaPermissions() {
   describe('constraint forwarding to browser getUserMedia', function () {
     beforeEach(function () {
       initAirConsoleAsController();
-      spyOn(airconsole, 'sendEvent_').and.callFake(replyNoPreference);
+      spyOn(airconsole, 'sendEvent_');
       spyOn(navigator.mediaDevices, 'getUserMedia').and.returnValue(
         Promise.resolve(makeFakeStream()),
       );
@@ -507,7 +496,6 @@ function testUserMediaPermissions() {
           type: eventType,
           data: eventData
         });
-        replyNoPreference(eventType);
       });
     });
 
@@ -668,8 +656,8 @@ function testUserMediaPermissions() {
 
       // Trigger promptUserMediaPermission to start the browser flow
       dispatchCustomMessageEvent({ action: 'event', type: 'promptUserMediaPermission' });
-      // Fire the 60s timeout
-      jasmine.clock().tick(60001);
+      // Fire the 45s timeout
+      jasmine.clock().tick(45001);
     });
 
     it('Should stop orphaned stream tracks when browser succeeds after timeout', function (done) {
@@ -695,7 +683,7 @@ function testUserMediaPermissions() {
       });
 
       dispatchCustomMessageEvent({ action: 'event', type: 'promptUserMediaPermission' });
-      jasmine.clock().tick(60001);
+      jasmine.clock().tick(45001);
     });
 
     it('Should not set cachedMediaError_ when browser failure arrives after timeout', function (done) {
@@ -717,7 +705,7 @@ function testUserMediaPermissions() {
       });
 
       dispatchCustomMessageEvent({ action: 'event', type: 'promptUserMediaPermission' });
-      jasmine.clock().tick(60001);
+      jasmine.clock().tick(45001);
     });
   });
 
@@ -726,7 +714,7 @@ function testUserMediaPermissions() {
   describe('stale message guard and error types', function () {
     beforeEach(function () {
       initAirConsoleAsController();
-      spyOn(airconsole, 'sendEvent_').and.callFake(replyNoPreference);
+      spyOn(airconsole, 'sendEvent_');
     });
 
     afterEach(teardown);
@@ -787,6 +775,7 @@ function testUserMediaPermissions() {
       dispatchCustomMessageEvent({ action: 'event', type: 'userMediaPermissionGranted' });
     });
   });
+
   // --- Group 15: Preferred audio input device exchange ---
   // First request of a game: stream #1, the request with the device list, then keep / reopen / stream #2.
   // Later request: no open on the hand-off, a list-less request, then a single open.
@@ -828,6 +817,8 @@ function testUserMediaPermissions() {
 
     beforeEach(function () {
       initAirConsoleAsController();
+      // The platform announced the exchange in ready (see "ready flag" below).
+      airconsole.preferredAudioInputDeviceSupported_ = true;
       sent = [];
       reply = null;
       spyOn(airconsole, 'sendEvent_').and.callFake(function (type, data) {
@@ -839,6 +830,57 @@ function testUserMediaPermissions() {
     });
 
     afterEach(teardown);
+
+    describe('ready flag', function () {
+      function dispatchReady(extra) {
+        dispatchCustomMessageEvent(Object.assign({
+          action: 'ready',
+          code: 1237,
+          device_id: DEVICE_ID,
+          devices: [{}, undefined, airconsole.devices[DEVICE_ID]],
+        }, extra));
+      }
+
+      it('Should leave the exchange off when ready does not announce it', function () {
+        dispatchReady({});
+        expect(airconsole.preferredAudioInputDeviceSupported_).toBe(false);
+      });
+
+      it('Should turn the exchange on when ready announces it', function () {
+        airconsole.preferredAudioInputDeviceSupported_ = false;
+        dispatchReady({ preferredAudioInputDeviceSupported: true });
+        expect(airconsole.preferredAudioInputDeviceSupported_).toBe(true);
+      });
+
+      it('Should open on the hand-off and send none of the new events without the flag', async function () {
+        airconsole.preferredAudioInputDeviceSupported_ = false;
+        const stream = makeFakeStream('mic-car');
+        spyGetUserMediaSequence([Promise.resolve(stream)]);
+        const result = airconsole.getUserMedia({ audio: true });
+        handOff();
+        expect(await result).toBe(stream);
+        await settle();
+        expect(navigator.mediaDevices.getUserMedia).toHaveBeenCalledTimes(1);
+        expect(navigator.mediaDevices.enumerateDevices).not.toHaveBeenCalled();
+        expect(eventsOfType('requestPreferredAudioInputDevice').length).toBe(0);
+        expect(eventsOfType('setAudioInputDevices').length).toBe(0);
+        expect(eventsOfType('userMediaRequestFailed').length).toBe(0);
+      });
+
+      it('Should keep the 45 s timeout running through a screen pause without the flag', async function () {
+        jasmine.clock().install();
+        try {
+          airconsole.preferredAudioInputDeviceSupported_ = false;
+          const result = airconsole.getUserMedia({ audio: true }).catch(function (error) { return error; });
+          updateScreen({ paused: { state: true, reason: 'audio-focus-loss' } });
+          jasmine.clock().tick(45001);
+          expect((await result).message).toBe(AirConsole.USER_MEDIA_ERROR_TYPE.timeout);
+          expect(eventsOfType('userMediaRequestFailed').length).toBe(0);
+        } finally {
+          jasmine.clock().uninstall();
+        }
+      });
+    });
 
     describe('first request', function () {
       it('Should ask with the device list and keep stream #1 on a null reply', async function () {
