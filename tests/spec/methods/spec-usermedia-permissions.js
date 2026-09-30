@@ -880,6 +880,14 @@ function testUserMediaPermissions() {
           jasmine.clock().uninstall();
         }
       });
+
+      it('Should reject on destroy() without userMediaRequestFailed when the flag is off', async function () {
+        airconsole.preferredAudioInputDeviceSupported_ = false;
+        const result = airconsole.getUserMedia({ audio: true }).catch(function (error) { return error; });
+        airconsole.destroy();
+        expect((await result).message).toBe(AirConsole.USER_MEDIA_ERROR_TYPE.timeout);
+        expect(eventsOfType('userMediaRequestFailed').length).toBe(0);
+      });
     });
 
     describe('first request', function () {
@@ -1085,6 +1093,32 @@ function testUserMediaPermissions() {
         expect(stream1.track.stop).toHaveBeenCalled();
         expect(eventsOfType('userMediaRequestFailed')[0].data).toEqual({ reason: 'timeout', error: 'Timeout' });
         expect(order.indexOf('userMediaRequestFailed')).toBeLessThan(order.indexOf('rejected'));
+      });
+
+      it('Should end a request on destroy() like a timeout: stop stream #1, send, then reject, once', async function () {
+        reply = undefined;
+        const stream1 = makeFakeStream('mic-car');
+        spyGetUserMediaSequence([Promise.resolve(stream1)]);
+        const order = [];
+        airconsole.sendEvent_.and.callFake(function (type, data) {
+          sent.push({ type: type, data: data });
+          order.push(type);
+        });
+        const result = airconsole.getUserMedia({ audio: true }).catch(function (error) {
+          order.push('rejected');
+          return error;
+        });
+        handOff();
+        await settle();
+        expect(eventsOfType('requestPreferredAudioInputDevice').length).toBe(1);
+        airconsole.destroy();
+        const error = await result;
+        expect(error.message).toBe(AirConsole.USER_MEDIA_ERROR_TYPE.timeout);
+        expect(stream1.track.stop).toHaveBeenCalled();
+        expect(eventsOfType('userMediaRequestFailed')[0].data).toEqual({ reason: 'timeout', error: 'Timeout' });
+        expect(order.indexOf('userMediaRequestFailed')).toBeLessThan(order.indexOf('rejected'));
+        jasmine.clock().tick(PERMISSION_TIMEOUT);
+        expect(eventsOfType('userMediaRequestFailed').length).toBe(1);
       });
 
       it('Should use the first-request flow again after a timeout before the reply, and ignore the late reply', async function () {

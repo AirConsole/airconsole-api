@@ -1296,7 +1296,12 @@ AirConsole.prototype.startLaterMediaPermissionRequest_ = function startLaterMedi
  */
 AirConsole.prototype.destroy = function destroy() {
   window.removeEventListener('message', this.messageEventListener_);
-  if (this.mediaPermissionPending_) {
+  if (this.mediaPermissionPending_ && this.mediaPermissionUsesExchange_) {
+    // End the request like a timeout: stop any stream it holds (stream #1 while the reply is awaited), tell the
+    // platform so it closes its prompts, then reject. The timer is cleared first, so it cannot expire a second time.
+    clearTimeout(this.mediaPermissionTimeout_);
+    this.expireMediaPermission_();
+  } else if (this.mediaPermissionPending_) {
     this.rejectMediaPermission_(new AirConsoleUserMediaError(AirConsole.USER_MEDIA_ERROR_TYPE.timeout));
   } else if (this.mediaPermissionTimeout_) {
     clearTimeout(this.mediaPermissionTimeout_);

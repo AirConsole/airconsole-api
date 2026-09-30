@@ -25,6 +25,8 @@ Release notes follow the [keep a changelog](https://keepachangelog.com/en/1.0.0/
 
 - With the exchange, the `getUserMedia` timeout is 60 s of unpaused time: it stops while the screen is paused.
   Without it, the timeout stays 45 s.
+- With the exchange, `destroy()` ends a pending `getUserMedia` request like a timeout: it stops any stream the request
+  holds and reports `userMediaRequestFailed` before rejecting.
 
 ## [1.11.0] - 2026-07-07
 
