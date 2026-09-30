@@ -16,7 +16,7 @@ Release notes follow the [keep a changelog](https://keepachangelog.com/en/1.0.0/
   (`requestPreferredAudioInputDevice` / `preferredAudioInputDevice`), so car head units can keep games on the phone's
   built-in microphone. The first request of a game opens once, then keeps that stream, reopens it, or switches to the
   preferred device; later requests open once with the device merged in as a non-exact `deviceId`.
-- The API reports the audio inputs and the active device after every successful open (`setAudioInputDevices`), and
+- The API reports the audio inputs and the active device after every successful open (`audioInputDevicesReported`), and
   failures the platform would not otherwise learn of (`userMediaRequestFailed`).
 - The preferred audio input device exchange runs only when the platform announces it in `ready`
   (`preferredAudioInputDeviceSupported: true`); otherwise `getUserMedia` behaves as before.

@@ -1159,7 +1159,7 @@ AirConsole.prototype.resolveMediaPermissionWithReport_ = function resolveMediaPe
   });
   me.resolveMediaPermission_(stream);
   AirConsole.enumerateAudioInputDevices_().then(function (devices) {
-    me.sendEvent_('setAudioInputDevices', {
+    me.sendEvent_('audioInputDevicesReported', {
       devices: devices,
       activeDeviceId: AirConsole.getActiveAudioInputDeviceId_(stream),
     });

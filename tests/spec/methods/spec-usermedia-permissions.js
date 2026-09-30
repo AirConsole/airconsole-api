@@ -863,7 +863,7 @@ function testUserMediaPermissions() {
         expect(navigator.mediaDevices.getUserMedia).toHaveBeenCalledTimes(1);
         expect(navigator.mediaDevices.enumerateDevices).not.toHaveBeenCalled();
         expect(eventsOfType('requestPreferredAudioInputDevice').length).toBe(0);
-        expect(eventsOfType('setAudioInputDevices').length).toBe(0);
+        expect(eventsOfType('audioInputDevicesReported').length).toBe(0);
         expect(eventsOfType('userMediaRequestFailed').length).toBe(0);
       });
 
@@ -906,7 +906,7 @@ function testUserMediaPermissions() {
           ],
           activeDeviceId: 'mic-car',
         });
-        expect(eventsOfType('setAudioInputDevices')[0].data).toEqual({
+        expect(eventsOfType('audioInputDevicesReported')[0].data).toEqual({
           devices: [
             { deviceId: 'mic-builtin', label: 'iPhone Microphone' },
             { deviceId: 'mic-car', label: 'CarPlay' },
@@ -939,7 +939,7 @@ function testUserMediaPermissions() {
         expect(navigator.mediaDevices.getUserMedia.calls.argsFor(1)[0]).toEqual({
           audio: { echoCancellation: true, deviceId: 'mic-builtin' },
         });
-        expect(eventsOfType('setAudioInputDevices')[0].data.activeDeviceId).toBe('mic-builtin');
+        expect(eventsOfType('audioInputDevicesReported')[0].data.activeDeviceId).toBe('mic-builtin');
       });
 
       it('Should open a fresh stream when stream #1 ended before the reply', async function () {
@@ -956,7 +956,7 @@ function testUserMediaPermissions() {
         expect(navigator.mediaDevices.getUserMedia.calls.argsFor(1)[0]).toEqual({ audio: true });
       });
 
-      it('Should send userMediaRequestFailed(open-error) when stream #2 fails, and no setAudioInputDevices', async function () {
+      it('Should send userMediaRequestFailed(open-error) when stream #2 fails, and no audioInputDevicesReported', async function () {
         reply = 'mic-builtin';
         const openError = new DOMException('Busy', 'NotReadableError');
         spyGetUserMediaSequence([Promise.resolve(makeFakeStream('mic-car')), openError]);
@@ -968,7 +968,7 @@ function testUserMediaPermissions() {
           reason: 'open-error',
           error: 'NotReadableError',
         });
-        expect(eventsOfType('setAudioInputDevices').length).toBe(0);
+        expect(eventsOfType('audioInputDevicesReported').length).toBe(0);
       });
 
       it('Should send userMediaRequestFailed(open-error) when stream #1 fails after the native grant', async function () {
@@ -1033,7 +1033,7 @@ function testUserMediaPermissions() {
         await settle();
         expect(navigator.mediaDevices.getUserMedia).toHaveBeenCalledTimes(2);
         expect(navigator.mediaDevices.getUserMedia.calls.argsFor(1)[0]).toEqual({ audio: { deviceId: 'mic-builtin' } });
-        expect(eventsOfType('setAudioInputDevices')[0].data.activeDeviceId).toBe('mic-builtin');
+        expect(eventsOfType('audioInputDevicesReported')[0].data.activeDeviceId).toBe('mic-builtin');
       });
 
       it('Should take the denial path on NotAllowedError', async function () {
