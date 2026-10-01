@@ -1185,6 +1185,29 @@ AirConsole.prototype.failMediaPermissionOpen_ = function failMediaPermissionOpen
 };
 
 /**
+ * Ends the pending request after an open that followed stream #1 failed: a fresh open or stream #2 on a first
+ * request, or a later request's single open. On web a NotAllowedError is a permission denial and takes the base's
+ * denial path. Any other error, and every error in the app, where the native app has just granted the permission,
+ * reaches the game through failMediaPermissionOpen_.
+ * @private
+ * @param {number} requestId
+ * @param {string} handOffType - 'promptUserMediaPermission' (web) or 'userMediaPermissionGranted' (native app).
+ * @param {*} error
+ */
+AirConsole.prototype.failMediaPermissionReopen_ = function failMediaPermissionReopen_(requestId, handOffType,
+  error) {
+  if (!this.isCurrentMediaPermission_(requestId)) {
+    return;
+  }
+  if (handOffType === 'promptUserMediaPermission' && error && error.name === 'NotAllowedError') {
+    this.cachedMediaError_ = error;
+    this.sendEvent_('userMediaPermissionDenied');
+  } else {
+    this.failMediaPermissionOpen_(requestId, error);
+  }
+};
+
+/**
  * Opens a stream for the pending request, holding it until it is handed to the game.
  * @private
  * @param {number} requestId
@@ -1239,7 +1262,7 @@ AirConsole.prototype.startFirstMediaPermissionRequest_ = function startFirstMedi
             me.resolveMediaPermissionWithReport_(requestId, stream);
           }
         }, function (error) {
-          me.failMediaPermissionOpen_(requestId, error);
+          me.failMediaPermissionReopen_(requestId, handOffType, error);
         });
       });
     });
@@ -1262,8 +1285,10 @@ AirConsole.prototype.startFirstMediaPermissionRequest_ = function startFirstMedi
  * once with it merged in as a non-exact constraint.
  * @private
  * @param {number} requestId
+ * @param {string} handOffType - 'promptUserMediaPermission' (web) or 'userMediaPermissionGranted' (native app).
  */
-AirConsole.prototype.startLaterMediaPermissionRequest_ = function startLaterMediaPermissionRequest_(requestId) {
+AirConsole.prototype.startLaterMediaPermissionRequest_ = function startLaterMediaPermissionRequest_(requestId,
+  handOffType) {
   var me = this;
   const constraints = me.mediaPermissionConstraints_;
   me.requestPreferredAudioInputDevice_(requestId, {}, function (deviceId) {
@@ -1273,16 +1298,8 @@ AirConsole.prototype.startLaterMediaPermissionRequest_ = function startLaterMedi
         me.resolveMediaPermissionWithReport_(requestId, stream);
       }
     }, function (error) {
-      if (!me.isCurrentMediaPermission_(requestId)) {
-        return;
-      }
-      if (error && error.name === 'NotAllowedError') {
-        // The permission was revoked: a permission denial, which takes the base's denial path.
-        me.cachedMediaError_ = error;
-        me.sendEvent_('userMediaPermissionDenied');
-      } else {
-        me.failMediaPermissionOpen_(requestId, error);
-      }
+      // On web a revoked permission is first seen here, as a NotAllowedError.
+      me.failMediaPermissionReopen_(requestId, handOffType, error);
     });
   });
 };
@@ -2120,7 +2137,7 @@ AirConsole.prototype.onPostMessage_ = function(event) {
       }
       me.mediaPermissionHandOffAccepted_ = true;
       if (me.audioInputExchangeCompleted_) {
-        me.startLaterMediaPermissionRequest_(me.mediaPermissionRequestId_);
+        me.startLaterMediaPermissionRequest_(me.mediaPermissionRequestId_, type);
       } else {
         me.startFirstMediaPermissionRequest_(me.mediaPermissionRequestId_, type);
       }

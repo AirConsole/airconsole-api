@@ -971,6 +971,31 @@ function testUserMediaPermissions() {
         expect(eventsOfType('audioInputDevicesReported').length).toBe(0);
       });
 
+      it('Should take the denial path when stream #2 fails with NotAllowedError on web', async function () {
+        reply = 'mic-builtin';
+        const notAllowed = makeNotAllowedError();
+        spyGetUserMediaSequence([Promise.resolve(makeFakeStream('mic-car')), notAllowed]);
+        const result = airconsole.getUserMedia({ audio: true });
+        handOff('promptUserMediaPermission');
+        await settle();
+        expect(eventsOfType('userMediaPermissionDenied').length).toBe(1);
+        expect(eventsOfType('userMediaRequestFailed').length).toBe(0);
+        dispatchCustomMessageEvent({ action: 'event', type: 'userMediaPermissionDenied' });
+        await expectAsync(result).toBeRejectedWith(notAllowed);
+      });
+
+      it('Should send userMediaRequestFailed(open-error) when stream #2 fails with NotAllowedError in the app', async function () {
+        reply = 'mic-builtin';
+        const notAllowed = makeNotAllowedError();
+        spyGetUserMediaSequence([Promise.resolve(makeFakeStream('mic-car')), notAllowed]);
+        const result = airconsole.getUserMedia({ audio: true });
+        handOff('userMediaPermissionGranted');
+        await expectAsync(result).toBeRejectedWith(notAllowed);
+        await settle();
+        expect(eventsOfType('userMediaRequestFailed')[0].data).toEqual({ reason: 'open-error', error: 'NotAllowedError' });
+        expect(eventsOfType('userMediaPermissionDenied').length).toBe(0);
+      });
+
       it('Should send userMediaRequestFailed(open-error) when stream #1 fails after the native grant', async function () {
         const openError = new DOMException('No device', 'NotFoundError');
         spyGetUserMediaSequence([openError]);
@@ -1008,9 +1033,9 @@ function testUserMediaPermissions() {
     });
 
     describe('later request', function () {
-      async function completeFirstRequest() {
+      async function completeFirstRequest(type) {
         const result = airconsole.getUserMedia({ audio: true });
-        handOff();
+        handOff(type);
         await result;
         await settle();
         sent = [];
@@ -1048,6 +1073,18 @@ function testUserMediaPermissions() {
         expect(eventsOfType('userMediaRequestFailed').length).toBe(0);
         dispatchCustomMessageEvent({ action: 'event', type: 'userMediaPermissionDenied' });
         await expectAsync(result).toBeRejectedWith(notAllowed);
+      });
+
+      it('Should send userMediaRequestFailed(open-error) on NotAllowedError in the app, with no denial', async function () {
+        const notAllowed = makeNotAllowedError();
+        spyGetUserMediaSequence([Promise.resolve(makeFakeStream('mic-car')), notAllowed]);
+        await completeFirstRequest('userMediaPermissionGranted');
+
+        const result = airconsole.getUserMedia({ audio: true });
+        handOff('userMediaPermissionGranted');
+        await expectAsync(result).toBeRejectedWith(notAllowed);
+        expect(eventsOfType('userMediaRequestFailed')[0].data).toEqual({ reason: 'open-error', error: 'NotAllowedError' });
+        expect(eventsOfType('userMediaPermissionDenied').length).toBe(0);
       });
 
       it('Should send userMediaRequestFailed(open-error) on any other error', async function () {
