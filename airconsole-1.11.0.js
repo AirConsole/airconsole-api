@@ -2130,8 +2130,7 @@ AirConsole.prototype.onPostMessage_ = function(event) {
         me.startBaseMediaPermissionRequest_(type);
         return;
       }
-      // The hand-off is accepted once per request: the store echoes userMediaPermissionGranted down whenever the
-      // API reports a grant, and without this guard the echo would open a second stream.
+      // The hand-off is accepted once per request, so a duplicate hand-off cannot open a second stream.
       if (me.mediaPermissionHandOffAccepted_) {
         return;
       }
