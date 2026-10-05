@@ -1,7 +1,7 @@
 /**
  * AirConsole.
  * @copyright 2026 by N-Dream AG, Switzerland. All rights reserved.
- * @version 1.11.1
+ * @version 1.12.0
  *
  * IMPORTANT:
  * @see http://developers.airconsole.com/ for API documentation
