@@ -1,7 +1,7 @@
 /**
  * AirConsole.
  * @copyright 2026 by N-Dream AG, Switzerland. All rights reserved.
- * @version 1.11.1
+ * @version 1.12.0
  *
  * IMPORTANT:
  * @see http://developers.airconsole.com/ for API documentation
@@ -1132,6 +1132,80 @@ AirConsole.prototype.requestPersistentData = function (uids) {
  */
 AirConsole.prototype.onPersistentDataLoaded = function(data) {};
 
+
+/** ------------------------------------------------------------------------ *
+ * @chapter                     PHOTON ENGINE AUTHENTICATION                  *
+ * ------------------------------------------------------------------------- */
+
+/**
+ * Requests a short-lived ticket for Photon Custom Authentication.<br />
+ * Pass the ticket to Photon as the auth parameter "ticket" (AuthenticationValues.AddAuthParameter).
+ * Request a new ticket for every connection attempt: tickets expire after 15 minutes. Photon checks
+ * the ticket only when the client connects, so a connected session needs no new ticket.
+ * The result is delivered to onPhotonEngineAuth.
+ * @version 1.12.0
+ *
+ * @example
+ * //  Screen (game)                                AirConsole                  Photon
+ * //       |                                            |                          |
+ * //       | airconsole.requestPhotonEngineAuth()       |                          |
+ * //       |------------------------------------------->|                          |
+ * //       | airconsole.onPhotonEngineAuth(ticket)      |                          |
+ * //       |<-------------------------------------------|                          |
+ * //       | loadBalancingClient.setCustomAuthentication("ticket=" + ticket, Custom)
+ * //       | loadBalancingClient.connectToRegionMaster(region)                     |
+ * //       |---------------------------------------------------------------------->|
+ * //       |                                            |  Photon verifies ticket  |
+ * //       |                                            |<------------------------>|
+ * //       |                                                                       |
+ * //       | Valid ticket:                                                         |
+ * //       | onStateChange(State.JoinedLobby)                                      |
+ * //       |<----------------------------------------------------------------------|
+ * //       | joinRoom(name) or createRoom(name)                                    |
+ * //       |---------------------------------------------------------------------->|
+ * //       | onJoinRoom(createdByMe)                                               |
+ * //       |<----------------------------------------------------------------------|
+ * //       |                                                                       |
+ * //       | Missing or expired ticket:                                            |
+ * //       | onError(PeerErrorCode.NameServerAuthenticationFailed,                 |
+ * //       |         "NameServer authentication failed: 32755 ...")                |
+ * //       |<----------------------------------------------------------------------|
+ * //       | Request a new ticket, then connect again.                             |
+ *
+ * @example
+ * // Photon JavaScript SDK. Request a new ticket before every attempt to connect.
+ * airconsole.onPhotonEngineAuth = function (ticket) {
+ *   // Also connect without a ticket. Photon then rejects the connection with
+ *   // CustomAuthenticationFailed, and the player does not connect anonymously.
+ *   loadBalancingClient.setCustomAuthentication(
+ *     'ticket=' + encodeURIComponent(ticket || ''),
+ *     Photon.LoadBalancing.Constants.CustomAuthenticationType.Custom);
+ *   loadBalancingClient.connectToRegionMaster(region);
+ * };
+ * airconsole.requestPhotonEngineAuth();
+ *
+ * @example
+ * // Unity with Photon Fusion. The AirConsole Unity plugin has
+ * // AirConsole.instance.RequestPhotonEngineAuth() and the onPhotonEngineAuth event.
+ * //   var authValues = new AuthenticationValues { AuthType = CustomAuthenticationType.Custom };
+ * //   authValues.AddAuthParameter("ticket", ticket ?? string.Empty);
+ * //   await runner.StartGame(new StartGameArgs { GameMode = GameMode.Shared, AuthValues = authValues });
+ */
+AirConsole.prototype.requestPhotonEngineAuth = function () {
+  if (this.device_id !== AirConsole.SCREEN) {
+    throw new Error("Only the screen can request Photon Engine authentication.");
+  }
+  this.set_("photonengineauth", {});
+};
+
+/**
+ * Gets called when requestPhotonEngineAuth() finished.
+ * @abstract
+ * @param {String|null} ticket - The Photon auth ticket, or null if the request failed.
+ * @version 1.12.0
+ */
+AirConsole.prototype.onPhotonEngineAuth = function (ticket) {};
+
 /**
  * Stores a key-value pair persistently on the AirConsole servers.
  * Storage is per game. Total storage can not exceed 1 MB per game and uid.
@@ -1662,6 +1736,8 @@ AirConsole.prototype.onPostMessage_ = function(event) {
     me.onPersistentDataStored(data.uid);
   } else if (data.action == "persistentrequest") {
     me.onPersistentDataLoaded(data.data);
+  } else if (data.action == "photonengineauth") {
+    me.onPhotonEngineAuth(data.data.ticket);
   } else if (data.action == "premium") {
     me.devices[data.device_id].premium = true;
     me.onPremium(data.device_id);
