@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>AirConsoleUserMediaError - Documentation</title>
+    <title>AirConsole - Documentation</title>
 
     <script src="scripts/prettify/prettify.js"></script>
     <script src="scripts/prettify/lang-css.js"></script>
@@ -30,7 +30,7 @@
 
     <div id="main">
         
-        <h1 class="page-title">AirConsoleUserMediaError</h1>
+        <h1 class="page-title"><b>&#8627; Photon Engine Authentication</b></h1>
         
         
 
@@ -42,11 +42,8 @@
 <header>
     
         <h2>
-        AirConsoleUserMediaError
+        AirConsole
         </h2>
-        
-            <div class="class-description">Represents an error specific to user media operations within the AirConsole platform.
-This error is thrown when there is an issue related to accessing or managing user media.</div>
         
     
 </header>
@@ -57,14 +54,18 @@ This error is thrown when there is an issue related to accessing or managing use
         
 
     
-    <h2>Constructor</h2>
-    
 
-    <h4 class="name" id="AirConsoleUserMediaError"><span class="type-signature"></span>new AirConsoleUserMediaError<span class="signature">(message)</span><span class="type-signature"></span></h4>
+    <h4 class="name" id="AirConsole"><span class="type-signature"></span>new AirConsole<span class="signature">(opts)</span><span class="type-signature"> &rarr; {<a href="global.html#AirConsoleObject">AirConsoleObject</a>}</span></h4>
 
     
 
 
+
+<div class="description">
+    Your gateway object to AirConsole.
+There are getter and setter functions for all properties.
+Do not access properties of this object directly.
+</div>
 
 
 
@@ -99,13 +100,13 @@ This error is thrown when there is an issue related to accessing or managing use
 
         <tr>
             
-                <td class="name"><code>message</code></td>
+                <td class="name"><code>opts</code></td>
             
 
             <td class="type">
             
                 
-<span class="param-type"><a href="AirConsole.html#.USER_MEDIA_ERROR_TYPE">AirConsole.USER_MEDIA_ERROR_TYPE</a></span>
+<span class="param-type"><a href="AirConsole.html#~Config">AirConsole~Config</a></span>
 
 
             
@@ -115,7 +116,7 @@ This error is thrown when there is an issue related to accessing or managing use
 
             
 
-            <td class="description last">The message is of type AirConsole.USER_MEDIA_ERROR_TYPE.</td>
+            <td class="description last">Constructor config, see bellow.</td>
         </tr>
 
     
@@ -156,7 +157,7 @@ This error is thrown when there is an issue related to accessing or managing use
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="beta_airconsole-1.12.0.js.html">beta/airconsole-1.12.0.js</a>, <a href="beta_airconsole-1.12.0.js.html#line166">line 166</a>
+        <a href="./beta/airconsole-1.12.0.js.html">./beta/airconsole-1.12.0.js</a>, <a href="./beta/airconsole-1.12.0.js.html#line39">line 39</a>
     </li></ul></dd>
     
 
@@ -179,22 +180,33 @@ This error is thrown when there is an issue related to accessing or managing use
 
 
 
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    The AirConsole object.
+</div>
+
+
+
+<dl class="param-type">
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type"><a href="global.html#AirConsoleObject">AirConsoleObject</a></span>
+
+
+    </dd>
+</dl>
+
+    
 
 
 
     
     </div>
-
-    
-        <h3 class="subsection-title">Extends</h3>
-
-        
-
-
-    <ul>
-        <li>Error</li>
-    </ul>
-
 
     
 
@@ -209,48 +221,22 @@ This error is thrown when there is an issue related to accessing or managing use
     
 
     
+        <h3 class="subsection-title">Methods</h3>
 
-    
-
-    
-</article>
-
-</section>
-
-
-
-
-
-
-
-<section>
-
-<header>
-    
-        <h2>
-        AirConsoleUserMediaError
-        </h2>
         
-            <div class="class-description">Represents an error specific to user media operations within the AirConsole platform.
-This error is thrown when there is an issue related to accessing or managing user media.</div>
-        
-    
-</header>
-
-<article>
-    <div style='display:none;'>
-    
-        
+            
 
     
-    <h2>Constructor</h2>
-    
 
-    <h4 class="name" id="AirConsoleUserMediaError"><span class="type-signature"></span>new AirConsoleUserMediaError<span class="signature">(message)</span><span class="type-signature"></span></h4>
+    <h4 class="name" id="onPersistentDataStored"><span class="type-signature">(abstract) </span>onPersistentDataStored<span class="signature">(uid)</span><span class="type-signature"></span></h4>
 
     
 
 
+
+<div class="description">
+    Gets called when persistent data was stored from storePersistentData().
+</div>
 
 
 
@@ -285,13 +271,13 @@ This error is thrown when there is an issue related to accessing or managing use
 
         <tr>
             
-                <td class="name"><code>message</code></td>
+                <td class="name"><code>uid</code></td>
             
 
             <td class="type">
             
                 
-<span class="param-type">AirConsole.USER_MEDIA_ERROR_TYPE</span>
+<span class="param-type">String</span>
 
 
             
@@ -301,7 +287,7 @@ This error is thrown when there is an issue related to accessing or managing use
 
             
 
-            <td class="description last">The message is of type AirConsole.USER_MEDIA_ERROR_TYPE.</td>
+            <td class="description last">The uid for which the data was stored.</td>
         </tr>
 
     
@@ -342,7 +328,7 @@ This error is thrown when there is an issue related to accessing or managing use
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="./beta/airconsole-1.12.0.js.html">./beta/airconsole-1.12.0.js</a>, <a href="./beta/airconsole-1.12.0.js.html#line166">line 166</a>
+        <a href="./beta/airconsole-1.12.0.js.html">./beta/airconsole-1.12.0.js</a>, <a href="./beta/airconsole-1.12.0.js.html#line1237">line 1237</a>
     </li></ul></dd>
     
 
@@ -368,19 +354,95 @@ This error is thrown when there is an issue related to accessing or managing use
 
 
 
-    
-    </div>
+        
+            
 
     
-        <h3 class="subsection-title">Extends</h3>
+
+    <h4 class="name" id="onPhotonEngineAuth"><span class="type-signature">(abstract) </span>onPhotonEngineAuth<span class="signature">(ticket)</span><span class="type-signature"></span></h4>
+
+    
+
+
+
+<div class="description">
+    Gets called when requestPhotonEngineAuth() finished.
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
 
         
 
+        
 
-    <ul>
-        <li>Error</li>
-    </ul>
+        <th class="last">Description</th>
+    </tr>
+    </thead>
 
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>ticket</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">String</span>
+|
+
+<span class="param-type">null</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The Photon auth ticket, or null if the request failed.</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+    <dt class="tag-version">Version:</dt>
+    <dd class="tag-version"><ul class="dummy"><li>1.12.0</li></ul></dd>
+    
+
+    
+
+    
 
     
 
@@ -388,12 +450,368 @@ This error is thrown when there is an issue related to accessing or managing use
 
     
 
-     
+    
+
+    
 
     
 
     
 
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="./beta/airconsole-1.12.0.js.html">./beta/airconsole-1.12.0.js</a>, <a href="./beta/airconsole-1.12.0.js.html#line1207">line 1207</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id="requestPhotonEngineAuth"><span class="type-signature"></span>requestPhotonEngineAuth<span class="signature">()</span><span class="type-signature"></span></h4>
+
+    
+
+
+
+<div class="description">
+    Requests a short-lived ticket for Photon Custom Authentication.<br />
+Pass the ticket to Photon as the auth parameter "ticket" (AuthenticationValues.AddAuthParameter).
+Request a new ticket for every connection attempt: tickets expire after 15 minutes. Photon checks
+the ticket only when the client connects, so a connected session needs no new ticket.
+The result is delivered to onPhotonEngineAuth.
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+    <dt class="tag-version">Version:</dt>
+    <dd class="tag-version"><ul class="dummy"><li>1.12.0</li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="./beta/airconsole-1.12.0.js.html">./beta/airconsole-1.12.0.js</a>, <a href="./beta/airconsole-1.12.0.js.html#line1194">line 1194</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <h5>Examples</h5>
+    
+    <pre class="prettyprint"><code>//  Screen (game)                                AirConsole                  Photon
+//       |                                            |                          |
+//       | airconsole.requestPhotonEngineAuth()       |                          |
+//       |------------------------------------------->|                          |
+//       | airconsole.onPhotonEngineAuth(ticket)      |                          |
+//       |&lt;-------------------------------------------|                          |
+//       | loadBalancingClient.setCustomAuthentication("ticket=" + ticket, Custom)
+//       | loadBalancingClient.connectToRegionMaster(region)                     |
+//       |---------------------------------------------------------------------->|
+//       |                                            |  Photon verifies ticket  |
+//       |                                            |&lt;------------------------>|
+//       |                                                                       |
+//       | Valid ticket:                                                         |
+//       | onStateChange(State.JoinedLobby)                                      |
+//       |&lt;----------------------------------------------------------------------|
+//       | joinRoom(name) or createRoom(name)                                    |
+//       |---------------------------------------------------------------------->|
+//       | onJoinRoom(createdByMe)                                               |
+//       |&lt;----------------------------------------------------------------------|
+//       |                                                                       |
+//       | Missing or expired ticket:                                            |
+//       | onError(PeerErrorCode.NameServerAuthenticationFailed,                 |
+//       |         "NameServer authentication failed: 32755 ...")                |
+//       |&lt;----------------------------------------------------------------------|
+//       | Request a new ticket, then connect again.                             |</code></pre>
+
+    <pre class="prettyprint"><code>// Photon JavaScript SDK. Request a new ticket before every attempt to connect.
+airconsole.onPhotonEngineAuth = function (ticket) {
+  // Also connect without a ticket. Photon then rejects the connection with
+  // CustomAuthenticationFailed, and the player does not connect anonymously.
+  loadBalancingClient.setCustomAuthentication(
+    'ticket=' + encodeURIComponent(ticket || ''),
+    Photon.LoadBalancing.Constants.CustomAuthenticationType.Custom);
+  loadBalancingClient.connectToRegionMaster(region);
+};
+airconsole.requestPhotonEngineAuth();</code></pre>
+
+    <pre class="prettyprint"><code>// Unity with Photon Fusion. The AirConsole Unity plugin has
+// AirConsole.instance.RequestPhotonEngineAuth() and the onPhotonEngineAuth event.
+//   var authValues = new AuthenticationValues { AuthType = CustomAuthenticationType.Custom };
+//   authValues.AddAuthParameter("ticket", ticket ?? string.Empty);
+//   await runner.StartGame(new StartGameArgs { GameMode = GameMode.Shared, AuthValues = authValues });</code></pre>
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id="storePersistentData"><span class="type-signature"></span>storePersistentData<span class="signature">(key, value, uid)</span><span class="type-signature"></span></h4>
+
+    
+
+
+
+<div class="description">
+    Stores a key-value pair persistently on the AirConsole servers.
+Storage is per game. Total storage can not exceed 1 MB per game and uid.
+Storage is public, not secure and anyone can request and tamper with it.
+Do not store sensitive data.
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>key</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">String</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The key of the data entry.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>value</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">mixed</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The value of the data entry.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>uid</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">String</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The uid for which the data should be stored.
+                      For controllers, the default is the uid of this device.
+                      Screens must provide a valid uid.</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+    <dt class="tag-version">Version:</dt>
+    <dd class="tag-version"><ul class="dummy"><li>1.9.0 - uid is no longer optional for requests from the screen</li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="./beta/airconsole-1.12.0.js.html">./beta/airconsole-1.12.0.js</a>, <a href="./beta/airconsole-1.12.0.js.html#line1221">line 1221</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
     
 
     
