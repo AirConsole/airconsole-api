@@ -7,14 +7,17 @@ on:
     paths:
       - 'airconsole-*.js'
 
+permissions:
+  contents: write
+
 jobs:
   generate-and-deploy:
     name: Generate and deploy live docs
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
 
     steps:
     - name: Checkout the repository
-      uses: actions/checkout@v4
+      uses: actions/checkout@v7
 
     # Install npm dependencies (global or local)
     - name: Install npm dependencies
@@ -23,7 +26,7 @@ jobs:
 
     # Install Python dependencies if required
     - name: Set up Python
-      uses: actions/setup-python@v4
+      uses: actions/setup-python@v7
       with:
         python-version: '3.x'
 
@@ -34,7 +37,7 @@ jobs:
 
     # Deploy to GitHub Pages
     - name: Deploy to GitHub Pages
-      uses: peaceiris/actions-gh-pages@v3
+      uses: peaceiris/actions-gh-pages@v4
       with:
         github_token: ${{ secrets.GITHUB_TOKEN }}
         publish_dir: ./docs/live  # The directory containing the generated HTML files
