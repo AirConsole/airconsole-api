@@ -50,6 +50,8 @@ describe("AirConsole 1.11.0", function () {
 
         testSetup("1.11.0");
 
+        testPostMessageWithoutReferrer();
+
     });
 
     /**
