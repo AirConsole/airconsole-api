@@ -20,7 +20,7 @@ Release notes follow the [keep a changelog](https://keepachangelog.com/en/1.0.0/
 - The API reports the audio inputs and the active device after every successful open (`audioInputDevicesReported`), and
   failures the platform would not otherwise learn of (`userMediaRequestFailed`).
 - The preferred audio input device exchange runs only when the platform announces it in `ready`
-  (`preferredAudioInputDeviceSupported: true`); otherwise `getUserMedia` behaves as before.
+  (`audioInputExchangeEnabled: true`); otherwise `getUserMedia` behaves as before.
 
 ### Changed
 

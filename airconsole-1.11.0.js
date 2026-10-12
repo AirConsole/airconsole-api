@@ -893,7 +893,7 @@ AirConsole.prototype.getUserMedia = function getUserMedia(constraints) {
     me.preferredAudioInputDeviceHandler_ = null;
     me.mediaPermissionStreams_ = [];
     // Taken per request, so a later ready cannot switch flows while a request is pending.
-    me.mediaPermissionUsesExchange_ = me.preferredAudioInputDeviceSupported_ === true;
+    me.mediaPermissionUsesExchange_ = me.audioInputExchangeEnabled_ === true;
     mediaPermissionCallbacks_.set(me, { resolve: resolve, reject: reject });
     if (me.mediaPermissionUsesExchange_) {
       me.mediaPermissionRemainingMs_ = PERMISSION_TIMEOUT_MS;
@@ -2009,7 +2009,7 @@ AirConsole.prototype.onPostMessage_ = function(event) {
   } else if (data.action === "ready") {
     me.device_id = data.device_id;
     me.devices = data.devices;
-    me.preferredAudioInputDeviceSupported_ = data.preferredAudioInputDeviceSupported === true;
+    me.audioInputExchangeEnabled_ = data.audioInputExchangeEnabled === true;
     me.updatePermissionClock_();
     if (me.server_time_offset !== false) {
       me.server_time_offset = data.server_time_offset || 0;

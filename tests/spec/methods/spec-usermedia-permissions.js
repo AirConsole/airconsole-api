@@ -818,7 +818,7 @@ function testUserMediaPermissions() {
     beforeEach(function () {
       initAirConsoleAsController();
       // The platform announced the exchange in ready (see "ready flag" below).
-      airconsole.preferredAudioInputDeviceSupported_ = true;
+      airconsole.audioInputExchangeEnabled_ = true;
       sent = [];
       reply = null;
       spyOn(airconsole, 'sendEvent_').and.callFake(function (type, data) {
@@ -843,17 +843,17 @@ function testUserMediaPermissions() {
 
       it('Should leave the exchange off when ready does not announce it', function () {
         dispatchReady({});
-        expect(airconsole.preferredAudioInputDeviceSupported_).toBe(false);
+        expect(airconsole.audioInputExchangeEnabled_).toBe(false);
       });
 
       it('Should turn the exchange on when ready announces it', function () {
-        airconsole.preferredAudioInputDeviceSupported_ = false;
-        dispatchReady({ preferredAudioInputDeviceSupported: true });
-        expect(airconsole.preferredAudioInputDeviceSupported_).toBe(true);
+        airconsole.audioInputExchangeEnabled_ = false;
+        dispatchReady({ audioInputExchangeEnabled: true });
+        expect(airconsole.audioInputExchangeEnabled_).toBe(true);
       });
 
       it('Should open on the hand-off and send none of the new events without the flag', async function () {
-        airconsole.preferredAudioInputDeviceSupported_ = false;
+        airconsole.audioInputExchangeEnabled_ = false;
         const stream = makeFakeStream('mic-car');
         spyGetUserMediaSequence([Promise.resolve(stream)]);
         const result = airconsole.getUserMedia({ audio: true });
@@ -870,7 +870,7 @@ function testUserMediaPermissions() {
       it('Should keep the 45 s timeout running through a screen pause without the flag', async function () {
         jasmine.clock().install();
         try {
-          airconsole.preferredAudioInputDeviceSupported_ = false;
+          airconsole.audioInputExchangeEnabled_ = false;
           const result = airconsole.getUserMedia({ audio: true }).catch(function (error) { return error; });
           updateScreen({ paused: { state: true, reason: 'audio-focus-loss' } });
           jasmine.clock().tick(45001);
@@ -882,7 +882,7 @@ function testUserMediaPermissions() {
       });
 
       it('Should reject on destroy() without userMediaRequestFailed when the flag is off', async function () {
-        airconsole.preferredAudioInputDeviceSupported_ = false;
+        airconsole.audioInputExchangeEnabled_ = false;
         const result = airconsole.getUserMedia({ audio: true }).catch(function (error) { return error; });
         airconsole.destroy();
         expect((await result).message).toBe(AirConsole.USER_MEDIA_ERROR_TYPE.timeout);
