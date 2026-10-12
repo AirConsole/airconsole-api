@@ -48,7 +48,8 @@ describe("AirConsole 1.11.0", function () {
             tearDown();
         });
 
-        testSetup("1.11.0");
+        // A newer version's page that reuses this suite sets EXPECTED_API_VERSION.
+        testSetup(typeof EXPECTED_API_VERSION === "undefined" ? "1.11.0" : EXPECTED_API_VERSION);
 
     });
 
