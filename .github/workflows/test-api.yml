@@ -1,0 +1,58 @@
+name: Test AirConsole API
+
+# Replaces the Jenkins job "Test AirConsole API" (ci/jenkins.groovy). Public repo rules: read-only
+# token, no secrets, actions/* only, no PR values in run:, no artifact upload.
+on:
+  push:
+    # The branch filter keeps tag pushes out.
+    branches:
+      - '**'
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: test-api-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  test:
+    name: Playwright
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: ci
+
+    steps:
+    - name: Checkout the repository
+      uses: actions/checkout@v7
+      with:
+        persist-credentials: false  # Leaves no git token on disk for the later steps
+
+    - name: Set up Node
+      uses: actions/setup-node@v7
+      with:
+        node-version-file: .nvmrc
+        package-manager-cache: false
+
+    - name: Activate pnpm via corepack
+      env:
+        COREPACK_ENABLE_DOWNLOAD_PROMPT: '0'
+      run: |
+        corepack enable
+        corepack prepare pnpm@11.13.1 --activate
+        pnpm --version
+
+    - name: Install dependencies
+      run: |
+        pnpm install --frozen-lockfile
+
+    - name: Install Chromium
+      run: |
+        npx playwright install --with-deps chromium
+
+    - name: Run tests
+      run: |
+        npx playwright test --project chromium

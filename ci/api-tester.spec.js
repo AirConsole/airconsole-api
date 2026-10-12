@@ -9,6 +9,7 @@ const SPECS = [
   { file: "airconsole-1.9.0-spec.html",  doneSelector: '.jasmine-duration' },
   { file: "airconsole-1.10.0-spec.html", doneSelector: '.jasmine-duration' },
   { file: "airconsole-1.11.0-spec.html", doneSelector: '.jasmine-overall-result' },
+  { file: "airconsole-1.12.0-spec.html", doneSelector: '.jasmine-overall-result' },
 ];
 
 SPECS.forEach(({ file, doneSelector }) => {

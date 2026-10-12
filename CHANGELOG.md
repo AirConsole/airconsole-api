@@ -12,6 +12,7 @@ Release notes follow the [keep a changelog](https://keepachangelog.com/en/1.0.0/
 
 ### Added
 
+- Added `AirConsole.requestPhotonEngineAuth()` and `onPhotonEngineAuth(ticket)` so screens can authenticate with Photon Custom Authentication.
 - `AirConsole.getUserMedia` asks the platform which audio input a stream should use before handing it to the game
   (`requestPreferredAudioInputDevice` / `preferredAudioInputDevice`), so car head units can keep games on the phone's
   built-in microphone. The first request of a game opens once, then keeps that stream, reopens it, or switches to the
