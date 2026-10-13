@@ -15,10 +15,11 @@ Release notes follow the [keep a changelog](https://keepachangelog.com/en/1.0.0/
 - Added `AirConsole.requestPhotonEngineAuth()` and `onPhotonEngineAuth(ticket)` so screens can authenticate with Photon Custom Authentication.
 - `AirConsole.getUserMedia` asks the platform which audio input a stream should use before handing it to the game
   (`requestPreferredAudioInputDevice` / `preferredAudioInputDevice`), so car head units can keep games on the phone's
-  built-in microphone. The first request of a game opens once, then keeps that stream, reopens it, or switches to the
-  preferred device; later requests open once with the device merged in as a non-exact `deviceId`.
-- The API reports the audio inputs and the active device after every successful open (`audioInputDevicesReported`), and
-  failures the platform would not otherwise learn of (`userMediaRequestFailed`).
+  built-in microphone. The first request opens a stream, then keeps it, opens a fresh one if it ended, or switches to
+  the preferred device; later requests ask first, then open once with the device merged in as a non-exact `deviceId`.
+- The API reports the audio inputs and the active device each time `getUserMedia` resolves
+  (`audioInputDevicesReported`), and failures the platform would not otherwise learn of, a timeout or an open error
+  (`userMediaRequestFailed`).
 - The preferred audio input device exchange runs only when the platform announces it in `ready`
   (`audioInputExchangeEnabled: true`); otherwise `getUserMedia` behaves as before.
 

@@ -824,14 +824,15 @@ const BASE_PERMISSION_TIMEOUT_MS = 45000;
 
 /**
  * @typedef {Object} AirConsole~GetUserMediaConstraint
- * @property {boolean} audio - Whether to request microphone permissions. Must be provided; video is not supported.
+ * @property {boolean|MediaTrackConstraints} audio - Whether to request microphone permissions, or the audio track
+ *   constraints. Must be truthy; video is not supported.
  */
 
 /**
  * Requests microphone permissions for the controller device.
  * Can only be called by a controller (not the screen). Video constraints are not supported.
  *
- * @param {AirConsole~GetUserMediaConstraint} constraints - Media constraints. Must include `audio: true`.
+ * @param {AirConsole~GetUserMediaConstraint} constraints - Media constraints. Must include a truthy `audio`.
  *   Video constraints are not supported and will cause the promise to reject with
  *   {@link AirConsole.USER_MEDIA_ERROR_TYPE}.invalidConstraints.
  * @return {Promise<MediaStream>} Resolves with the granted {@link https://developer.mozilla.org/en-US/docs/Web/API/MediaStream MediaStream}
@@ -843,10 +844,11 @@ const BASE_PERMISSION_TIMEOUT_MS = 45000;
  *   Note: callers are responsible for stopping stream tracks when the stream is no longer needed:
  *   `stream.getTracks().forEach(function(t) { t.stop(); })`
  *
- *   On a platform that announces it (a car head unit), the platform may prefer another audio input, e.g. the
- *   phone's built-in microphone; the API then resolves with a stream on that device. There a request that stays
- *   unsettled for 60 s of unpaused time rejects with {@link AirConsole.USER_MEDIA_ERROR_TYPE}.timeout; the clock
- *   stops while the screen is paused. Everywhere else the timeout is 45 s.
+ *   On a platform that enables the preferred audio input exchange (e.g. a car head unit), the platform may prefer
+ *   another audio input, such as the phone's built-in microphone; the API then asks the browser for that device,
+ *   which opens another microphone if it is unavailable. There a request that stays unsettled for 60 s of unpaused
+ *   time rejects with {@link AirConsole.USER_MEDIA_ERROR_TYPE}.timeout; the clock stops while the screen is paused.
+ *   Everywhere else the timeout is 45 s.
  *
  * @example
  * airconsole.getUserMedia({ audio: true }).then(function(stream) {
@@ -950,8 +952,8 @@ AirConsole.prototype.isScreenPaused_ = function isScreenPaused_() {
 
 /**
  * Starts or stops the permission clock to match the screen's pause state, keeping the remaining time across a pause.
- * Called when a request starts and whenever the screen's presence changes. Does nothing for a request without the
- * exchange, whose timeout is the base one.
+ * Called when a request starts, on `ready`, and whenever the screen's presence changes. Does nothing when no request
+ * is pending, or for a request without the exchange, whose timeout is the base one.
  * @private
  */
 AirConsole.prototype.updatePermissionClock_ = function updatePermissionClock_() {
@@ -976,9 +978,9 @@ AirConsole.prototype.updatePermissionClock_ = function updatePermissionClock_() 
 };
 
 /**
- * Ends the pending request once the permission timeout expires: stops any stream the request holds, tells the
- * platform, then rejects the game's promise. Sending before rejecting means the platform has handled the timeout
- * before the game can retry.
+ * Ends the pending request when the permission timeout expires, or on destroy(): stops any stream the request holds,
+ * tells the platform, then rejects the game's promise. Sending before rejecting means the platform receives the
+ * failure before any retry the game sends.
  * @private
  */
 AirConsole.prototype.expireMediaPermission_ = function expireMediaPermission_() {
@@ -1002,7 +1004,7 @@ AirConsole.prototype.startBaseMediaPermissionRequest_ = function startBaseMediaP
   navigator.mediaDevices.getUserMedia(me.mediaPermissionConstraints_).then(
     function success(stream) {
       if (!me.mediaPermissionPending_) {
-        // Timeout fired while the browser permission dialog was still open;
+        // The request ended (timeout or destroy()) while the browser permission dialog was still open;
         // the outer Promise is already settled — stop the orphaned stream to release hardware.
         stream.getTracks().forEach(function (t) { t.stop(); });
         return;
@@ -1051,8 +1053,8 @@ AirConsole.prototype.stopMediaPermissionStreams_ = function stopMediaPermissionS
 };
 
 /**
- * Returns the name the platform receives for an error: the message of an AirConsoleUserMediaError, or the name of a
- * browser DOMException.
+ * Returns the name the platform receives for an error: the message of an AirConsoleUserMediaError, otherwise the
+ * error's name (e.g. a DOMException's), or String(error) if it has none.
  * @private
  * @param {*} error
  * @return {string}
@@ -1065,7 +1067,8 @@ AirConsole.getUserMediaErrorName_ = function getUserMediaErrorName_(error) {
 };
 
 /**
- * Returns the device id the stream's audio track captures from, or '' when it has none.
+ * Returns the device id the stream's audio track captures from, or '' when the stream has no live audio track or
+ * the id is unavailable.
  * @private
  * @param {MediaStream} stream
  * @return {string}
@@ -1100,7 +1103,8 @@ AirConsole.enumerateAudioInputDevices_ = function enumerateAudioInputDevices_() 
 
 /**
  * Returns the game's constraints with deviceId merged into `audio` as a plain (non-exact) value, so the browser
- * treats it as a preference and opens another microphone when that device is gone.
+ * treats it as a preference and opens another microphone when that device is gone. Returns the constraints unchanged
+ * when deviceId is null.
  * @private
  * @param {AirConsole~GetUserMediaConstraint} constraints
  * @param {string|null} deviceId
@@ -1117,7 +1121,8 @@ AirConsole.getConstraintsWithAudioInputDevice_ = function getConstraintsWithAudi
 
 /**
  * Asks the platform which audio input the stream should use and waits for its preferredAudioInputDevice reply.
- * The reply is accepted once per request, and only while it is awaited.
+ * The reply is accepted once per request, and only while it is awaited. An accepted reply marks the exchange
+ * completed, so later requests use the later-request flow.
  * @private
  * @param {number} requestId
  * @param {Object} payload - { devices, activeDeviceId } on a first request; empty on a later one.
@@ -1138,7 +1143,8 @@ AirConsole.prototype.requestPreferredAudioInputDevice_ = function requestPreferr
 };
 
 /**
- * Hands a stream to the game and reports the devices and the device the stream actually captures from.
+ * Sends userMediaPermissionGranted, hands the stream to the game, then reports the audio inputs and the device the
+ * stream actually captures from (audioInputDevicesReported). Stops the stream instead if the request has ended.
  * @private
  * @param {number} requestId
  * @param {MediaStream} stream
@@ -1167,8 +1173,9 @@ AirConsole.prototype.resolveMediaPermissionWithReport_ = function resolveMediaPe
 };
 
 /**
- * Ends the pending request after an open failed for a reason other than a permission denial: tells the platform,
- * then lets the error reach the game.
+ * Ends the pending request after an open failed in a way the denial path does not handle (any error after the
+ * native app's grant, a NotAllowedError included, or any other than NotAllowedError on web): sends
+ * userMediaRequestFailed with reason 'open-error', then rejects with the error.
  * @private
  * @param {number} requestId
  * @param {*} error
@@ -1228,8 +1235,10 @@ AirConsole.prototype.openMediaPermissionStream_ = function openMediaPermissionSt
 };
 
 /**
- * First request of a game: opens stream #1 with the game's constraints, asks for the preferred audio input device
- * with the device list, then keeps stream #1, reopens a fresh stream if it ended, or switches to stream #2.
+ * Used until the platform has answered once on this instance (a game's first request, or the next one after a
+ * request that ended before the reply): opens stream #1 with the game's constraints, asks for the preferred audio
+ * input device with the device list, then keeps stream #1, reopens a fresh stream if it ended, or switches to
+ * stream #2.
  * @private
  * @param {number} requestId
  * @param {string} handOffType - 'promptUserMediaPermission' (web) or 'userMediaPermissionGranted' (native app).
@@ -1281,8 +1290,8 @@ AirConsole.prototype.startFirstMediaPermissionRequest_ = function startFirstMedi
 };
 
 /**
- * Later request in the same game: asks for the preferred audio input device before opening anything, then opens
- * once with it merged in as a non-exact constraint.
+ * Used once the platform has answered a previous request: asks for the preferred audio input device before opening
+ * anything, then opens once, with the preferred device merged in as a non-exact constraint when the reply names one.
  * @private
  * @param {number} requestId
  * @param {string} handOffType - 'promptUserMediaPermission' (web) or 'userMediaPermissionGranted' (native app).
@@ -1308,8 +1317,11 @@ AirConsole.prototype.startLaterMediaPermissionRequest_ = function startLaterMedi
  * Releases resources held by this AirConsole instance.
  * Call this when the instance is no longer needed — for example, when navigating
  * away in a single-page application — to remove the message event listener and
- * cancel any pending getUserMedia timeout. Failing to call destroy() in such
- * environments will leave a dangling listener and possibly a live timeout.
+ * end any pending getUserMedia request: it is rejected with
+ * {@link AirConsole.USER_MEDIA_ERROR_TYPE}.timeout, and with the preferred audio input
+ * exchange its streams are stopped and userMediaRequestFailed is sent first.
+ * Failing to call destroy() in such environments will leave a dangling listener and
+ * possibly a live timeout.
  */
 AirConsole.prototype.destroy = function destroy() {
   window.removeEventListener('message', this.messageEventListener_);
@@ -2185,7 +2197,7 @@ AirConsole.prototype.onPostMessage_ = function(event) {
     const { type } = data;
 
     // Guard: ignore stale platform messages that arrive after state has been cleaned up
-    // (e.g. after the 30-second timeout has already resolved the pending Promise).
+    // (e.g. after the timeout has already rejected the pending Promise).
     if (!me.mediaPermissionPending_) {
       return;
     }
@@ -2217,7 +2229,8 @@ AirConsole.prototype.onPostMessage_ = function(event) {
         me.startFirstMediaPermissionRequest_(me.mediaPermissionRequestId_, type);
       }
     } else if (type === 'preferredAudioInputDevice') {
-      // Accepted only while awaited; a reply meant for an earlier request is ignored.
+      // Accepted only while awaited. A reply meant for an earlier request is ignored: the platform's messages arrive
+      // in order, so it arrives before this request's hand-off, while no reply is awaited.
       if (me.preferredAudioInputDeviceHandler_) {
         me.preferredAudioInputDeviceHandler_(data.data && data.data.deviceId);
       }
