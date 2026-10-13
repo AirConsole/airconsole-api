@@ -65,3 +65,45 @@ function testSetup(version) {
     });
 
 }
+
+/**
+ * Safari's privacy protections empty document.referrer in sandboxed or cross-site game frames.
+ */
+function testPostMessageWithoutReferrer() {
+
+    describe("Without document.referrer", function() {
+      let host;
+      let blobUrl;
+
+      afterEach(function() {
+        if (host) host.remove();
+        if (blobUrl) URL.revokeObjectURL(blobUrl);
+        host = blobUrl = undefined;
+      });
+
+      it ("Should post the ready message to the parent", function(done) {
+        // The bundle this runner loaded, so each runner tests its own version.
+        const bundleUrl = [...document.scripts].map((s) => s.src).find((src) => /airconsole-\d+\.\d+\.\d+\.js$/.test(src));
+        if (!bundleUrl) return done.fail('AirConsole bundle script not found');
+        // Without an empty referrer the old code path would pass too, so the frame only starts AirConsole then.
+        const html = '<script src="' + bundleUrl + '"><\/script>'
+          + '<script>if (document.referrer === "") new AirConsole({ setup_document: false });<\/script>';
+        blobUrl = URL.createObjectURL(new Blob([html], { type: 'text/html' }));
+        // The about:blank host gives the game frame an empty referrer and keeps its messages away from the
+        // AirConsole instances of this runner.
+        host = document.createElement('iframe');
+        document.body.appendChild(host);
+        const frame = host.contentDocument.createElement('iframe');
+        frame.setAttribute('sandbox', 'allow-scripts');
+        frame.src = blobUrl;
+
+        host.contentWindow.addEventListener('message', function(event) {
+          if (event.source !== frame.contentWindow || event.data.action !== 'ready') return;
+          expect(event.origin).toBe('null'); // Sent by the sandboxed frame
+          done();
+        });
+        host.contentDocument.body.appendChild(frame);
+      });
+    });
+
+}

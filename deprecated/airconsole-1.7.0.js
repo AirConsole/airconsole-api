@@ -1215,7 +1215,9 @@ AirConsole.prototype.getGameUrl_ = function(url) {
  */
 AirConsole.postMessage_ = function(data) {
   try {
-    window.parent.postMessage(data, document.referrer);
+    // Safari's privacy protections can empty document.referrer in sandboxed or cross-site game frames.
+    var target_origin = document.referrer || (window.location.ancestorOrigins && window.location.ancestorOrigins[0]) || "";
+    window.parent.postMessage(data, target_origin);
   } catch(e) {
     console.log("Posting message to parent failed: " + JSON.stringify(data));
   }
